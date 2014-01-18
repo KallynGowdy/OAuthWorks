@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OAuthWorks", "OAuthWorks\OAuthWorks.csproj", "{6365EEBC-E95E-4CC5-ABC9-EA00B0FBFAFD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OAuthWorks.Tests", "OAuthWorks.Tests\OAuthWorks.Tests.csproj", "{43FB5F81-5839-4F35-99AE-E5F2AC71670C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6365EEBC-E95E-4CC5-ABC9-EA00B0FBFAFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6365EEBC-E95E-4CC5-ABC9-EA00B0FBFAFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6365EEBC-E95E-4CC5-ABC9-EA00B0FBFAFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6365EEBC-E95E-4CC5-ABC9-EA00B0FBFAFD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43FB5F81-5839-4F35-99AE-E5F2AC71670C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43FB5F81-5839-4F35-99AE-E5F2AC71670C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43FB5F81-5839-4F35-99AE-E5F2AC71670C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43FB5F81-5839-4F35-99AE-E5F2AC71670C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
