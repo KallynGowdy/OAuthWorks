@@ -39,8 +39,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
+    <Compile Include="AuthorizationCodeResponseType.cs" />
+    <Compile Include="AuthorizationRequestCodeErrorType.cs" />
+    <Compile Include="IAccessTokenRequest.cs" />
+    <Compile Include="IAccessTokenResponse.cs" />
+    <Compile Include="IAuthorizationCodeError.cs" />
+    <Compile Include="IAuthorizationCodeRequest.cs" />
+    <Compile Include="IAuthorizationCodeResponse.cs" />
+    <Compile Include="IOAuthProvider.cs" />
+    <Compile Include="IOAuthProviderDefinition.cs" />
+    <Compile Include="IRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="IScope.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

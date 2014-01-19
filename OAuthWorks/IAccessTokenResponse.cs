@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace OAuthWorks.Tests
+namespace OAuthWorks
 {
-    public class Class1
+    public interface IAccessTokenResponse
     {
-
     }
 }
