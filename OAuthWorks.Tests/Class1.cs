@@ -8,6 +8,9 @@ namespace OAuthWorks.Tests
 {
     public class Class1
     {
+        public void TestGenerateRandomString()
+        {
+        }
 
     }
 }
