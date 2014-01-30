@@ -27,5 +27,12 @@ namespace OAuthWorks
         {
             get;
         }
+
+        /// <summary>
+        /// Determines if the two scopes equal each other.
+        /// </summary>
+        /// <param name="other">The other scope to determine equality to.</param>
+        /// <returns>Returns true if the two scopes equal each other, otherwise false.</returns>
+        bool Equals(IScope other);
     }
 }

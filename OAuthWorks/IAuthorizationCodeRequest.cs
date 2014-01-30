@@ -26,6 +26,8 @@ namespace OAuthWorks
         //                              server includes this value when redirecting the user-agent back
         //                              to the client. (RFC 6749, Section 10.12, http://tools.ietf.org/html/rfc6749#section-10.12)
 
+        //  We require the client to provide a password/secret for simple authentication.
+
         /// <summary>
         /// Gets the response_type that defines what the OAuth Provider should return. Required to be 'Code'.
         /// </summary>
@@ -38,6 +40,14 @@ namespace OAuthWorks
         /// Gets the Id of the client. This value is required to be non-null and not empty.
         /// </summary>
         string ClientId
+        {
+            get;
+        }
+
+        /// <summary>
+        /// Gets the secret that the client provided in the request. This value is required to be non-null and not empty.
+        /// </summary>
+        string ClientSecret
         {
             get;
         }
