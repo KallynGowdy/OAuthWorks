@@ -25,9 +25,26 @@ namespace OAuthWorks.Factories
     /// <summary>
     /// Defines an interface for a <see cref="OAuthWorks.IFactory"/> object that produces <see cref="OAuthWorks.IAccessTokenResponse"/> objects.
     /// </summary>
-    public interface IAccessTokenResponseFactory<in TAccessTokenResponse> : IFactory<TAccessTokenResponse> where TAccessTokenResponse : IAccessTokenResponse
+    public interface IAccessTokenResponseFactory<out TAccessTokenResponse> : IFactory<TAccessTokenResponse> where TAccessTokenResponse : IAccessTokenResponse
     {
-        TAccessTokenResponse Get(string accessToken, 
+        /// <summary>
+        /// Gets a new <see cref="OAuthWorks.IAccessTokenResponse"/> object given the distributed access token, refresh token, access token type, granted scope, and expiration date.
+        /// </summary>
+        /// <param name="accessToken">The access token that grants access to the resources governed by the scope.</param>
+        /// <param name="refreshToken">The refresh token that allows retrieval of additional access tokens.</param>
+        /// <param name="tokenType">The type of token that is returned.</param>
+        /// <param name="scope"></param>
+        /// <param name="expirationDateUtc"></param>
+        /// <returns>Returns a new <see cref="OAuthWorks.IAccessTokenResponse"/> object.</returns>
+        TAccessTokenResponse Create(string accessToken, string refreshToken, string tokenType, string scope, DateTime expirationDateUtc);
 
+        /// <summary>
+        /// Gets a new <see cref="OAuthWorks.IAccessTokenResponse"/> object used for error responsed to the client given the error type, error description and error description uri.
+        /// </summary>
+        /// <param name="errorCode">The error code that describes the basic problem.</param>
+        /// <param name="errorDescription">A more in-depth description of the error. May be null.</param>
+        /// <param name="errorUri">A uri where a developer can go to find information about the error.</param>
+        /// <returns>Returns a new <see cref="OAuthWorks.IAccessTokenResponse"/> object.</returns>
+        TAccessTokenResponse CreateError(AccessTokenRequestError errorCode, string errorDescription, string errorUri);
     }
 }

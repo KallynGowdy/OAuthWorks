@@ -24,7 +24,7 @@ namespace OAuthWorks.Repositories
     /// <summary>
     /// Defines an interface for a repository that contains <see cref="OAuthWorks.IScope"/> objects.
     /// </summary>
-    public interface IScopeRepository<in T> : IRepository<string, T> where T : IScope
+    public interface IScopeRepository<T> : IRepository<string, T> where T : IScope
     {
         /// <summary>
         /// Gets a list of all of the scopes that are contained in this repository.

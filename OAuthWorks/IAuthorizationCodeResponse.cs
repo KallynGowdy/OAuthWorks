@@ -72,7 +72,7 @@ namespace OAuthWorks
         /// <summary>
         /// Gets an object that represents the actual error that occured.
         /// </summary>
-        IAuthorizationCodeError Error
+        IAuthorizationCodeError ErrorCode
         {
             get;
         }

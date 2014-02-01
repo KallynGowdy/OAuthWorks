@@ -12,24 +12,40 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace OAuthWorks
 {
     /// <summary>
-    /// Defines a list of the different types of access tokens that can be granted to a client.
+    /// Defines an interface for refresh tokens.
     /// </summary>
-    public enum AccessTokenType
+    public interface IRefreshToken
     {
         /// <summary>
-        /// Defines that the granted access token is a bearer token.
-        /// It is used in the http authorization header with the word "Bearer" prefixing the
-        /// actual access token.
+        /// Determines if the given value matches the one stored in this object.
         /// </summary>
-        Bearer
+        /// <param name="token">The token to match to the value stored in this object.</param>
+        /// <returns>Returns true if the tokens match, otherwise returns false.</returns>
+        bool MatchesToken(string token);
+
+        /// <summary>
+        /// Gets the client that this token belongs to.
+        /// </summary>
+        IClient Client
+        {
+            get;
+        }
+
+        /// <summary>
+        /// Gets whether this token has been revoked by the user.
+        /// </summary>
+        bool Revoked
+        {
+            get;
+        }
     }
 }

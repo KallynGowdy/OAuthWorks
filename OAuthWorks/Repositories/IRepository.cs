@@ -27,7 +27,7 @@ namespace OAuthWorks.Repositories
     /// </summary>
     /// <typeparam name="T">The type of the entities that are stored in this repository.</typeparam>
     /// <typeparam name="K">The type of the identifier that is used to retrieve objects from the respository.</typeparam>
-    public interface IRepository<K, in T>
+    public interface IRepository<K, T>
     {
         /// <summary>
         /// Gets an entity by it's identifier.

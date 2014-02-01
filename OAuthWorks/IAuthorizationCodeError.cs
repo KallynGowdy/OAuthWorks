@@ -50,7 +50,7 @@ namespace OAuthWorks
         /// <summary>
         /// Gets the type of the error that provides information on the basic problem that occured.
         /// </summary>
-        AuthorizationRequestCodeErrorType Error
+        AuthorizationRequestCodeErrorType ErrorCode
         {
             get;
         }

@@ -27,10 +27,22 @@ namespace OAuthWorks.Repositories
     public interface IAuthorizationCodeRepository<T> : IRepository<string, T> where T : IAuthorizationCode
     {
         /// <summary>
+        /// Gets the authorization code by it's actual internal value.
+        /// </summary>
+        /// <param name="authorizationCode">The authorization code that was issued to a client.</param>
+        /// <returns>Returns the complete authorization code.</returns>
+        /// <remarks>
+        /// This method is used to allow flexibility to implementations in how they store Ids. 
+        /// Authorization code factories can return authorization codes that contain Ids in them for easy retrieval.
+        /// It is also possible to use different possiblities.
+        /// </remarks>
+        T GetByValue(string authorizationCode);
+
+        /// <summary>
         /// Gets a list of Authorization codes by the given client.
         /// </summary>
         /// <param name="client">The client </param>
         /// <returns></returns>
-        IEnumerable<T> GetByClient(IClient client);
+        //IEnumerable<T> GetByClient(IClient client);
     }
 }

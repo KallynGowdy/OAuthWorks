@@ -32,11 +32,7 @@ namespace OAuthWorks
     /// There are helper functions for determining whether a client requires authorization by the user or not.
     /// In the case that the Resource Owner Password Credentials flow is allowed by the provider, 
     /// </remarks>
-    public interface IOAuthProvider<TScope, TClient, TAuthorizationCode, TAccessToken>
-        where TScope : IScope
-        where TClient : IClient
-        where TAuthorizationCode : IAuthorizationCode
-        where TAccessToken : IAccessToken
+    public interface IOAuthProvider
     {
         //The provider needs to provide support for the different OAuth flows
         //There are four(4) different OAuth 2.0 flows that are defined by the spec.
@@ -124,11 +120,19 @@ namespace OAuthWorks
         // The Authorization Provider must have access to an Access Token and Authorization Code repository so that it can store and retrieve access tokens.
 
         /// <summary>
+        /// Gets whether the OAuthProvider distributes refresh tokens.
+        /// </summary>
+        bool DistributeRefreshTokens
+        {
+            get;
+        }
+
+        /// <summary>
         /// Gets the scopes that are requested by the client based on the given request.
         /// </summary>
         /// <param name="request">The <see cref="OAuthWorks.AuthorizationCode"/> object that represents the request from the client.</param>
         /// <returns>Returns a list of <see cref="OAuthWorks.IScope"/> objects.</returns>
-        IEnumerable<TScope> GetRequestedScopes(IAuthorizationCodeRequest request);
+        IEnumerable<IScope> GetRequestedScopes(IAuthorizationCodeRequest request);
 
         /// <summary>
         /// Initiates the Authorization Code flow based on the given request and returns a response that defines what response to send back to the user agent.
@@ -143,7 +147,7 @@ namespace OAuthWorks
         /// </summary>
         /// <param name="request">The request that contains the required values.</param>
         /// <returns>Returns a new <see cref="OAuthWorks.IAccessTokenResponse"/> object that determines what values to put in the outgoing response.</returns>
-        IAccessTokenResponse RequestAccessToken(IAccessTokenRequest request);
+        IAccessTokenResponse RequestAccessToken(IAccessTokenRequest request, IUser currentUser);
 
         /// <summary>
         /// Revokes access to the given user's account from the given client.
@@ -159,7 +163,7 @@ namespace OAuthWorks
         /// <param name="client">The client to determine access for.</param>
         /// <param name="scope">The scope that the client wants access to.</param>
         /// <returns>Returns true if the client has access to the given users resources restricted by the given scope, otherwise false.</returns>
-        public bool HasAccess(IUser user, IClient client, IScope scope);
+        bool HasAccess(IUser user, IClient client, IScope scope);
 
         /// <summary>
         /// Gets the <see cref="OAuthWorks.IOAuthProviderDefintion"/> that contains information on the different endpoints provided by this

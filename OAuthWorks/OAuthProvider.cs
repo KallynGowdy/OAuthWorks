@@ -24,16 +24,12 @@ using System.Threading.Tasks;
 
 namespace OAuthWorks
 {
-    public class OAuthProvider<TScope, TClient, TAuthorizationCode, TAccessToken, TUser> : IOAuthProvider<TScope, TClient, TAuthorizationCode, TAccessToken>
-        where TScope : IScope
-        where TClient : IClient
-        where TAuthorizationCode : IAuthorizationCode
-        where TAccessToken : IAccessToken
+    public class OAuthProvider : IOAuthProvider
     {
         /// <summary>
         /// Gets the repository of scopes that this provider has access to.
         /// </summary>
-        public IScopeRepository<TScope> ScopeRepository
+        public IScopeRepository<IScope> ScopeRepository
         {
             get;
             private set;
@@ -49,83 +45,191 @@ namespace OAuthWorks
         }
 
         /// <summary>
-        /// Gets the repository of Authorization Code objects that this provider has access to.
+        /// Gets or sets the factory used to create new <see cref="OAuthWorks.IAuthorizationCodeResponse"/> objects.
         /// </summary>
-        public IAuthorizationCodeRepository<TAuthorizationCode> AuthorizationCodeRepository
+        public IAuthorizationCodeResponseFactory<IAuthorizationCodeResponse> AuthorizationCodeResponseFactory
         {
             get;
-            private set;
+            set;
         }
 
         /// <summary>
-        /// Gets the factory that creates Authorization Code objects for this provider.
+        /// Gets or sets the repository of Authorization Code objects that this provider has access to.
         /// </summary>
-        public IFactory<TAuthorizationCode> AuthorizationCodeFactory
+        public IAuthorizationCodeRepository<IAuthorizationCode> AuthorizationCodeRepository
         {
             get;
-            private set;
+            set;
         }
 
         /// <summary>
-        /// Gets the repository of Access Token objects that this provider has access to.
+        /// Gets or sets the factory that creates Authorization Code objects for this provider.
         /// </summary>
-        public IAccessTokenRepository<TAccessToken> AccessTokenRepository
+        public IAuthorizationCodeFactory<IAuthorizationCode> AuthorizationCodeFactory
         {
             get;
-            private set;
+            set;
         }
 
         /// <summary>
-        /// Gets the factory that creates Access Token objects for this provider.
+        /// Gets or sets the repository of Access Token objects that this provider has access to.
         /// </summary>
-        public IAccessTokenFactory<TAccessToken> AccessTokenFactory
+        public IAccessTokenRepository<IAccessToken> AccessTokenRepository
         {
             get;
-            private set;
+            set;
         }
 
         /// <summary>
-        /// Gets the facroty that creates <see cref="OAuthWorks.IAccessTokenResponse"/> objects for this provider.
+        /// Gets or sets the factory that creates Access Token objects for this provider.
+        /// </summary>
+        public IAccessTokenFactory<IAccessToken> AccessTokenFactory
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets the factory that creates <see cref="OAuthWorks.IAccessTokenResponse"/> objects for this provider.
         /// </summary>
         public IAccessTokenResponseFactory<IAccessTokenResponse> AccessTokenResponseFactory
         {
             get;
-            private set;
+            set;
         }
 
-        public IEnumerable<TScope> GetRequestedScopes(IAuthorizationCodeRequest request)
+        /// <summary>
+        /// Gets or sets the factory that creates <see cref="OAuthWorks.IRefreshToken"/> objects for this provider.
+        /// </summary>
+        public IRefreshTokenFactory<IRefreshToken> RefreshTokenFactory
         {
-            return request.Scope.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries).Join(ScopeRepository.GetAllScopes(), s => s, s => s.Id, (s, scope) => scope);
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets the formatter for scopes. That is, a function that, given a list of scopes, returns a string representing those scopes.
+        /// </summary>
+        public Func<IEnumerable<IScope>, string> ScopeFormatter
+        {
+            get;
+            set;
+        }
+
+        private Func<string, IEnumerable<IScope>> scopeParser;
+
+        /// <summary>
+        /// Gets or sets the parser for the scopes. That is, a function that, given a string, returns a list of scopes representing that string.
+        /// </summary>
+        public Func<string, IEnumerable<IScope>> ScopeParser
+        {
+            get
+            {
+                return scopeParser;
+            }
+            set
+            {
+                if (value != null)
+                {
+                    scopeParser = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the error description provider. That is, a function that, given the error and client, returns a string describing the problem.
+        /// </summary>
+        public Func<AccessTokenRequestError, IClient, string> AccessTokenErrorDescriptionProvider
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets the error uri provider. That is, a function that, given the error and client, returns a string containing a uri that points to a web page providing information
+        /// on the error.
+        /// </summary>
+        public Func<AccessTokenRequestError, IClient, string> AccessTokenErrorUriProvider
+        {
+            get;
+            set;
+        }
+
+        public IEnumerable<IScope> GetRequestedScopes(IAuthorizationCodeRequest request)
+        {
+            return ScopeParser(request.Scope);
         }
 
         public IAuthorizationCodeResponse InitiateAuthorizationCodeFlow(IAuthorizationCodeRequest request)
         {
-            throw new NotImplementedException();
+            IClient client = ClientRepository.GetById(request.ClientId);
+            if (client != null && client.MatchesSecret(request.ClientSecret))
+            {
+                if (client.ValidRedirectUri(request.RedirectUri))
+                {
+                    IEnumerable<IScope> scopes = GetRequestedScopes(request);
+                    string authoizationCodeValue;
+                    IAuthorizationCode authCode = AuthorizationCodeFactory.Create(out authoizationCodeValue, scopes);
+
+                    //put the authorization code in the repository
+                    AuthorizationCodeRepository.Add(authCode);
+
+                    //return a successful response
+                    return AuthorizationCodeResponseFactory.Create(authoizationCodeValue, request.State);
+                }
+                else
+                {
+                    //Invalid redirect
+                    return null;
+                }
+            }
+            else
+            {
+                return null;
+            }
         }
 
         /// <summary>
         /// Requests an access token from the server with the request.
         /// </summary>
         /// <param name="request">The incoming request for an access token.</param>
-        /// <returns></returns>
-        public IAccessTokenResponse RequestAccessToken(IAccessTokenRequest request)
+        /// <returns>Returns a new <see cref="OAuthWorks.IAccessTokenResponse"/> object that represents what to </returns>
+        public IAccessTokenResponse RequestAccessToken(IAccessTokenRequest request, IUser currentUser)
         {
             IClient client = ClientRepository.GetById(request.ClientId);
             if (client != null && client.MatchesSecret(request.ClientSecret))
             {
-                Tuple<string, string> codeValues = IAuthorizationCode.Util.GetIdAndAuthorizationCode(request.AuthorizationCode);
-                if (codeValues != null)
+                IAuthorizationCode code = AuthorizationCodeRepository.GetByValue(request.AuthorizationCode);
+                if (code != null && !code.Expired && code.MatchesCode(request.AuthorizationCode))
                 {
-                    IAuthorizationCode code = AuthorizationCodeRepository.GetById(codeValues.Item1);
-                    if (code != null && !code.Expired && code.MatchesCode(codeValues.Item2))
-                    {
-                        //Authorized!
-                        TAccessToken token = AccessTokenFactory.Get(client, code.Scopes);
+                    //TODO: Add Redirect Uri Check
 
+                    string accessTokenValue;
+                    string refreshTokenValue = null;
+                    //Authorized!
+                    IAccessToken accessToken = AccessTokenFactory.Create(out accessTokenValue, client, currentUser, code.Scopes);
+                    IRefreshToken refreshToken = null;
+                    if (RefreshTokenFactory != null)
+                    {
+                        refreshToken = RefreshTokenFactory.Create(out refreshTokenValue, client, currentUser, code.Scopes);
                     }
+                    //store refresh and access tokens
+                    AccessTokenRepository.Add(accessToken);
+                    
+
+                    return AccessTokenResponseFactory.Create(accessTokenValue, refreshTokenValue, accessToken.TokenType, ScopeFormatter(accessToken.Scopes), accessToken.ExpirationDateUtc);
+                }
+                else
+                {
+                    //Invalid authorization code grant
+                    return AccessTokenResponseFactory.CreateError(AccessTokenRequestError.InvalidGrant, AccessTokenErrorDescriptionProvider(AccessTokenRequestError.InvalidGrant, client), AccessTokenErrorUriProvider(AccessTokenRequestError.InvalidGrant, client));
                 }
             }
-            //Unauthorized
+            else
+            {
+                //Unauthorized
+                return AccessTokenResponseFactory.CreateError(AccessTokenRequestError.InvalidClient, AccessTokenErrorDescriptionProvider(AccessTokenRequestError.InvalidClient, client), AccessTokenErrorUriProvider(AccessTokenRequestError.InvalidClient, client));
+            }
         }
 
         /// <summary>
@@ -145,12 +249,10 @@ namespace OAuthWorks
                 throw new ArgumentNullException("client");
             }
 
-            foreach (TAccessToken token in AccessTokenRepository.GetByUser(user).Where(t => t.Client.Equals(client)))
+            IAccessToken token = AccessTokenRepository.GetByUserAndClient(user, client);
+            if (token != null && !token.Revoked)
             {
-                if (!token.Revoked)
-                {
-                    token.Revoke();
-                }
+                token.Revoke();
             }
         }
 
@@ -163,7 +265,7 @@ namespace OAuthWorks
         /// <returns>Returns true if the client has access to the given users resources restricted by the given scope, otherwise false.</returns>
         public bool HasAccess(IUser user, IClient client, IScope scope)
         {
-            IAccessToken token = AccessTokenRepository.GetByUser(user).SingleOrDefault(t => t.Client.Equals(client));
+            IAccessToken token = AccessTokenRepository.GetByUserAndClient(user, client);
             if (token != null && !token.Revoked && !token.Expired)
             {
                 return ScopeRepository.GetByToken(token).Any(a => a.Equals(scope));
@@ -174,6 +276,16 @@ namespace OAuthWorks
         public IOAuthProviderDefinition Definition
         {
             get { throw new NotImplementedException(); }
+        }
+
+        public bool DistributeRefreshTokens
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        IEnumerable<IScope> IOAuthProvider.GetRequestedScopes(IAuthorizationCodeRequest request)
+        {
+            throw new NotImplementedException();
         }
     }
 }

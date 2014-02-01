@@ -36,7 +36,7 @@ namespace OAuthWorks
         /// <summary>
         /// Gets the type of the token as required by RCF 6749 Section 7.1 (http://tools.ietf.org/html/rfc6749#section-7.1)
         /// </summary>
-        AccessTokenType TokenType
+        string TokenType
         {
             get;
         }

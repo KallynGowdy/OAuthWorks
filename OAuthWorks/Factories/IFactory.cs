@@ -26,13 +26,22 @@ namespace OAuthWorks.Factories
     /// Defines an interface for an object factory that produces objects of the given type.
     /// </summary>
     /// <typeparam name="T">The type of the objects that the factory produces.</typeparam>
-    public interface IFactory<in T>
+    public interface IFactory<out T>
     {
         /// <summary>
-        /// Gets a new object of the type T from this factory.
+        /// Gets the default object of the type T.
         /// </summary>
-        /// <returns>Returns a new object of the type T.</returns>
-        T Get();
+        /// <remarks>
+        /// This method should not be confused with 
+        /// <code>
+        /// default(T);
+        /// </code>
+        /// It returns the default object as defined by the factory, which is up to the creator of the factory.
+        /// Acceptable responses are null, an non-null empty object or an object that is fully initalized based on whatever the 
+        /// implementation defines. Therefore beware when calling this method without proper documentation on the specific behaviour.
+        /// </remarks>
+        /// <returns>Returns the default value for objects of the type T.</returns>
+        T Create();
 
     }
 }

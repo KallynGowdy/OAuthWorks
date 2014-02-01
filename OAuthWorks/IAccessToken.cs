@@ -25,6 +25,7 @@ namespace OAuthWorks
     /// </summary>
     public interface IAccessToken
     {
+
         /// <summary>
         /// Gets the client that has access to this token.
         /// </summary>
@@ -37,6 +38,26 @@ namespace OAuthWorks
         /// Gets the scopes that this token grants access to.
         /// </summary>
         IEnumerable<IScope> Scopes
+        {
+            get;
+        }
+
+        /// <summary>
+        /// Gets the user that the token belongs to.
+        /// </summary>
+        IUser User
+        {
+            get;
+        }
+
+        /// <summary>
+        /// Gets the type of the token which describes how the client should handle it.
+        /// </summary>
+        /// <remarks>
+        /// The token type is used to define how the client should handle the token itself.
+        /// Common types are "bearer" and "mac".
+        /// </remarks>
+        string TokenType
         {
             get;
         }

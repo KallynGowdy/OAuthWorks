@@ -37,6 +37,8 @@ namespace OAuthWorks
             get;
             set;
         }
+        
+
         /// <summary>
         /// Gets or sets the client id that designates who this request is coming from.
         /// </summary>
@@ -60,10 +62,12 @@ namespace OAuthWorks
         /// <summary>
         /// Gets or sets the client Id that designates who this request is coming from.
         /// </summary>
-        public string IAuthorizationCodeRequest.ClientId
+        string IAuthorizationCodeRequest.ClientId
         {
-            get;
-            set;
+            get
+            {
+                return this.ClientId.ToString();
+            }
         }
 
         /// <summary>
