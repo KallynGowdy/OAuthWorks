@@ -27,30 +27,94 @@ namespace OAuthWorks
     public class OAuthProvider : IOAuthProvider
     {
         /// <summary>
-        /// Gets the repository of scopes that this provider has access to.
+        /// Creates a new OAuthWorks.OAuthProvider using the given OAuthWorks.IDependencyInjector to retrieve
+        /// factories and repositories that are used by the provider.
         /// </summary>
-        public IScopeRepository<IScope> ScopeRepository
+        /// <param name="dependencyInjector">An object that implements the OAuthWorks.IDependencyInjector interface.</param>
+        /// <exception cref="System.ArgumentNullException">Thrown if the given <paramref name="dependencyInjector"/> is null.</exception>
+        public OAuthProvider(IDependencyInjector dependencyInjector)
+        {
+            if (dependencyInjector == null)
+            {
+                throw new ArgumentNullException("dependencyInjector");
+            }
+            this.DependencyInjector = dependencyInjector;
+        }
+
+        /// <summary>
+        /// Gets the dependency injector that is used to retrieve all of the repositories and factories for this object.
+        /// </summary>
+        public IDependencyInjector DependencyInjector
         {
             get;
             private set;
         }
 
+        private IScopeRepository<IScope> scopeRepository;
+
         /// <summary>
-        /// Gets the repository that contains <see cref="OAuthWorks.IClient"/> objects.
+        /// Gets or sets the repository of scopes that this provider has access to.
+        /// </summary>
+        /// <remarks>
+        /// This property tries to retrieve it's value from the dependency injector when it is null.
+        /// If accessing this value results in null being returned, then the provider could not retrieve a default value from the dependency injector.
+        /// </remarks>
+        public IScopeRepository<IScope> ScopeRepository
+        {
+            get
+            {
+                if (this.scopeRepository == null)
+                {
+                    scopeRepository = DependencyInjector.GetInstance<IScopeRepository<IScope>>();
+                }
+                return scopeRepository;
+            }
+            set
+            {
+                this.scopeRepository = value;
+            }
+        }
+
+        private IRepository<string, IClient> clientRepository;
+
+        /// <summary>
+        /// Gets or sets the repository that contains <see cref="OAuthWorks.IClient"/> objects.
         /// </summary>
         public IRepository<string, IClient> ClientRepository
         {
-            get;
-            private set;
+            get
+            {
+                if (this.clientRepository == null)
+                {
+                    this.clientRepository = DependencyInjector.GetInstance<IRepository<string, IClient>>();
+                }
+                return clientRepository;
+            }
+            set
+            {
+                this.clientRepository = value;
+            }
         }
+
+        private IAuthorizationCodeResponseFactory<IAuthorizationCodeResponse> authorizationCodeResponseFactory;
 
         /// <summary>
         /// Gets or sets the factory used to create new <see cref="OAuthWorks.IAuthorizationCodeResponse"/> objects.
         /// </summary>
         public IAuthorizationCodeResponseFactory<IAuthorizationCodeResponse> AuthorizationCodeResponseFactory
         {
-            get;
-            set;
+            get
+            {
+                if (this.authorizationCodeResponseFactory == null)
+                {
+                    this.authorizationCodeResponseFactory = DependencyInjector.GetInstance<IAuthorizationCodeResponseFactory<IAuthorizationCodeResponse>>();
+                }
+                return this.authorizationCodeResponseFactory;
+            }
+            set
+            {
+                this.authorizationCodeResponseFactory = value;
+            }
         }
 
         /// <summary>
@@ -92,7 +156,7 @@ namespace OAuthWorks
         /// <summary>
         /// Gets or sets the factory that creates <see cref="OAuthWorks.IAccessTokenResponse"/> objects for this provider.
         /// </summary>
-        public IAccessTokenResponseFactory<IAccessTokenResponse> AccessTokenResponseFactory
+        public IAccessTokenResponseFactory<IAccessTokenResponse, AccessTokenResponseException> AccessTokenResponseFactory
         {
             get;
             set;
@@ -108,6 +172,15 @@ namespace OAuthWorks
         }
 
         /// <summary>
+        /// Gets or sets the repository that is used to store OAuthWorks.IRefreshToken objects.
+        /// </summary>
+        public IRefreshTokenRepository<IRefreshToken> RefreshTokenRepository
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
         /// Gets or sets the formatter for scopes. That is, a function that, given a list of scopes, returns a string representing those scopes.
         /// </summary>
         public Func<IEnumerable<IScope>, string> ScopeFormatter
@@ -116,12 +189,12 @@ namespace OAuthWorks
             set;
         }
 
-        private Func<string, IEnumerable<IScope>> scopeParser;
+        private Func<OAuthProvider, string, IEnumerable<IScope>> scopeParser;
 
         /// <summary>
         /// Gets or sets the parser for the scopes. That is, a function that, given a string, returns a list of scopes representing that string.
         /// </summary>
-        public Func<string, IEnumerable<IScope>> ScopeParser
+        public Func<OAuthProvider, string, IEnumerable<IScope>> ScopeParser
         {
             get
             {
@@ -155,13 +228,26 @@ namespace OAuthWorks
             set;
         }
 
+        /// <summary>
+        /// Gets a list of the scopes that are being requested by the given OAuthWorks.IAuthorizationCodeRequest object.
+        /// </summary>
+        /// <param name="request">The request that is being used to request an authorization code.</param>
+        /// <returns>Returns a non-null enumerable list of scopes that define the permissions requested.</returns>
+        /// <exception cref="System.ArgumentNullException">Thrown if the given request object is null.</exception>
         public IEnumerable<IScope> GetRequestedScopes(IAuthorizationCodeRequest request)
         {
-            return ScopeParser(request.Scope);
+            if (request == null)
+            {
+                throw new ArgumentNullException("request");
+            }
+            IEnumerable<IScope> result = ScopeParser(this, request.Scope != null ? request.Scope : string.Empty);
+            return result != null ? result : new IScope[0];
         }
 
         public IAuthorizationCodeResponse InitiateAuthorizationCodeFlow(IAuthorizationCodeRequest request)
         {
+
+
             IClient client = ClientRepository.GetById(request.ClientId);
             if (client != null && client.MatchesSecret(request.ClientSecret))
             {
@@ -193,42 +279,71 @@ namespace OAuthWorks
         /// Requests an access token from the server with the request.
         /// </summary>
         /// <param name="request">The incoming request for an access token.</param>
+        /// <exception cref="OAuthWorks.AccessTokenResponseException">Thrown if the client is unauthorized or if any other exception occured inside this method.</exception>
         /// <returns>Returns a new <see cref="OAuthWorks.IAccessTokenResponse"/> object that represents what to </returns>
         public IAccessTokenResponse RequestAccessToken(IAccessTokenRequest request, IUser currentUser)
         {
-            IClient client = ClientRepository.GetById(request.ClientId);
-            if (client != null && client.MatchesSecret(request.ClientSecret))
+            try
             {
-                IAuthorizationCode code = AuthorizationCodeRepository.GetByValue(request.AuthorizationCode);
-                if (code != null && !code.Expired && code.MatchesCode(request.AuthorizationCode))
+                IClient client = ClientRepository.GetById(request.ClientId);
+                if (client != null && client.MatchesSecret(request.ClientSecret))
                 {
-                    //TODO: Add Redirect Uri Check
-
-                    string accessTokenValue;
-                    string refreshTokenValue = null;
-                    //Authorized!
-                    IAccessToken accessToken = AccessTokenFactory.Create(out accessTokenValue, client, currentUser, code.Scopes);
-                    IRefreshToken refreshToken = null;
-                    if (RefreshTokenFactory != null)
+                    IAuthorizationCode code = AuthorizationCodeRepository.GetByValue(request.AuthorizationCode);
+                    if (code != null && !code.Expired && code.MatchesCode(request.AuthorizationCode))
                     {
-                        refreshToken = RefreshTokenFactory.Create(out refreshTokenValue, client, currentUser, code.Scopes);
-                    }
-                    //store refresh and access tokens
-                    AccessTokenRepository.Add(accessToken);
-                    
+                        //TODO: Add Redirect Uri Check
 
-                    return AccessTokenResponseFactory.Create(accessTokenValue, refreshTokenValue, accessToken.TokenType, ScopeFormatter(accessToken.Scopes), accessToken.ExpirationDateUtc);
+                        string accessTokenValue;
+                        string refreshTokenValue = null;
+                        //Authorized!
+                        IAccessToken accessToken = AccessTokenFactory.Create(out accessTokenValue, client, currentUser, code.Scopes);
+                        IRefreshToken refreshToken = null;
+                        if (RefreshTokenFactory != null)
+                        {
+                            refreshToken = RefreshTokenFactory.Create(out refreshTokenValue, client, currentUser, code.Scopes);
+                        }
+                        //store refresh and access tokens
+                        AccessTokenRepository.Add(accessToken);
+                        if (RefreshTokenRepository != null && refreshToken != null)
+                        {
+                            RefreshTokenRepository.Add(refreshToken);
+                        }
+
+                        return AccessTokenResponseFactory.Create(
+                            accessTokenValue,
+                            refreshTokenValue,
+                            accessToken.TokenType,
+                            ScopeFormatter(accessToken.Scopes),
+                            accessToken.ExpirationDateUtc);
+                    }
+                    else
+                    {
+                        //Invalid authorization code grant
+                        throw AccessTokenResponseFactory.CreateError(
+                            AccessTokenRequestError.InvalidGrant,
+                            AccessTokenErrorDescriptionProvider(AccessTokenRequestError.InvalidGrant, client),
+                            AccessTokenErrorUriProvider(AccessTokenRequestError.InvalidGrant, client),
+                            null);
+                    }
                 }
                 else
                 {
-                    //Invalid authorization code grant
-                    return AccessTokenResponseFactory.CreateError(AccessTokenRequestError.InvalidGrant, AccessTokenErrorDescriptionProvider(AccessTokenRequestError.InvalidGrant, client), AccessTokenErrorUriProvider(AccessTokenRequestError.InvalidGrant, client));
+                    //Unauthorized
+                    throw AccessTokenResponseFactory.CreateError(
+                        AccessTokenRequestError.InvalidClient,
+                        AccessTokenErrorDescriptionProvider(AccessTokenRequestError.InvalidClient, client),
+                        AccessTokenErrorUriProvider(AccessTokenRequestError.InvalidClient, client),
+                        null);
                 }
             }
-            else
+            catch (Exception e)
             {
-                //Unauthorized
-                return AccessTokenResponseFactory.CreateError(AccessTokenRequestError.InvalidClient, AccessTokenErrorDescriptionProvider(AccessTokenRequestError.InvalidClient, client), AccessTokenErrorUriProvider(AccessTokenRequestError.InvalidClient, client));
+                //Server error
+                throw AccessTokenResponseFactory.CreateError(
+                    AccessTokenRequestError.ServerError,
+                    AccessTokenErrorDescriptionProvider(AccessTokenRequestError.ServerError, null),
+                    AccessTokenErrorUriProvider(AccessTokenRequestError.ServerError, null),
+                    e);
             }
         }
 
@@ -254,6 +369,12 @@ namespace OAuthWorks
             {
                 token.Revoke();
             }
+
+            IRefreshToken refreshToken = RefreshTokenRepository.GetByUserAndClient(user, client);
+            if (refreshToken != null && !refreshToken.Revoked)
+            {
+                token.Revoke();
+            }
         }
 
         /// <summary>
@@ -268,7 +389,7 @@ namespace OAuthWorks
             IAccessToken token = AccessTokenRepository.GetByUserAndClient(user, client);
             if (token != null && !token.Revoked && !token.Expired)
             {
-                return ScopeRepository.GetByToken(token).Any(a => a.Equals(scope));
+                return ScopeRepository.GetAllScopes().Any(a => a.Equals(scope) && token.Scopes.Contains(a));
             }
             return false;
         }

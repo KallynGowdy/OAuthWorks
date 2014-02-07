@@ -20,7 +20,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <CodeAnalysisRuleSet>BasicDesignGuidelineRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>ExtendedDesignGuidelineRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -41,18 +41,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AccessTokenResponseException.cs" />
     <Compile Include="AccessTokenType.cs" />
     <Compile Include="AccessTokenTypes.cs" />
     <Compile Include="AuthorizationCodeRequest.cs" />
     <Compile Include="AuthorizationCodeResponseType.cs" />
     <Compile Include="AuthorizationRequestCodeErrorType.cs" />
-    <Compile Include="Factories\AccessTokenRequestError.cs" />
+    <Compile Include="AccessTokenRequestError.cs" />
     <Compile Include="Factories\IAccessTokenResponseFactory.cs" />
     <Compile Include="Factories\IAuthorizationCodeResponseFactory.cs" />
     <Compile Include="Factories\IRefreshTokenFactory.cs" />
     <Compile Include="IAccessToken.cs" />
     <Compile Include="Factories\IAccessTokenFactory.cs" />
     <Compile Include="Factories\IAuthorizationCodeFactory.cs" />
+    <Compile Include="IAccessTokenResponseException.cs" />
+    <Compile Include="IDependencyInjector.cs" />
     <Compile Include="IRefreshToken.cs" />
     <Compile Include="Repositories\IAccessTokenRepository.cs" />
     <Compile Include="Repositories\IAuthorizationCodeRepository.cs" />
@@ -67,6 +70,7 @@
     <Compile Include="IIDentifiable.cs" />
     <Compile Include="IOAuthProvider.cs" />
     <Compile Include="IOAuthProviderDefinition.cs" />
+    <Compile Include="Repositories\IRefreshTokenRepository.cs" />
     <Compile Include="Repositories\IRepository.cs" />
     <Compile Include="Repositories\IScopeRepository.cs" />
     <Compile Include="IUser.cs" />

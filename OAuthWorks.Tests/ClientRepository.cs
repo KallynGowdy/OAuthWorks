@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace OAuthWorks.Tests
 {
-    public class Class1
+    class ClientRepository : DictionaryRepository<string, IClient>
     {
-        public void TestGenerateRandomString()
+        public ClientRepository()
         {
+            IdSelector = c => ((Client)c).Id;
         }
-
     }
 }

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 
-namespace OAuthWorks.Factories
+namespace OAuthWorks
 {
     /// <summary>
     /// Defines a list of values of the possible error codes that can be sent back to a client after a failed attempt.
@@ -59,6 +59,12 @@ namespace OAuthWorks.Factories
         /// Defines that the requested scope is invalid, unknown, malformed, or exceeds the scope granted by the resource owner.
         /// </summary>
         [EnumMember(Value="invalid_scope")]
-        InvalidScope
+        InvalidScope,
+
+        /// <summary>
+        /// Defines that the server encountered an unexpected error and the request could not be completed successfully. Not part of the OAuth 2.0 Spec.
+        /// </summary>
+        [EnumMember(Value="server_error")]
+        ServerError
     }
 }

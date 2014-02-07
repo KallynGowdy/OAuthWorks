@@ -25,7 +25,10 @@ namespace OAuthWorks.Factories
     /// <summary>
     /// Defines an interface for a <see cref="OAuthWorks.IFactory"/> object that produces <see cref="OAuthWorks.IAccessTokenResponse"/> objects.
     /// </summary>
-    public interface IAccessTokenResponseFactory<out TAccessTokenResponse> : IFactory<TAccessTokenResponse> where TAccessTokenResponse : IAccessTokenResponse
+    public interface IAccessTokenResponseFactory<out TAccessTokenResponse, out TResponseException> :
+        IFactory<TAccessTokenResponse>
+        where TAccessTokenResponse : IAccessTokenResponse
+        where TResponseException : Exception, IAccessTokenResponseException
     {
         /// <summary>
         /// Gets a new <see cref="OAuthWorks.IAccessTokenResponse"/> object given the distributed access token, refresh token, access token type, granted scope, and expiration date.
@@ -45,6 +48,6 @@ namespace OAuthWorks.Factories
         /// <param name="errorDescription">A more in-depth description of the error. May be null.</param>
         /// <param name="errorUri">A uri where a developer can go to find information about the error.</param>
         /// <returns>Returns a new <see cref="OAuthWorks.IAccessTokenResponse"/> object.</returns>
-        TAccessTokenResponse CreateError(AccessTokenRequestError errorCode, string errorDescription, string errorUri);
+        TResponseException CreateError(AccessTokenRequestError errorCode, string errorDescription, string errorUri, Exception innerException);
     }
 }

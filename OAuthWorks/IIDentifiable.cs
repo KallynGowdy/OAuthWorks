@@ -24,7 +24,7 @@ namespace OAuthWorks
     /// <summary>
     /// Defines a non-generic interface for an object that is identifiable.
     /// </summary>
-    public interface IIDentifiable
+    public interface IIdentifiable
     {
         /// <summary>
         /// Gets the Id of this object.
@@ -39,7 +39,7 @@ namespace OAuthWorks
     /// Defines an interface for an object that is identifiable by a certian type.
     /// </summary>
     /// <typeparam name="T">The type of this object's identifier.</typeparam>
-    public interface IIDentifiable<T> : IIDentifiable
+    public interface IIdentifiable<T> : IIdentifiable
     {
         /// <summary>
         /// Gets the Id of this object.
