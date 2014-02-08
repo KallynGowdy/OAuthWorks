@@ -31,11 +31,10 @@ namespace OAuthWorks.Factories
         /// <summary>
         /// Gets a new <see cref="OAuthWorks.IAccessToken"/> object given the <see cref="OAuthWorks.IClient"/>, <see cref="OAuthWorks.IUser"/> and the list of scopes that the client has access to.
         /// </summary>
-        /// <param name="accessToken">The value of the access token that was generated.</param>
         /// <param name="client">The client that should have access to the new token.</param>
         /// <param name="user">The user that is giving access to the client.</param>
         /// <param name="scopes">The list of scopes that the client should have access to.</param>
-        /// <returns>Returns a new <see cref="OAuthWorks.IAccessToken"/> object.</returns>
-        TAccessToken Create(out string accessToken, IClient client, IUser user, IEnumerable<IScope> scopes);
+        /// <returns>Returns a new OAuthWorks.CreatedToken(of TAccessToken) object.</returns>
+        ICreatedToken<TAccessToken> Create(IClient client, IUser user, IEnumerable<IScope> scopes);
     }
 }

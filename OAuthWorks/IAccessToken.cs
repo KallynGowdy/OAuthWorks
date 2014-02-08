@@ -23,9 +23,8 @@ namespace OAuthWorks
     /// <summary>
     /// Defines an interface for access tokens.
     /// </summary>
-    public interface IAccessToken
+    public interface IAccessToken : IToken
     {
-
         /// <summary>
         /// Gets the client that has access to this token.
         /// </summary>
@@ -61,13 +60,6 @@ namespace OAuthWorks
         {
             get;
         }
-
-        /// <summary>
-        /// Determines if the given token value matches the one stored internally.
-        /// </summary>
-        /// <param name="token">The token to compare to the internal one.</param>
-        /// <returns>Returns true if the two tokens match, otherwise false.</returns>
-        bool MatchesValue(string token);
 
         /// <summary>
         /// Gets the expiration date of this token in Universal Coordinated Time.

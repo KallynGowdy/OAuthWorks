@@ -18,14 +18,32 @@ using OAuthWorks.Factories;
 using OAuthWorks.Repositories;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace OAuthWorks
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Auth")]
     public class OAuthProvider : IOAuthProvider
     {
+        internal class DefaultDependencyInjector : IDependencyInjector
+        {
+            public T GetInstance<T>()
+            {
+                return default(T);
+            }
+        }
+
+        /// <summary>
+        /// Creates a new OAuthWorks.OAuthProvider using a default dependency injector instance.
+        /// </summary>
+        public OAuthProvider()
+        {
+            this.DependencyInjector = new DefaultDependencyInjector();
+        }
+
         /// <summary>
         /// Creates a new OAuthWorks.OAuthProvider using the given OAuthWorks.IDependencyInjector to retrieve
         /// factories and repositories that are used by the provider.
@@ -75,18 +93,18 @@ namespace OAuthWorks
             }
         }
 
-        private IRepository<string, IClient> clientRepository;
+        private IReadStore<string, IClient> clientRepository;
 
         /// <summary>
         /// Gets or sets the repository that contains <see cref="OAuthWorks.IClient"/> objects.
         /// </summary>
-        public IRepository<string, IClient> ClientRepository
+        public IReadStore<string, IClient> ClientRepository
         {
             get
             {
                 if (this.clientRepository == null)
                 {
-                    this.clientRepository = DependencyInjector.GetInstance<IRepository<string, IClient>>();
+                    this.clientRepository = DependencyInjector.GetInstance<IReadStore<string, IClient>>();
                 }
                 return clientRepository;
             }
@@ -96,18 +114,18 @@ namespace OAuthWorks
             }
         }
 
-        private IAuthorizationCodeResponseFactory<IAuthorizationCodeResponse> authorizationCodeResponseFactory;
+        private IAuthorizationCodeResponseFactory<IAuthorizationCodeResponse, AuthorizationCodeResponseException> authorizationCodeResponseFactory;
 
         /// <summary>
         /// Gets or sets the factory used to create new <see cref="OAuthWorks.IAuthorizationCodeResponse"/> objects.
         /// </summary>
-        public IAuthorizationCodeResponseFactory<IAuthorizationCodeResponse> AuthorizationCodeResponseFactory
+        public IAuthorizationCodeResponseFactory<IAuthorizationCodeResponse, AuthorizationCodeResponseException> AuthorizationCodeResponseFactory
         {
             get
             {
                 if (this.authorizationCodeResponseFactory == null)
                 {
-                    this.authorizationCodeResponseFactory = DependencyInjector.GetInstance<IAuthorizationCodeResponseFactory<IAuthorizationCodeResponse>>();
+                    this.authorizationCodeResponseFactory = DependencyInjector.GetInstance<IAuthorizationCodeResponseFactory<IAuthorizationCodeResponse, AuthorizationCodeResponseException>>();
                 }
                 return this.authorizationCodeResponseFactory;
             }
@@ -129,7 +147,7 @@ namespace OAuthWorks
         /// <summary>
         /// Gets or sets the factory that creates Authorization Code objects for this provider.
         /// </summary>
-        public IAuthorizationCodeFactory<IAuthorizationCode> AuthorizationCodeFactory
+        public IAuthorizationCodeFactory<IAuthorizationCode, AuthorizationCodeResponseException> AuthorizationCodeFactory
         {
             get;
             set;
@@ -222,7 +240,7 @@ namespace OAuthWorks
         /// Gets or sets the error uri provider. That is, a function that, given the error and client, returns a string containing a uri that points to a web page providing information
         /// on the error.
         /// </summary>
-        public Func<AccessTokenRequestError, IClient, string> AccessTokenErrorUriProvider
+        public Func<AccessTokenRequestError, IClient, Uri> AccessTokenErrorUriProvider
         {
             get;
             set;
@@ -236,42 +254,46 @@ namespace OAuthWorks
         /// <exception cref="System.ArgumentNullException">Thrown if the given request object is null.</exception>
         public IEnumerable<IScope> GetRequestedScopes(IAuthorizationCodeRequest request)
         {
-            if (request == null)
-            {
-                throw new ArgumentNullException("request");
-            }
+            request.ThrowIfNull("request");
             IEnumerable<IScope> result = ScopeParser(this, request.Scope != null ? request.Scope : string.Empty);
             return result != null ? result : new IScope[0];
         }
 
+
         public IAuthorizationCodeResponse InitiateAuthorizationCodeFlow(IAuthorizationCodeRequest request)
         {
-
-
-            IClient client = ClientRepository.GetById(request.ClientId);
-            if (client != null && client.MatchesSecret(request.ClientSecret))
+            request.ThrowIfNull("request");
+            try
             {
-                if (client.ValidRedirectUri(request.RedirectUri))
+                IClient client = ClientRepository.GetById(request.ClientId);
+                if (client != null && client.MatchesSecret(request.ClientSecret))
                 {
-                    IEnumerable<IScope> scopes = GetRequestedScopes(request);
-                    string authoizationCodeValue;
-                    IAuthorizationCode authCode = AuthorizationCodeFactory.Create(out authoizationCodeValue, scopes);
+                    if (client.ValidRedirectUri(request.RedirectUri))
+                    {
+                        IEnumerable<IScope> scopes = GetRequestedScopes(request);
 
-                    //put the authorization code in the repository
-                    AuthorizationCodeRepository.Add(authCode);
+                        ICreatedToken<IAuthorizationCode> authCode = AuthorizationCodeFactory.Create(request.RedirectUri, scopes);
 
-                    //return a successful response
-                    return AuthorizationCodeResponseFactory.Create(authoizationCodeValue, request.State);
+                        //put the authorization code in the repository
+                        AuthorizationCodeRepository.Add(authCode.Token);
+
+                        //return a successful response
+                        return AuthorizationCodeResponseFactory.Create(authCode.TokenValue, request.State);
+                    }
+                    else
+                    {
+                        //Invalid redirect
+                        throw AuthorizationCodeResponseFactory.CreateError(AuthorizationRequestCodeErrorType.InvalidRequest, "The given redirect uri was invalid", null, request.State, null);
+                    }
                 }
                 else
                 {
-                    //Invalid redirect
-                    return null;
+                    throw AuthorizationCodeResponseFactory.CreateError(AuthorizationRequestCodeErrorType.UnauthorizedClient, "The client is not authorized to access this resource.", null, request.State, null);
                 }
             }
-            else
+            catch (Exception e)
             {
-                return null;
+                throw AuthorizationCodeResponseFactory.CreateError(AuthorizationRequestCodeErrorType.ServerError, "The server encountered an error while processing the request.", null, request.State, e);
             }
         }
 
@@ -280,41 +302,40 @@ namespace OAuthWorks
         /// </summary>
         /// <param name="request">The incoming request for an access token.</param>
         /// <exception cref="OAuthWorks.AccessTokenResponseException">Thrown if the client is unauthorized or if any other exception occured inside this method.</exception>
+        /// <exception cref="System.ArgumentNullException">Throw if the given request is null or if the given user is null.</exception>
         /// <returns>Returns a new <see cref="OAuthWorks.IAccessTokenResponse"/> object that represents what to </returns>
         public IAccessTokenResponse RequestAccessToken(IAccessTokenRequest request, IUser currentUser)
         {
+            request.ThrowIfNull("request");
+            request.ThrowIfNull("currentUser");
             try
             {
                 IClient client = ClientRepository.GetById(request.ClientId);
                 if (client != null && client.MatchesSecret(request.ClientSecret))
                 {
                     IAuthorizationCode code = AuthorizationCodeRepository.GetByValue(request.AuthorizationCode);
-                    if (code != null && !code.Expired && code.MatchesCode(request.AuthorizationCode))
+                    if (code != null && !code.Expired && code.MatchesValue(request.AuthorizationCode) && Uri.Compare(code.RedirectUri, request.RedirectUri, UriComponents.AbsoluteUri, UriFormat.SafeUnescaped, StringComparison.Ordinal) == 0)
                     {
-                        //TODO: Add Redirect Uri Check
-
-                        string accessTokenValue;
-                        string refreshTokenValue = null;
                         //Authorized!
-                        IAccessToken accessToken = AccessTokenFactory.Create(out accessTokenValue, client, currentUser, code.Scopes);
-                        IRefreshToken refreshToken = null;
+                        ICreatedToken<IAccessToken> accessToken = AccessTokenFactory.Create(client, currentUser, code.Scopes);
+                        ICreatedToken<IRefreshToken> refreshToken = null;
                         if (RefreshTokenFactory != null)
                         {
-                            refreshToken = RefreshTokenFactory.Create(out refreshTokenValue, client, currentUser, code.Scopes);
+                            refreshToken = RefreshTokenFactory.Create(client, currentUser, code.Scopes);
                         }
                         //store refresh and access tokens
-                        AccessTokenRepository.Add(accessToken);
+                        AccessTokenRepository.Add(accessToken.Token);
                         if (RefreshTokenRepository != null && refreshToken != null)
                         {
-                            RefreshTokenRepository.Add(refreshToken);
+                            RefreshTokenRepository.Add(refreshToken.Token);
                         }
 
                         return AccessTokenResponseFactory.Create(
-                            accessTokenValue,
-                            refreshTokenValue,
-                            accessToken.TokenType,
-                            ScopeFormatter(accessToken.Scopes),
-                            accessToken.ExpirationDateUtc);
+                            accessToken.TokenValue,
+                            refreshToken != null ? refreshToken.TokenValue : null,
+                            accessToken.Token.TokenType,
+                            ScopeFormatter(accessToken.Token.Scopes),
+                            accessToken.Token.ExpirationDateUtc);
                     }
                     else
                     {

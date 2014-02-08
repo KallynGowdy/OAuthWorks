@@ -7,7 +7,7 @@ namespace OAuthWorks.Tests
 {
     class AccessTokenResponseException : OAuthWorks.AccessTokenResponseException
     {
-        public AccessTokenResponseException(AccessTokenRequestError errorCode, string description, string uri, Exception innerException)
+        public AccessTokenResponseException(AccessTokenRequestError errorCode, string description, Uri uri, Exception innerException)
             : base(description, innerException)
         {
             this.errorCode = errorCode;
@@ -17,7 +17,7 @@ namespace OAuthWorks.Tests
 
         AccessTokenRequestError errorCode;
         private string errorDescription;
-        private string errorUri;
+        private Uri errorUri;
 
         public override AccessTokenRequestError ErrorCode
         {
@@ -35,7 +35,7 @@ namespace OAuthWorks.Tests
             }
         }
 
-        public override string ErrorUri
+        public override Uri ErrorUri
         {
             get
             {

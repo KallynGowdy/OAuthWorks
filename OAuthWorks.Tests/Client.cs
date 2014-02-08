@@ -25,7 +25,7 @@ namespace OAuthWorks.Tests
             set;
         }
 
-        public IEnumerable<string> RedirectUris
+        public IEnumerable<Uri> RedirectUris
         {
             get;
             set;
@@ -33,9 +33,9 @@ namespace OAuthWorks.Tests
 
         private string secret;
 
-        public bool ValidRedirectUri(string redirectUri)
+        public bool ValidRedirectUri(Uri redirectUri)
         {
-            return  RedirectUris.Any(r => r.Equals(redirectUri));
+            return RedirectUris.Any(r => r.Equals(redirectUri));
         }
 
         public bool MatchesSecret(string secret)

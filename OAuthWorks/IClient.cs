@@ -36,7 +36,7 @@ namespace OAuthWorks
         /// <summary>
         /// Gets the list of allowed redirect URIs for this client.
         /// </summary>
-        IEnumerable<string> RedirectUris
+        IEnumerable<Uri> RedirectUris
         {
             get;
         }
@@ -46,7 +46,7 @@ namespace OAuthWorks
         /// </summary>
         /// <param name="redirectUri">The redirect uri to determine validity/qualification for.</param>
         /// <returns>Returns true if the redirect uri is registered, otherwise false.</returns>
-        bool ValidRedirectUri(string redirectUri);
+        bool ValidRedirectUri(Uri redirectUri);
 
         /// <summary>
         /// Determines if the given secret matches the one stored internally.

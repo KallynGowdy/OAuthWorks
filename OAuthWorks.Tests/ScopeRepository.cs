@@ -6,19 +6,19 @@ using System.Threading.Tasks;
 using OAuthWorks.Repositories;
 namespace OAuthWorks.Tests
 {
-    class ScopeRepository : DictionaryRepository<string, IScope>, IScopeRepository<IScope>
+    class ScopeRepository : DictionaryRepository<string, Scope>, IScopeRepository<Scope>
     {
         public ScopeRepository()
         {
             IdSelector = s => s.Id;
         }
 
-        public IEnumerable<IScope> GetAllScopes()
+        public IEnumerable<Scope> GetAllScopes()
         {
             return Entities;
         }
 
-        public IEnumerable<IScope> GetByToken(IAccessToken token)
+        public IEnumerable<Scope> GetByToken(IAccessToken token)
         {
             return null;
         }

@@ -8,12 +8,19 @@ namespace OAuthWorks.Tests
 {
     public class AuthorizationCode : IAuthorizationCode
     {
-        public AuthorizationCode(string code, string id, DateTime expirationDateUtc, IEnumerable<IScope> scopes)
+        public AuthorizationCode(string code, string id, Uri redirectUri, DateTime expirationDateUtc, IEnumerable<IScope> scopes)
         {
             this.code = code;
             this.Id = id;
             this.ExpirationDateUtc = expirationDateUtc.ToUniversalTime();
             this.Scopes = scopes;
+            this.RedirectUri = redirectUri;
+        }
+
+        public Uri RedirectUri
+        {
+            get;
+            set;
         }
 
         public string Id
@@ -24,7 +31,7 @@ namespace OAuthWorks.Tests
 
         private string code;
 
-        public bool MatchesCode(string code)
+        public bool MatchesValue(string code)
         {
             return this.code.Equals(code);
         }

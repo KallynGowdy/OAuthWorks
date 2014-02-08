@@ -71,7 +71,7 @@ namespace OAuthWorks
         /// Gets the redirect Uri that defines where the OAuth Provider should redirect the user agent after processing the request.
         /// This value can be null.
         /// </summary>
-        string RedirectUri
+        Uri RedirectUri
         {
             get;
         }

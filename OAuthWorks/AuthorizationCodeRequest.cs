@@ -74,7 +74,7 @@ namespace OAuthWorks
         /// Gets or sets the redirect uri that designates where to send the user after processing the request.
         /// </summary>
         [DataMember(Name = "redirect_uri")]
-        public string RedirectUri
+        public Uri RedirectUri
         {
             get;
             set;

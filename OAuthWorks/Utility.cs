@@ -15,14 +15,13 @@ namespace OAuthWorks
         /// Throws a new System.ArgumentNullException if the value of the object is null.
         /// </summary>
         /// <param name="value">The object to check for null-ness.</param>
-        /// <param name="paramName">The name of the parameter that is being checked.</param>
-        public static void ThrowIfNull(this object value, string paramName = "value")
+        /// <param name="parameterName">The name of the parameter that is being checked.</param>
+        public static void ThrowIfNull(this object value, string parameterName)
         {
             if (value == null)
             {
-                throw new ArgumentNullException(paramName);
+                throw new ArgumentNullException(parameterName);
             }
         }
-
     }
 }

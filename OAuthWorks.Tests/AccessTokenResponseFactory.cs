@@ -21,7 +21,7 @@ namespace OAuthWorks.Tests
             };
         }
 
-        public AccessTokenResponseException CreateError(AccessTokenRequestError errorCode, string errorDescription, string errorUri, Exception innerException)
+        public AccessTokenResponseException CreateError(AccessTokenRequestError errorCode, string errorDescription, Uri errorUri, Exception innerException)
         {
             return new AccessTokenResponseException(errorCode, errorDescription, errorUri, innerException);
         }

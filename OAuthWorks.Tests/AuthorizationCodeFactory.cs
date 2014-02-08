@@ -8,10 +8,9 @@ using System.Security.Cryptography;
 
 namespace OAuthWorks.Tests
 {
-    class AuthorizationCodeFactory : IAuthorizationCodeFactory<AuthorizationCode>
+    class AuthorizationCodeFactory : IAuthorizationCodeFactory<AuthorizationCode, AuthorizationCodeResponseException>
     {
-
-        public AuthorizationCode Create(out string generatedAuthorizationCode, IEnumerable<IScope> scopes)
+        public ICreatedToken<AuthorizationCode> Create(Uri redirectUri, IEnumerable<IScope> scopes)
         {
             StringBuilder token = new StringBuilder(61);
             string id;
@@ -35,13 +34,15 @@ namespace OAuthWorks.Tests
                 token.Append(value);
             }
 
-            generatedAuthorizationCode = token.ToString();
-            return new AuthorizationCode(token.ToString(), id, DateTime.UtcNow.AddHours(2), scopes);
+            return new CreatedToken<AuthorizationCode>(new AuthorizationCode(token.ToString(), id, redirectUri, DateTime.UtcNow.AddHours(2), scopes), token.ToString());
         }
 
         public AuthorizationCode Create()
         {
             return null;
         }
+
+
+
     }
 }

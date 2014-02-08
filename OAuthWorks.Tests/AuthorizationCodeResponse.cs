@@ -26,7 +26,7 @@ namespace OAuthWorks.Tests
             set;
         }
 
-        public IAuthorizationCodeError ErrorCode
+        public IAuthorizationCodeResponseError ErrorCode
         {
             get;
             set;

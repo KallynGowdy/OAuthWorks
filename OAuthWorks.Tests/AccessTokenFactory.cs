@@ -11,7 +11,7 @@ namespace OAuthWorks.Tests
     class AccessTokenFactory : IAccessTokenFactory<AccessToken>
     {
 
-        public AccessToken Create(out string accessToken, IClient client, IUser user, IEnumerable<IScope> scopes)
+        public ICreatedToken<AccessToken> Create( IClient client, IUser user, IEnumerable<IScope> scopes)
         {
             StringBuilder generatedAccessToken = new StringBuilder(61);
 
@@ -32,9 +32,8 @@ namespace OAuthWorks.Tests
                 generatedAccessToken.Append(token);
             }
 
-            accessToken = generatedAccessToken.ToString();
 
-            return new AccessToken
+            return new CreatedToken<AccessToken>(new AccessToken
             {
                 Id = id,
                 Token = generatedAccessToken.ToString(),
@@ -43,7 +42,8 @@ namespace OAuthWorks.Tests
                 Scopes = scopes,
                 TokenType = "bearer",
                 ExpirationDateUtc = DateTime.UtcNow.AddHours(2)
-            };
+            },
+            token.ToString());
         }
 
         public AccessToken Create()

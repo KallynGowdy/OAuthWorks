@@ -60,21 +60,5 @@ namespace OAuthWorks
         {
             get;
         }
-
-        /// <summary>
-        /// Gets whether an error occured while processing the request.
-        /// </summary>
-        bool IsError
-        {
-            get;
-        }
-
-        /// <summary>
-        /// Gets an object that represents the actual error that occured.
-        /// </summary>
-        IAuthorizationCodeError ErrorCode
-        {
-            get;
-        }
     }
 }

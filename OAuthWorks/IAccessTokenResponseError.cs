@@ -10,7 +10,7 @@ namespace OAuthWorks
     /// <summary>
     /// Defines an interface for an object that defines that an error/exception occurred in a client's access token request.
     /// </summary>
-    public interface IAccessTokenResponseException
+    public interface IAccessTokenResponseError
     {
         /// <summary>
         /// Gets the error code which defines what happened in the request.
@@ -31,7 +31,7 @@ namespace OAuthWorks
         /// <summary>
         /// Gets a URI that points to a web page that the developer can visit to find information about the error.
         /// </summary>
-        string ErrorUri
+        Uri ErrorUri
         {
             get;
         }

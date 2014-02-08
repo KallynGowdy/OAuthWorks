@@ -23,6 +23,7 @@ namespace OAuthWorks
     /// <summary>
     /// Defines an interface that contains several values that define OAuth provider properties such as endpoints and supported scopes.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Auth")]
     public interface IOAuthProviderDefinition
     {
         /// <summary>

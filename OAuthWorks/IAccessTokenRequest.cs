@@ -44,7 +44,7 @@ namespace OAuthWorks
         /// <summary>
         /// Gets the redirect uri that was provided in getting the authorization code.
         /// </summary>
-        string RedirectUri
+        Uri RedirectUri
         {
             get;
         }

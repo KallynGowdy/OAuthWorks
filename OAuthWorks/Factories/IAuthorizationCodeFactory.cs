@@ -9,14 +9,14 @@ namespace OAuthWorks.Factories
     /// Defines an interface for a factory that creates authorization code objects.
     /// </summary>
     /// <typeparam name="T">The type of authorization codes to create.</typeparam>
-    public interface IAuthorizationCodeFactory<out TAuthorizationCode> : IFactory<TAuthorizationCode> where TAuthorizationCode : IAuthorizationCode
+    public interface IAuthorizationCodeFactory<out TAuthorizationCode, out TAuthorizationCodeResponseError> : IFactory<TAuthorizationCode> where TAuthorizationCode : IAuthorizationCode where TAuthorizationCodeResponseError : Exception, IAuthorizationCodeResponseError
     {
         /// <summary>
         /// Creates a new <see cref="OAuthWorks.IAuthorizationCode"/> object given the granted scopes.
         /// </summary>
-        /// <param name="generatedAuthorizationCode">The object that the generated authorization code should be put in.</param>
         /// <param name="scopes">The enumerable list of scopes that were granted by the user to the client.</param>
-        /// <returns>Returns a new <see cref="OAuthWorks.IAuthorizationCode"/> object.</returns>
-        TAuthorizationCode Create(out string generatedAuthorizationCode, IEnumerable<IScope> scopes);
+        /// <param name="redirectUri">The URI that was provided by the client that specifies the location that the user should be redirected to after completing authorization.</param>
+        /// <returns>Returns a new OAuthWorks.CreatedToken(of TAuthorizationCode) object.</returns>
+        ICreatedToken<TAuthorizationCode> Create(Uri redirectUri, IEnumerable<IScope> scopes);
     }
 }

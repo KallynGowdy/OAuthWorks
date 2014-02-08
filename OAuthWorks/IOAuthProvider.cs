@@ -16,6 +16,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -32,6 +33,7 @@ namespace OAuthWorks
     /// There are helper functions for determining whether a client requires authorization by the user or not.
     /// In the case that the Resource Owner Password Credentials flow is allowed by the provider, 
     /// </remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Auth")]
     public interface IOAuthProvider
     {
         //The provider needs to provide support for the different OAuth flows
@@ -139,6 +141,8 @@ namespace OAuthWorks
         /// Be sure to authenticate the user and request consent before calling this. THIS METHOD ASSUMES THAT USER CONSENT WAS GIVEN.
         /// </summary>
         /// <param name="request">The request that contains the values that were sent by the client.</param>
+        /// <exception cref="OAuthWorks.AuthorizationCodeResponseException">Thrown if an exception occurs inside this method or if the given request was invalid in some way.</exception>
+        /// <exception cref="System.ArgumentNullException">Thrown if the given request is null.</exception>
         /// <returns>Returns a new <see cref="OAuthWorks.IAuthorizationCodeResponse"/> object that determines what values to put in the outgoing response.</returns>
         IAuthorizationCodeResponse InitiateAuthorizationCodeFlow(IAuthorizationCodeRequest request);
 
@@ -146,6 +150,8 @@ namespace OAuthWorks
         /// Requests an access token from the authorization server based on the given request.
         /// </summary>
         /// <param name="request">The request that contains the required values.</param>
+        /// <exception cref="OAuthWorks.AccessTokenResponseException">Thrown if the given request is invalid or if an unexpected error occurred.</exception>
+        /// <exception cref="System.ArgumentNullException">Thrown if one of the given arguments is null.</exception>
         /// <returns>Returns a new <see cref="OAuthWorks.IAccessTokenResponse"/> object that determines what values to put in the outgoing response.</returns>
         IAccessTokenResponse RequestAccessToken(IAccessTokenRequest request, IUser currentUser);
 

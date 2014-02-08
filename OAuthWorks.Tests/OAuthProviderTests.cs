@@ -12,16 +12,27 @@ namespace OAuthWorks.Tests
 
         public void TestOAuthProvider()
         {
+            var scopes = new ScopeRepository();
+
+            ClientRepository newClientRepository = new ClientRepository();
+
+            AuthorizationCodeResponseFactory newAuthorizationCodeResponseFactory = new AuthorizationCodeResponseFactory();
+            AuthorizationCodeRepository newAuthorizationCodeRepository = new AuthorizationCodeRepository();
+            AuthorizationCodeFactory newAuthorizationCodeFactory = new AuthorizationCodeFactory();
+            AccessTokenResponseFactory newAccessTokenResponseFactory = new AccessTokenResponseFactory();
+            AccessTokenRepository newAccessTokenRepository = new AccessTokenRepository();
+            AccessTokenFactory newAccessTokenFactory = new AccessTokenFactory();
+
             OAuthProvider provider = new OAuthProvider
             {
-                AccessTokenFactory = new AccessTokenFactory(),
-                AccessTokenRepository = new AccessTokenRepository(),
-                AccessTokenResponseFactory = new AccessTokenResponseFactory(),
-                AuthorizationCodeFactory = new AuthorizationCodeFactory(),
-                AuthorizationCodeRepository = new AuthorizationCodeRepository(),
-                AuthorizationCodeResponseFactory = new AuthorizationCodeResponseFactory(),
-                ClientRepository = new ClientRepository(),
-                ScopeRepository = new ScopeRepository(),
+                AccessTokenFactory = newAccessTokenFactory,
+                AccessTokenRepository = newAccessTokenRepository,
+                AccessTokenResponseFactory = newAccessTokenResponseFactory,
+                AuthorizationCodeFactory = newAuthorizationCodeFactory,
+                AuthorizationCodeRepository = newAuthorizationCodeRepository,
+                AuthorizationCodeResponseFactory = newAuthorizationCodeResponseFactory,
+                ClientRepository = newClientRepository,
+                ScopeRepository = scopes,
                 ScopeParser = (p, s) => s.Split(' ', '-').Select(a => p.ScopeRepository.GetById(a)),
                 ScopeFormatter = (s) => string.Join(" ", s)
             };
@@ -32,19 +43,19 @@ namespace OAuthWorks.Tests
                 Description = "The first and only scope that can be requested"
             };
 
-            provider.ScopeRepository.Add(scope);
+            scopes.Add(scope);
 
             Client client = new Client("secret")
             {
                 Id = "bob",
                 Name = "Client",
-                RedirectUris = new string[]
+                RedirectUris = new Uri[]
                 {
-                    "http://example.com/oauth/response/token"
+                    new Uri("http://example.com/oauth/response/token")
                 }
             };
 
-            provider.ClientRepository.Add(client);
+            newClientRepository.Add(client);
 
             User user = new User
             {
@@ -55,7 +66,7 @@ namespace OAuthWorks.Tests
             {
                 ClientId = "bob",
                 ClientSecret = "secret",
-                RedirectUri = "http://example.com/oauth/response/token",
+                RedirectUri = new Uri("http://example.com/oauth/response/token"),
                 ResponseType = AuthorizationCodeResponseType.Code,
                 Scope = "exampleScope",
                 State = "state"
@@ -63,13 +74,13 @@ namespace OAuthWorks.Tests
 
             var response = provider.InitiateAuthorizationCodeFlow(codeRequest);
 
-            Debug.Assert(response != null && !response.IsError);
+            Debug.Assert(response != null);
 
             AccessTokenRequest tokenRequest = new AccessTokenRequest
             {
                 ClientId = "bob",
                 ClientSecret = "secret",
-                RedirectUri = "http://example.com/oauth/response/token",
+                RedirectUri = new Uri("http://example.com/oauth/response/token"),
                 AuthorizationCode = response.Code
             };
 
@@ -83,13 +94,13 @@ namespace OAuthWorks.Tests
             {
                 Id = "evilClient",
                 Name = "BadGuy",
-                RedirectUris = new string[]
+                RedirectUris = new Uri[]
                 {
-                    "http://sealinfosite.com/oauth/giveme/token"
+                    new Uri("http://sealinfosite.com/oauth/giveme/token")
                 }
             };
 
-            provider.ClientRepository.Add(otherClient);
+            newClientRepository.Add(otherClient);
 
             Debug.Assert(!provider.HasAccess(user, otherClient, scope));
         }

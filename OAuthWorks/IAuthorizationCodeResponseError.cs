@@ -23,7 +23,7 @@ namespace OAuthWorks
     /// <summary>
     /// Defines an interface that contains values that describe the problem that happened while trying to authorize the client. (RFC 6749, Section 4.1.2.1, http://tools.ietf.org/html/rfc6749#section-4.1.2.1)
     /// </summary>
-    public interface IAuthorizationCodeError
+    public interface IAuthorizationCodeResponseError
     {
         // The specification defines values that are required to be present, including:
         //
@@ -68,7 +68,7 @@ namespace OAuthWorks
         /// Gets a URI that identifies a human-readable web page with information about the error, used to provide the client developer with additional information about
         /// the error.
         /// </summary>
-        string ErrorUri
+        Uri ErrorUri
         {
             get;
         }

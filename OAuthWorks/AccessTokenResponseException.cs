@@ -10,7 +10,7 @@ namespace OAuthWorks
     /// Defines an abstract exception that provides unification between the System.Exception class and the OAuthWorks.IAccessTokenResponseException interface.
     /// </summary>
     [Serializable]
-    public abstract class AccessTokenResponseException : Exception, IAccessTokenResponseException
+    public abstract class AccessTokenResponseException : Exception, IAccessTokenResponseError
     {
         protected AccessTokenResponseException(string message, Exception innerException) : base(message, innerException) { }
 
@@ -24,7 +24,7 @@ namespace OAuthWorks
             get;
         }
 
-        public abstract string ErrorUri
+        public abstract Uri ErrorUri
         {
             get;
         }

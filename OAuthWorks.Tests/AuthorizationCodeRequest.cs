@@ -26,7 +26,7 @@ namespace OAuthWorks.Tests
             set;
         }
 
-        public string RedirectUri
+        public Uri RedirectUri
         {
             get;
             set;

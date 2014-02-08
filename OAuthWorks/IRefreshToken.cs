@@ -23,15 +23,8 @@ namespace OAuthWorks
     /// <summary>
     /// Defines an interface for refresh tokens.
     /// </summary>
-    public interface IRefreshToken
+    public interface IRefreshToken : IToken
     {
-        /// <summary>
-        /// Determines if the given value matches the one stored in this object.
-        /// </summary>
-        /// <param name="token">The token to match to the value stored in this object.</param>
-        /// <returns>Returns true if the tokens match, otherwise returns false.</returns>
-        bool MatchesToken(string token);
-
         /// <summary>
         /// Gets the client that this token belongs to.
         /// </summary>
