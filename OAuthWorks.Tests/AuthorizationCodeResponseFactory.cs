@@ -19,6 +19,7 @@ namespace OAuthWorks.Tests
             };
         }
 
+        [Serializable]
         class AuthorizationCodeException : AuthorizationCodeResponseException
         {
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Ninject;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,13 +9,15 @@ namespace OAuthWorks.Tests
 {
     public class AuthorizationCode : IAuthorizationCode
     {
-        public AuthorizationCode(string code, string id, Uri redirectUri, DateTime expirationDateUtc, IEnumerable<IScope> scopes)
+        [Inject]
+        public AuthorizationCode(string code, string id, Uri redirectUri, DateTime expirationDateUtc, IUser user, IEnumerable<IScope> scopes)
         {
             this.code = code;
             this.Id = id;
             this.ExpirationDateUtc = expirationDateUtc.ToUniversalTime();
             this.Scopes = scopes;
             this.RedirectUri = redirectUri;
+            this.User = user;
         }
 
         public Uri RedirectUri
@@ -51,6 +54,12 @@ namespace OAuthWorks.Tests
         }
 
         public DateTime ExpirationDateUtc
+        {
+            get;
+            set;
+        }
+
+        public IUser User
         {
             get;
             set;

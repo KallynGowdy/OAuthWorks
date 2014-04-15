@@ -1,4 +1,20 @@
-﻿using System;
+﻿// Copyright 2014 Kallyn Gowdy
+// 
+//    Licensed under the Apache License, Version 2.0 (the "License");
+//    you may not use this file except in compliance with the License.
+//    You may obtain a copy of the License at
+// 
+//        http://www.apache.org/licenses/LICENSE-2.0
+// 
+//    Unless required by applicable law or agreed to in writing, software
+//    distributed under the License is distributed on an "AS IS" BASIS,
+//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//    See the License for the specific language governing permissions and
+//    limitations under the License.
+
+
+using NUnit.Framework;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -7,45 +23,34 @@ using System.Threading.Tasks;
 
 namespace OAuthWorks.Tests
 {
+    [TestFixture]
     public class OAuthProviderTests
     {
+        OAuthProvider provider;
+        DependencyInjector dependencyInjector = new DependencyInjector();
 
-        public void TestOAuthProvider()
+        Scope exampleScope;
+
+        Client client;
+
+        [TestFixtureSetUp]
+        public void SetUp()
         {
-            var scopes = new ScopeRepository();
-
-            ClientRepository newClientRepository = new ClientRepository();
-
-            AuthorizationCodeResponseFactory newAuthorizationCodeResponseFactory = new AuthorizationCodeResponseFactory();
-            AuthorizationCodeRepository newAuthorizationCodeRepository = new AuthorizationCodeRepository();
-            AuthorizationCodeFactory newAuthorizationCodeFactory = new AuthorizationCodeFactory();
-            AccessTokenResponseFactory newAccessTokenResponseFactory = new AccessTokenResponseFactory();
-            AccessTokenRepository newAccessTokenRepository = new AccessTokenRepository();
-            AccessTokenFactory newAccessTokenFactory = new AccessTokenFactory();
-
-            OAuthProvider provider = new OAuthProvider
+            provider = new OAuthProvider(dependencyInjector)
             {
-                AccessTokenFactory = newAccessTokenFactory,
-                AccessTokenRepository = newAccessTokenRepository,
-                AccessTokenResponseFactory = newAccessTokenResponseFactory,
-                AuthorizationCodeFactory = newAuthorizationCodeFactory,
-                AuthorizationCodeRepository = newAuthorizationCodeRepository,
-                AuthorizationCodeResponseFactory = newAuthorizationCodeResponseFactory,
-                ClientRepository = newClientRepository,
-                ScopeRepository = scopes,
                 ScopeParser = (p, s) => s.Split(' ', '-').Select(a => p.ScopeRepository.GetById(a)),
                 ScopeFormatter = (s) => string.Join(" ", s)
             };
 
-            Scope scope = new Scope
+            exampleScope = new Scope
             {
                 Id = "exampleScope",
                 Description = "The first and only scope that can be requested"
             };
 
-            scopes.Add(scope);
+            ((ScopeRepository)provider.ScopeRepository).Add(exampleScope);
 
-            Client client = new Client("secret")
+            client = new Client("secret")
             {
                 Id = "bob",
                 Name = "Client",
@@ -55,13 +60,19 @@ namespace OAuthWorks.Tests
                 }
             };
 
-            newClientRepository.Add(client);
+            ((ClientRepository)provider.ClientRepository).Add(client);
+        }
 
+
+        [Test]
+        public void TestOAuthProvider()
+        {
             User user = new User
             {
                 Id = "Id"
             };
 
+            //A request from the client for an authorization code.
             AuthorizationCodeRequest codeRequest = new AuthorizationCodeRequest
             {
                 ClientId = "bob",
@@ -72,7 +83,12 @@ namespace OAuthWorks.Tests
                 State = "state"
             };
 
-            var response = provider.InitiateAuthorizationCodeFlow(codeRequest);
+            //Normally you would authorize the client and user here.
+            //You would also determine if the user needs to provide consent using
+            //provider.HasAccess(user, client, scope)
+
+            //Then retrieve the 
+            IAuthorizationCodeResponse response = provider.RequestAuthorizationCode(codeRequest, user);
 
             Debug.Assert(response != null);
 
@@ -88,7 +104,7 @@ namespace OAuthWorks.Tests
 
             Debug.Assert(tokenResponse != null);
 
-            Debug.Assert(provider.HasAccess(user, client, scope));
+            Debug.Assert(provider.HasAccess(user, client, exampleScope));
 
             Client otherClient = new Client("otherSecret")
             {
@@ -100,9 +116,9 @@ namespace OAuthWorks.Tests
                 }
             };
 
-            newClientRepository.Add(otherClient);
+            ((ClientRepository)provider.ClientRepository).Add(otherClient);
 
-            Debug.Assert(!provider.HasAccess(user, otherClient, scope));
+            Debug.Assert(!provider.HasAccess(user, otherClient, exampleScope));
         }
 
     }

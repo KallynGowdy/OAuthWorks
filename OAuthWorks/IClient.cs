@@ -46,7 +46,7 @@ namespace OAuthWorks
         /// </summary>
         /// <param name="redirectUri">The redirect uri to determine validity/qualification for.</param>
         /// <returns>Returns true if the redirect uri is registered, otherwise false.</returns>
-        bool ValidRedirectUri(Uri redirectUri);
+        bool IsValidRedirectUri(Uri redirectUri);
 
         /// <summary>
         /// Determines if the given secret matches the one stored internally.

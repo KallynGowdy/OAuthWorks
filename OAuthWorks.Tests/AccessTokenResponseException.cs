@@ -5,7 +5,8 @@ using System.Text;
 
 namespace OAuthWorks.Tests
 {
-    class AccessTokenResponseException : OAuthWorks.AccessTokenResponseException
+    [Serializable]
+    public class AccessTokenResponseException : OAuthWorks.AccessTokenResponseException
     {
         public AccessTokenResponseException(AccessTokenRequestError errorCode, string description, Uri uri, Exception innerException)
             : base(description, innerException)

@@ -1,4 +1,5 @@
-﻿using OAuthWorks.Factories;
+﻿using Ninject;
+using OAuthWorks.Factories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,9 +8,15 @@ using System.Threading.Tasks;
 
 namespace OAuthWorks.Tests
 {
-    class AccessTokenResponseFactory : IAccessTokenResponseFactory<AccessTokenResponse, AccessTokenResponseException>
+    public class AccessTokenResponseFactory : IAccessTokenResponseFactory<IAccessTokenResponse, OAuthWorks.AccessTokenResponseException>
     {
-        public AccessTokenResponse Create(string accessToken, string refreshToken, string tokenType, string scope, DateTime expirationDateUtc)
+        [Inject]
+        public AccessTokenResponseFactory()
+        {
+
+        }
+
+        public IAccessTokenResponse Create(string accessToken, string refreshToken, string tokenType, string scope, DateTime expirationDateUtc)
         {
             return new AccessTokenResponse
             {
@@ -21,12 +28,12 @@ namespace OAuthWorks.Tests
             };
         }
 
-        public AccessTokenResponseException CreateError(AccessTokenRequestError errorCode, string errorDescription, Uri errorUri, Exception innerException)
+        public OAuthWorks.AccessTokenResponseException CreateError(AccessTokenRequestError errorCode, string errorDescription, Uri errorUri, Exception innerException)
         {
             return new AccessTokenResponseException(errorCode, errorDescription, errorUri, innerException);
         }
 
-        public AccessTokenResponse Create()
+        public IAccessTokenResponse Create()
         {
             return null;
         }

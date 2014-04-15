@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,12 +17,14 @@ namespace OAuthWorks
         /// </summary>
         /// <param name="value">The object to check for null-ness.</param>
         /// <param name="parameterName">The name of the parameter that is being checked.</param>
+        [ContractArgumentValidator]
         public static void ThrowIfNull(this object value, string parameterName)
         {
             if (value == null)
             {
                 throw new ArgumentNullException(parameterName);
             }
+            Contract.EndContractBlock();
         }
     }
 }

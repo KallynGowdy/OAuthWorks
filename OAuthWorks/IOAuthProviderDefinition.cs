@@ -36,5 +36,20 @@ namespace OAuthWorks
             get;
         }
 
+        /// <summary>
+        /// Gets the uri at which users may be redirected so the client can obtain an Authorization Code.
+        /// </summary>
+        string AuthorizationCodeUri
+        {
+            get;
+        }
+
+        /// <summary>
+        /// Gets the uri at which the client should make a request for an access token.
+        /// </summary>
+        string AccessTokenUri
+        {
+            get;
+        }
     }
 }

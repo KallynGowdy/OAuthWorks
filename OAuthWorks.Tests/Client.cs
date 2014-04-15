@@ -33,7 +33,7 @@ namespace OAuthWorks.Tests
 
         private string secret;
 
-        public bool ValidRedirectUri(Uri redirectUri)
+        public bool IsValidRedirectUri(Uri redirectUri)
         {
             return RedirectUris.Any(r => r.Equals(redirectUri));
         }

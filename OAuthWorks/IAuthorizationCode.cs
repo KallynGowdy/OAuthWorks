@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -63,6 +64,55 @@ namespace OAuthWorks
         DateTime ExpirationDateUtc
         {
             get;
+        }
+
+        /// <summary>
+        /// Gets the user that this authorization code belongs to.
+        /// </summary>
+        IUser User
+        {
+            get;
+        }
+    }
+
+    internal abstract class IAuthorizationCodeContract : IAuthorizationCode
+    {
+        bool IAuthorizationCode.Expired
+        {
+            get
+            {
+                Contract.Ensures(!Contract.Result<bool>() && DateTime.UtcNow < ((IAuthorizationCode)this).ExpirationDateUtc);
+                return default(bool);
+            }
+        }
+
+        Uri IAuthorizationCode.RedirectUri
+        {
+            get { return default(Uri); }
+        }
+
+        IEnumerable<IScope> IAuthorizationCode.Scopes
+        {
+            get { return default(IEnumerable<IScope>); }
+        }
+
+        DateTime IAuthorizationCode.ExpirationDateUtc
+        {
+            get { return default(DateTime); }
+        }
+
+        bool IToken.MatchesValue(string token)
+        {
+            return default(bool);
+        }
+
+        IUser IAuthorizationCode.User
+        {
+            get
+            {
+                Contract.Ensures(Contract.Result<IUser>() != null);
+                return default(IUser);
+            }
         }
     }
 }
