@@ -22,5 +22,15 @@ namespace OAuthWorks.Tests
         {
             return null;
         }
+
+        public IEnumerator<Scope> GetEnumerator()
+        {
+            return base.GetEnumerator();
+        }
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        {
+            return base.GetEnumerator();
+        }
     }
 }

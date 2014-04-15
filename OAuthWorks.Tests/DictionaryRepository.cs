@@ -27,7 +27,19 @@ namespace OAuthWorks.Tests
 
         public T GetById(K id)
         {
-            return dictionary[id];
+            T val;
+            if (dictionary.TryGetValue(id, out val))
+            {
+                return val;
+            }
+            if (val == null)
+            {
+                return default(T);
+            }
+            else
+            {
+                throw new KeyNotFoundException();
+            }
         }
 
         public void Add(T obj)
@@ -46,6 +58,16 @@ namespace OAuthWorks.Tests
         public void RemoveById(K id)
         {
             dictionary.Remove(id);
+        }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            return dictionary.Values.GetEnumerator();
+        }
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        {
+            return dictionary.Values.GetEnumerator();
         }
     }
 }

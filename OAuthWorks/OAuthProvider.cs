@@ -273,6 +273,7 @@ namespace OAuthWorks
 
         /// <summary>
         /// Gets or sets the parser for the scopes. That is, a function that, given a string, returns a list of scopes representing that string.
+        /// If any of the returned scopes are null, then the requested scope is considered invalid and will be treated as such. The parser should always return a non-null value.
         /// </summary>
         public Func<OAuthProvider, string, IEnumerable<IScope>> ScopeParser
         {
@@ -312,13 +313,13 @@ namespace OAuthWorks
         /// Gets a list of the scopes that are being requested by the given OAuthWorks.IAuthorizationCodeRequest object.
         /// </summary>
         /// <param name="request">The request that is being used to request an authorization code.</param>
-        /// <returns>Returns a non-null enumerable list of scopes that define the permissions requested.</returns>
+        /// <returns>Returns an enumerable list of scopes that define the permissions requested. Null if one of the requested scopes are invalid.</returns>
         /// <exception cref="System.ArgumentNullException">Thrown if the given request object is null.</exception>
         public IEnumerable<IScope> GetRequestedScopes(IAuthorizationCodeRequest request)
         {
             request.ThrowIfNull("request");
             IEnumerable<IScope> result = ScopeParser(this, request.Scope != null ? request.Scope : string.Empty);
-            return result != null ? result : new IScope[0];
+            return result.All(s => s != null) ? result : null;
         }
 
         /// <summary>
@@ -342,13 +343,20 @@ namespace OAuthWorks
                     {
                         IEnumerable<IScope> scopes = GetRequestedScopes(request);
 
-                        ICreatedToken<IAuthorizationCode> authCode = AuthorizationCodeFactory.Create(request.RedirectUri, user, scopes);
+                        if (scopes != null)
+                        {
+                            ICreatedToken<IAuthorizationCode> authCode = AuthorizationCodeFactory.Create(request.RedirectUri, user, scopes);
 
-                        //put the authorization code in the repository
-                        AuthorizationCodeRepository.Add(authCode.Token);
+                            //put the authorization code in the repository
+                            AuthorizationCodeRepository.Add(authCode.Token);
 
-                        //return a successful response
-                        return AuthorizationCodeResponseFactory.Create(authCode.TokenValue, request.State);
+                            //return a successful response
+                            return AuthorizationCodeResponseFactory.Create(authCode.TokenValue, request.State);
+                        }
+                        else
+                        {
+                            throw AuthorizationCodeResponseFactory.CreateError(AuthorizationRequestCodeErrorType.InvalidScope, "One or more of the given scopes were invalid.", null, request.State, null);
+                        }
                     }
                     else
                     {
@@ -361,7 +369,7 @@ namespace OAuthWorks
                     throw AuthorizationCodeResponseFactory.CreateError(AuthorizationRequestCodeErrorType.UnauthorizedClient, "The client is not authorized to access this resource.", null, request.State, null);
                 }
             }
-            catch (Exception e)
+            catch (SystemException e)
             {
                 throw AuthorizationCodeResponseFactory.CreateError(AuthorizationRequestCodeErrorType.ServerError, "The server encountered an error while processing the request.", null, request.State, e);
             }

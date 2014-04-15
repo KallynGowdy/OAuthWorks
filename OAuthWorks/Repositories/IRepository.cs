@@ -27,7 +27,7 @@ namespace OAuthWorks.Repositories
     /// </summary>
     /// <typeparam name="TValue">The type of the entities that are stored in this repository.</typeparam>
     /// <typeparam name="TKey">The type of the identifier that is used to retrieve objects from the respository.</typeparam>
-    public interface IRepository<in TKey, TValue> : IReadStore<TKey, TValue>, IWriteStore<TKey, TValue>
+    public interface IRepository<in TKey, TValue> : IReadStore<TKey, TValue>, IWriteStore<TKey, TValue>, IEnumerable<TValue>
     {
     }
 }

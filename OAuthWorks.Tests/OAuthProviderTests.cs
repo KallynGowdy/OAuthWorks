@@ -31,6 +31,8 @@ namespace OAuthWorks.Tests
 
         Scope exampleScope;
 
+        Scope otherScope;
+
         Client client;
 
         [TestFixtureSetUp]
@@ -45,10 +47,17 @@ namespace OAuthWorks.Tests
             exampleScope = new Scope
             {
                 Id = "exampleScope",
-                Description = "The first and only scope that can be requested"
+                Description = "The first scope that can be requested"
+            };
+
+            otherScope = new Scope
+            {
+                Id = "otherScope",
+                Description = "Another scope that can be requested."
             };
 
             ((ScopeRepository)provider.ScopeRepository).Add(exampleScope);
+            ((ScopeRepository)provider.ScopeRepository).Add(otherScope);
 
             client = new Client("secret")
             {
@@ -63,6 +72,83 @@ namespace OAuthWorks.Tests
             ((ClientRepository)provider.ClientRepository).Add(client);
         }
 
+        [TestCase("exampleScope", "state", "secret", "http://example.com/oauth/response/token")]
+        [TestCase("nonExistantScope", "state", "secret", "http://example.com/oauth/response/token")]
+        [TestCase("otherScope, exampleScope", "state", "secret", "http://example.com/oauth/response/token")]
+        [TestCase("", "state", "secret", "http://example.com/oauth/response/token")]
+        public void TestGetRequestedScopes(string scope, string state, string secret, string redirectUri)
+        {
+            AuthorizationCodeRequest request = new AuthorizationCodeRequest
+            {
+                ClientId = client.Id,
+                ClientSecret = secret,
+                RedirectUri = new Uri(redirectUri),
+                ResponseType = AuthorizationCodeResponseType.Code,
+                Scope = scope,
+                State = state
+            };
+
+            var scopes = provider.GetRequestedScopes(request);
+
+            if (scopes != null)
+            {
+                Assert.True(scopes.All(s => s != null) && scopes.Count() > 0);
+            }
+            else
+            {
+                Assert.True(provider.ScopeParser(provider, scope).Any(s => s == null));
+            }
+        }
+
+        [TestCase("exampleScope", "state", "secret", "http://example.com/oauth/response/token")]
+        [TestCase("nonExistantScope", "state", "secret", "http://example.com/oauth/response/token")]
+        [TestCase("exampleScope", "state", "badSecret", "http://example.com/oauth/response/token")]
+        [TestCase("exampleScope", "state", "secret", "http://example.com/oauth/v1/response/token")]
+        public void TestRequestAuthorizationCode(string scope, string state, string secret, string redirectUri)
+        {
+            User user = new User
+            {
+                Id = "Id"
+            };
+
+            AuthorizationCodeRequest codeRequest = new AuthorizationCodeRequest
+            {
+                ClientId = client.Id,
+                ClientSecret = secret,
+                RedirectUri = new Uri(redirectUri),
+                ResponseType = AuthorizationCodeResponseType.Code,
+                Scope = scope,
+                State = state
+            };
+
+            try
+            {
+                var response = provider.RequestAuthorizationCode(codeRequest, user);
+
+                Assert.NotNull(response);
+
+                Assert.AreEqual(response.State, state);
+
+                Assert.True(client.IsValidRedirectUri(new Uri(redirectUri)), "The client did not have a valid redirect Uri even though it was able to retrieve a code.");
+                Assert.True(client.MatchesSecret(secret), "The client's secret was invalid even though it got through.");
+                Assert.NotNull(provider.GetRequestedScopes(codeRequest), "The requested scope was invalid even though it got through.");
+            }
+            catch (AuthorizationCodeResponseException e)
+            {
+                switch (e.ErrorCode)
+                {
+                    case AuthorizationRequestCodeErrorType.UnauthorizedClient:
+                        Assert.False(client.MatchesSecret(secret));
+                        break;
+                    case AuthorizationRequestCodeErrorType.InvalidScope:
+                        Assert.Null(provider.GetRequestedScopes(codeRequest));
+                        break;
+                    case AuthorizationRequestCodeErrorType.InvalidRequest:
+                        Assert.False(client.IsValidRedirectUri(codeRequest.RedirectUri));
+                        break;
+                }
+            }
+        }
 
         [Test]
         public void TestOAuthProvider()
@@ -90,7 +176,7 @@ namespace OAuthWorks.Tests
             //Then retrieve the 
             IAuthorizationCodeResponse response = provider.RequestAuthorizationCode(codeRequest, user);
 
-            Debug.Assert(response != null);
+            Assert.NotNull(response);
 
             AccessTokenRequest tokenRequest = new AccessTokenRequest
             {
@@ -102,9 +188,11 @@ namespace OAuthWorks.Tests
 
             var tokenResponse = provider.RequestAccessToken(tokenRequest, user);
 
+            Assert.NotNull(tokenResponse);
+
             Debug.Assert(tokenResponse != null);
 
-            Debug.Assert(provider.HasAccess(user, client, exampleScope));
+            Assert.True(provider.HasAccess(user, client, exampleScope), "The provider does not have access when it should");
 
             Client otherClient = new Client("otherSecret")
             {
@@ -118,7 +206,7 @@ namespace OAuthWorks.Tests
 
             ((ClientRepository)provider.ClientRepository).Add(otherClient);
 
-            Debug.Assert(!provider.HasAccess(user, otherClient, exampleScope));
+            Assert.False(provider.HasAccess(user, otherClient, exampleScope), "The unathorized client had access when it shouldn't have.");
         }
 
     }
