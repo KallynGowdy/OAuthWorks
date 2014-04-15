@@ -73,6 +73,14 @@ namespace OAuthWorks
         {
             get;
         }
+
+        /// <summary>
+        /// Gets the client that this authorization code was granted to.
+        /// </summary>
+        IClient Client
+        {
+            get;
+        }
     }
 
     internal abstract class IAuthorizationCodeContract : IAuthorizationCode
@@ -112,6 +120,15 @@ namespace OAuthWorks
             {
                 Contract.Ensures(Contract.Result<IUser>() != null);
                 return default(IUser);
+            }
+        }
+
+        IClient IAuthorizationCode.Client
+        {
+            get
+            {
+                Contract.Ensures(Contract.Result<IClient>() != null);
+                return default(IClient);
             }
         }
     }

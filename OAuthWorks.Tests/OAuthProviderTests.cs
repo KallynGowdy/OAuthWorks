@@ -35,6 +35,8 @@ namespace OAuthWorks.Tests
 
         Client client;
 
+        Client badClient;
+
         [TestFixtureSetUp]
         public void SetUp()
         {
@@ -69,7 +71,18 @@ namespace OAuthWorks.Tests
                 }
             };
 
+            badClient = new Client("otherSecret")
+            {
+                Id="bill",
+                Name = "Evil",
+                RedirectUris = new Uri[]
+                {
+                    new Uri("http://example.com/oauth/response/token")
+                }
+            };
+
             ((ClientRepository)provider.ClientRepository).Add(client);
+            ((ClientRepository)provider.ClientRepository).Add(badClient);
         }
 
         [TestCase("exampleScope", "state", "secret", "http://example.com/oauth/response/token")]
@@ -98,6 +111,38 @@ namespace OAuthWorks.Tests
             {
                 Assert.True(provider.ScopeParser(provider, scope).Any(s => s == null));
             }
+        }
+
+        [TestCase("exampleScope", "state", "secret", "otherSecret", "http://example.com/oauth/response/token")]
+        public void TestInvalidClientTokenRetrieval(string scope, string state, string secret, string badSecret, string redirectUri)
+        {
+            User user = new User
+            {
+                Id = "Id"
+            };
+
+            AuthorizationCodeRequest request = new AuthorizationCodeRequest
+            {
+                ClientId = client.Id,
+                ClientSecret = secret,
+                RedirectUri = new Uri(redirectUri),
+                ResponseType = AuthorizationCodeResponseType.Code,
+                Scope = scope,
+                State = state
+            };
+
+            var response = provider.RequestAuthorizationCode(request, user);
+
+            AccessTokenRequest tokenRequest = new AccessTokenRequest
+            {
+                AuthorizationCode = response.Code,
+                ClientId = badClient.Id,
+                ClientSecret = badSecret,
+                RedirectUri = new Uri(redirectUri)
+            };
+
+            Assert.Throws<AccessTokenResponseException>(() => provider.RequestAccessToken(tokenRequest, user));
+
         }
 
         [TestCase("exampleScope", "state", "secret", "http://example.com/oauth/response/token")]

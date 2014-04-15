@@ -16,8 +16,9 @@ namespace OAuthWorks.Factories
         /// </summary>
         /// <param name="scopes">The enumerable list of scopes that were granted by the user to the client.</param>
         /// <param name="user">The user that the created authorization code is bound to.</param>
+        /// <param name="client">The client that the code is granted for.</param>
         /// <param name="redirectUri">The URI that was provided by the client that specifies the location that the user should be redirected to after completing authorization.</param>
         /// <returns>Returns a new OAuthWorks.CreatedToken(of TAuthorizationCode) object.</returns>
-        ICreatedToken<TAuthorizationCode> Create(Uri redirectUri, IUser user, IEnumerable<IScope> scopes);
+        ICreatedToken<TAuthorizationCode> Create(Uri redirectUri, IUser user, IClient client, IEnumerable<IScope> scopes);
     }
 }

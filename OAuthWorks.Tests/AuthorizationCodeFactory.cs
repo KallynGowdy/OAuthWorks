@@ -10,7 +10,7 @@ namespace OAuthWorks.Tests
 {
     class AuthorizationCodeFactory : IAuthorizationCodeFactory<AuthorizationCode>
     {
-        public ICreatedToken<AuthorizationCode> Create(Uri redirectUri, IUser user, IEnumerable<IScope> scopes)
+        public ICreatedToken<AuthorizationCode> Create(Uri redirectUri, IUser user, IClient client, IEnumerable<IScope> scopes)
         {
             StringBuilder token = new StringBuilder(61);
             string id;
@@ -34,7 +34,7 @@ namespace OAuthWorks.Tests
                 token.Append(value);
             }
 
-            return new CreatedToken<AuthorizationCode>(new AuthorizationCode(token.ToString(), id, redirectUri, DateTime.UtcNow.AddHours(2), user, scopes), token.ToString());
+            return new CreatedToken<AuthorizationCode>(new AuthorizationCode(token.ToString(), id, redirectUri, DateTime.UtcNow.AddHours(2), user, client, scopes), token.ToString());
         }
 
         public AuthorizationCode Create()

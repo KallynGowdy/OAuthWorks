@@ -290,13 +290,24 @@ namespace OAuthWorks
             }
         }
 
+        private Func<AccessTokenRequestError, IClient, string> accessTokenErrorDescriptionProvider = (e, c) => "";
+
+        private Func<AccessTokenRequestError, IClient, Uri> accessTokenErrorUriProvider = (e, c) => null;
+
         /// <summary>
         /// Gets or sets the error description provider. That is, a function that, given the error and client, returns a string describing the problem.
         /// </summary>
         public Func<AccessTokenRequestError, IClient, string> AccessTokenErrorDescriptionProvider
         {
-            get;
-            set;
+            get
+            {
+                return accessTokenErrorDescriptionProvider;
+            }
+            set
+            {
+                value.ThrowIfNull("value");
+                accessTokenErrorDescriptionProvider = value;
+            }
         }
 
         /// <summary>
@@ -305,8 +316,15 @@ namespace OAuthWorks
         /// </summary>
         public Func<AccessTokenRequestError, IClient, Uri> AccessTokenErrorUriProvider
         {
-            get;
-            set;
+            get
+            {
+                return accessTokenErrorUriProvider;
+            }
+            set
+            {
+                value.ThrowIfNull("value");
+                accessTokenErrorUriProvider = value;
+            }
         }
 
         /// <summary>
@@ -345,7 +363,7 @@ namespace OAuthWorks
 
                         if (scopes != null)
                         {
-                            ICreatedToken<IAuthorizationCode> authCode = AuthorizationCodeFactory.Create(request.RedirectUri, user, scopes);
+                            ICreatedToken<IAuthorizationCode> authCode = AuthorizationCodeFactory.Create(request.RedirectUri, user, client, scopes);
 
                             //put the authorization code in the repository
                             AuthorizationCodeRepository.Add(authCode.Token);
@@ -392,7 +410,7 @@ namespace OAuthWorks
                 validateClient(request, client);
 
                 IAuthorizationCode code = AuthorizationCodeRepository.GetByValue(request.AuthorizationCode);
-                
+
                 validateAuthorizationCode(code, request, client);
 
                 //Authorized!
@@ -416,7 +434,7 @@ namespace OAuthWorks
                     ScopeFormatter(accessToken.Token.Scopes),
                     accessToken.Token.ExpirationDateUtc);
             }
-            catch (Exception e)
+            catch (SystemException e)
             {
                 //Server error
                 throw AccessTokenResponseFactory.CreateError(
@@ -433,7 +451,7 @@ namespace OAuthWorks
         /// <param name="client"></param>
         private void validateAuthorizationCode(IAuthorizationCode code, IAccessTokenRequest request, IClient client)
         {
-            if (!(code != null && !code.Expired && code.MatchesValue(request.AuthorizationCode) && Uri.Compare(code.RedirectUri, request.RedirectUri, UriComponents.AbsoluteUri, UriFormat.SafeUnescaped, StringComparison.Ordinal) == 0))
+            if (!(code != null && code.Client.Equals(client) && !code.Expired && code.MatchesValue(request.AuthorizationCode) && Uri.Compare(code.RedirectUri, request.RedirectUri, UriComponents.AbsoluteUri, UriFormat.SafeUnescaped, StringComparison.Ordinal) == 0))
             {
                 throw AccessTokenResponseFactory.CreateError(
                     AccessTokenRequestError.InvalidClient,
