@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OAuthWorks.Repositories
+namespace OAuthWorks.DataAccess.Repositories
 {
     /// <summary>
     /// Defines an interface for a repository that stores OAuthWorks.IRefreshToken objects.
     /// </summary>
-    public interface IRefreshTokenRepository<TRefreshToken> : IRepository<string, TRefreshToken>
+    public interface IRefreshTokenRepository<TRefreshToken> : IRepository<TRefreshToken>
     {
         /// <summary>
         /// Gets a refresh token that can be used by the given client to retrive access tokens for the given user's account.

@@ -35,7 +35,7 @@ namespace OAuthWorks
     /// </remarks>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Auth")]
     [ContractClass(typeof(IOAuthProviderContract))]
-    public interface IOAuthProvider
+    public interface IOAuthProvider : IDisposable
     {
         //The provider needs to provide support for the different OAuth flows
         //There are four(4) different OAuth 2.0 flows that are defined by the spec.
@@ -236,6 +236,11 @@ namespace OAuthWorks
                 Contract.Ensures(Contract.Result<IOAuthProviderDefinition>() != null);
                 return default(IOAuthProviderDefinition);
             }
+        }
+
+        void IDisposable.Dispose()
+        {
+            
         }
     }
 }

@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using OAuthWorks.Repositories;
+using OAuthWorks.DataAccess.Repositories;
 namespace OAuthWorks.Tests
 {
-    class ScopeRepository : DictionaryRepository<string, Scope>, IScopeRepository<Scope>
+    class ScopeRepository : DictionaryRepository<Scope>, IScopeRepository<Scope>
     {
         public ScopeRepository()
         {
@@ -21,11 +21,6 @@ namespace OAuthWorks.Tests
         public IEnumerable<Scope> GetByToken(IAccessToken token)
         {
             return null;
-        }
-
-        public IEnumerator<Scope> GetEnumerator()
-        {
-            return base.GetEnumerator();
         }
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()

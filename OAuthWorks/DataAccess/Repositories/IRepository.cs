@@ -20,14 +20,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OAuthWorks.Repositories
+namespace OAuthWorks.DataAccess.Repositories
 {
     /// <summary>
     /// Defines an interface for a repository.
     /// </summary>
+    /// <remarks>
+    /// A repository is an abstraction of basic database operations. It allows a library to function without specific database code.
+    /// Repositories are used in a unit-of-work pattern. This means that they should be easily created and disposed, since every different
+    /// transaction requires a new repository. Repositories are usually requested through the use of IoC containers, this allows the implementation to easily
+    /// be swapped out by another implementation for testing.
+    /// </remarks>
     /// <typeparam name="TValue">The type of the entities that are stored in this repository.</typeparam>
-    /// <typeparam name="TKey">The type of the identifier that is used to retrieve objects from the respository.</typeparam>
-    public interface IRepository<in TKey, TValue> : IReadStore<TKey, TValue>, IWriteStore<TKey, TValue>, IEnumerable<TValue>
+    public interface IRepository<TValue> : IReadStore<string, TValue>, IWriteStore<string, TValue>, IEnumerable<TValue>, IDisposable
     {
     }
 }

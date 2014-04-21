@@ -43,7 +43,7 @@ namespace OAuthWorks
         /// Gets or sets the client id that designates who this request is coming from.
         /// </summary>
         [DataMember(Name = "client_id")]
-        public int ClientId
+        public string ClientId
         {
             get;
             set;

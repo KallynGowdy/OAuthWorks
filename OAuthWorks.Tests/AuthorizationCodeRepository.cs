@@ -1,4 +1,4 @@
-﻿using OAuthWorks.Repositories;
+﻿using OAuthWorks.DataAccess.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace OAuthWorks.Tests
 {
-    class AuthorizationCodeRepository : DictionaryRepository<string, IAuthorizationCode>, IAuthorizationCodeRepository<IAuthorizationCode>
+    class AuthorizationCodeRepository : DictionaryRepository<IAuthorizationCode>, IAuthorizationCodeRepository<IAuthorizationCode>
     {
         public AuthorizationCodeRepository()
         {

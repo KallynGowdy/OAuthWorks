@@ -19,12 +19,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OAuthWorks.Repositories
+namespace OAuthWorks.DataAccess.Repositories
 {
     /// <summary>
     /// Defines an interface for storing <see cref="OAuthWorks.IAuthorizationCode"/> objects.
     /// </summary>
-    public interface IAuthorizationCodeRepository<T> : IRepository<string, T> where T : IAuthorizationCode
+    public interface IAuthorizationCodeRepository<T> : IRepository< T> where T : IAuthorizationCode
     {
         /// <summary>
         /// Gets the authorization code by it's actual internal value.

@@ -1,4 +1,4 @@
-﻿using OAuthWorks.Repositories;
+﻿using OAuthWorks.DataAccess.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace OAuthWorks.Tests
 {
-    class AccessTokenRepository : DictionaryRepository<string, IAccessToken>, IAccessTokenRepository<IAccessToken>
+    class AccessTokenRepository : DictionaryRepository<IAccessToken>, IAccessTokenRepository<IAccessToken>
     {
         public AccessTokenRepository()
         {
@@ -24,5 +24,6 @@ namespace OAuthWorks.Tests
         {
             return Entities.SingleOrDefault(a => a.Client.Equals(client) && a.User.Equals(user));
         }
+
     }
 }

@@ -14,8 +14,8 @@
 
 
 
+using OAuthWorks.DataAccess.Repositories;
 using OAuthWorks.Factories;
-using OAuthWorks.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
@@ -269,7 +269,7 @@ namespace OAuthWorks
             set;
         }
 
-        private Func<OAuthProvider, string, IEnumerable<IScope>> scopeParser;
+        private Func<OAuthProvider, string, IEnumerable<IScope>> scopeParser = (p, s) => s.Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries).Select(c => p.ScopeRepository.GetById(c));
 
         /// <summary>
         /// Gets or sets the parser for the scopes. That is, a function that, given a string, returns a list of scopes representing that string.
@@ -521,7 +521,7 @@ namespace OAuthWorks
             IAccessToken token = AccessTokenRepository.GetByUserAndClient(user, client);
             if (token != null && !token.Revoked && !token.Expired)
             {
-                return ScopeRepository.GetAllScopes().Any(a => a.Equals(scope) && token.Scopes.Contains(a));
+                return ScopeRepository.Any(a => a.Equals(scope) && token.Scopes.Contains(a));
             }
             return false;
         }
@@ -545,5 +545,44 @@ namespace OAuthWorks
             set;
         }
 
+        ~OAuthProvider()
+        {
+            Dispose(false);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        private bool disposed = false;
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (this.ClientRepository != null)
+                {
+                    ClientRepository.Dispose();
+                }
+                if (this.AccessTokenRepository != null)
+                {
+                    AccessTokenRepository.Dispose();
+                }
+                if (this.ScopeRepository != null)
+                {
+                    ScopeRepository.Dispose();
+                }
+                if (this.AuthorizationCodeRepository != null)
+                {
+                    this.AuthorizationCodeRepository.Dispose();
+                }
+                if (this.RefreshTokenRepository != null)
+                {
+                    this.RefreshTokenRepository.Dispose();
+                }                
+            }
+            this.disposed = true;
+        }
     }
 }

@@ -1,4 +1,4 @@
-﻿using OAuthWorks.Repositories;
+﻿using OAuthWorks.DataAccess.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace OAuthWorks.Tests
 {
-    public class DictionaryRepository<K, T> : IRepository<K, T>
+    public class DictionaryRepository<T> : IRepository<T>
     {
-        private Dictionary<K, T> dictionary = new Dictionary<K,T>();
+        private Dictionary<string, T> dictionary = new Dictionary<string,T>();
 
         protected IEnumerable<T> Entities
         {
@@ -19,13 +19,13 @@ namespace OAuthWorks.Tests
             }
         }
 
-        protected Func<T, K> IdSelector
+        protected Func<T, string> IdSelector
         {
             get;
             set;
         }
 
-        public T GetById(K id)
+        public T GetById(string id)
         {
             T val;
             if (dictionary.TryGetValue(id, out val))
@@ -55,7 +55,7 @@ namespace OAuthWorks.Tests
             }
         }
 
-        public void RemoveById(K id)
+        public void RemoveById(string id)
         {
             dictionary.Remove(id);
         }
@@ -68,6 +68,11 @@ namespace OAuthWorks.Tests
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
             return dictionary.Values.GetEnumerator();
+        }
+
+        public void Dispose()
+        {
+            
         }
     }
 }

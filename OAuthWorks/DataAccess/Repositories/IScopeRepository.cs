@@ -19,20 +19,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OAuthWorks.Repositories
+namespace OAuthWorks.DataAccess.Repositories
 {
     /// <summary>
     /// Defines an interface for a repository that contains <see cref="OAuthWorks.IScope"/> objects.
     /// </summary>
     public interface IScopeRepository<out TOut> : IReadStore<string, TOut>, IEnumerable<TOut> where TOut : IScope
     {
-        /// <summary>
-        /// Gets a list of all of the scopes that are contained in this repository.
-        /// </summary>
-        /// <returns>An enumerable list of the scopes that are contained in this repository.</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate")] //This should be a method because it will often cause database trips to occur
-        IEnumerable<TOut> GetAllScopes();
-
         /// <summary>
         /// Gets a list of all of the scopes that are provided by the given access token.
         /// </summary>

@@ -1,5 +1,4 @@
 ﻿using Ninject;
-using OAuthWorks.Repositories;
 using OAuthWorks.Factories;
 using System;
 using System.Collections.Generic;
@@ -7,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Ninject.Parameters;
+using OAuthWorks.DataAccess.Repositories;
 
 namespace OAuthWorks.Tests
 {
