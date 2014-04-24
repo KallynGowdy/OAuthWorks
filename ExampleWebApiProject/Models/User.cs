@@ -47,6 +47,13 @@ namespace ExampleWebApiProject.Models
             set;
         }
 
+        
+        public virtual HashedValue Password
+        {
+            get;
+            set;
+        }
+
         /// <summary>
         /// Determines if the given scope has been granted to the given client by this user.
         /// </summary>
@@ -71,6 +78,11 @@ namespace ExampleWebApiProject.Models
                 throw new ArgumentNullException("scope");
             }
             return GrantedAuthorizationCodes.Any(c => c.Client.Equals(client) && c.Scopes.Contains(scope));
+        }
+
+        public bool IsValidPassword(string password)
+        {
+            return password != null && this.Password.MatchesHash(password);
         }
     }
 }

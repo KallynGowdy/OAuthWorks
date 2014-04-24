@@ -2,12 +2,14 @@
 using ExampleWebApiProject.Models;
 using ExampleWebApiProject.Repositories;
 using OAuthWorks;
+using OAuthWorks.Implementation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using System.Web.Security;
 
 namespace ExampleWebApiProject.Controllers
 {
@@ -39,21 +41,25 @@ namespace ExampleWebApiProject.Controllers
             {
 
                 AuthorizationCodeRequest request = new AuthorizationCodeRequest
-                {
-                    ClientId = clientId,
-                    ClientSecret = clientSecret,
-                    RedirectUri = new Uri(redirectUri),
-                    ResponseType = responseType,
-                    Scope = scope,
-                    State = state
-                };
+                (
+                    clientId: clientId,
+                    clientSecret: clientSecret,
+                    redirectUri: new Uri(redirectUri),
+                    responseType: responseType,
+                    scope: scope,
+                    state: state
+                );
 
-                User user = new Models.User
+                if (User.Identity.IsAuthenticated)
                 {
-                    Id = "Id"
-                };
+                    User user = context.Users.Find(User.Identity.Name);
 
-                return (AuthorizationCodeResponse)Provider.RequestAuthorizationCode(request, user);
+                    return (AuthorizationCodeResponse)Provider.RequestAuthorizationCode(request, user);
+                }
+                else
+                {
+                    return null;
+                }
             }
         }
     }

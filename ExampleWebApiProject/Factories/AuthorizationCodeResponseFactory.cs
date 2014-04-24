@@ -7,7 +7,7 @@ using System.Web;
 
 namespace ExampleWebApiProject.Factories
 {
-    public class AuthorizationCodeResponseFactory : IAuthorizationCodeResponseFactory<AuthorizationCodeResponse, AuthorizationCodeResponseException>
+    public class AuthorizationCodeResponseFactory : IAuthorizationCodeResponseFactory<AuthorizationCodeResponse, AuthorizationCodeResponseExceptionBase>
     {
         public AuthorizationCodeResponse Create(string authorizationCode, string state)
         {
@@ -18,7 +18,7 @@ namespace ExampleWebApiProject.Factories
             };
         }
 
-        public AuthorizationCodeResponseException CreateError(AuthorizationRequestCodeErrorType errorCode, string errorDescription, Uri errorUri, string state, Exception innerException)
+        public AuthorizationCodeResponseExceptionBase CreateError(AuthorizationRequestCodeErrorType errorCode, string errorDescription, Uri errorUri, string state, Exception innerException)
         {
             throw new NotImplementedException();
         }

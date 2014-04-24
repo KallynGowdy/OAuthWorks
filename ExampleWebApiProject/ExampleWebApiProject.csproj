@@ -86,6 +86,7 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="AuthorizationCodeResponse.cs" />
     <Compile Include="Controllers\OAuthController.cs" />
+    <Compile Include="Controllers\UsersController.cs" />
     <Compile Include="Factories\AuthorizationCodeFactory.cs" />
     <Compile Include="Factories\AuthorizationCodeResponseFactory.cs" />
     <Compile Include="Global.asax.cs">
@@ -99,10 +100,15 @@
     <Compile Include="Migrations\201404211753069_ChangedIdGenerationMode.Designer.cs">
       <DependentUpon>201404211753069_ChangedIdGenerationMode.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201404211911206_AddedHashedValues.cs" />
+    <Compile Include="Migrations\201404211911206_AddedHashedValues.Designer.cs">
+      <DependentUpon>201404211911206_AddedHashedValues.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AuthorizationCode.cs" />
     <Compile Include="Models\Client.cs" />
     <Compile Include="Models\DatabaseContext.cs" />
+    <Compile Include="Models\HashedValue.cs" />
     <Compile Include="Models\RedirectUri.cs" />
     <Compile Include="Models\Scope.cs" />
     <Compile Include="Models\User.cs" />
@@ -135,6 +141,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201404211753069_ChangedIdGenerationMode.resx">
       <DependentUpon>201404211753069_ChangedIdGenerationMode.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201404211911206_AddedHashedValues.resx">
+      <DependentUpon>201404211911206_AddedHashedValues.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
