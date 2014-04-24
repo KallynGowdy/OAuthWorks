@@ -16,6 +16,7 @@
 
 using OAuthWorks.DataAccess.Repositories;
 using OAuthWorks.Factories;
+using OAuthWorks.Implementation.Factories;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
@@ -28,49 +29,55 @@ namespace OAuthWorks
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Auth")]
     public class OAuthProvider : IOAuthProvider
     {
-        internal class DefaultDependencyInjector : IDependencyInjector
-        {
-            public T GetInstance<T>()
-            {
-                return default(T);
-            }
-        }
-
         /// <summary>
-        /// Creates a new OAuthWorks.OAuthProvider using a default dependency injector instance.
+        /// Creates a new OAuthWorks.OAuthProvider using a default factories.
         /// </summary>
-        public OAuthProvider()
+        public OAuthProvider() :
+            this(
+                new AccessTokenFactory(),
+                new AccessTokenResponseFactory(),
+                new AuthorizationCodeFactory(),
+                new AuthorizationCodeResponseFactory()
+            )
         {
-            this.DependencyInjector = new DefaultDependencyInjector();
         }
 
-        /// <summary>
-        /// Creates a new OAuthWorks.OAuthProvider using the given OAuthWorks.IDependencyInjector to retrieve
-        /// factories and repositories that are used by the provider.
-        /// </summary>
-        /// <param name="dependencyInjector">An object that implements the OAuthWorks.IDependencyInjector interface.</param>
-        /// <exception cref="System.ArgumentNullException">Thrown if the given <paramref name="dependencyInjector"/> is null.</exception>
-        public OAuthProvider(IDependencyInjector dependencyInjector)
+        public OAuthProvider(
+            IAccessTokenFactory<IAccessToken> accessTokenFactory,
+            IAccessTokenResponseFactory<IAccessTokenResponse, AccessTokenResponseExceptionBase> accessTokenResponseFactory,
+            IAuthorizationCodeFactory<IAuthorizationCode> authorizationCodeFactory,
+            IAuthorizationCodeResponseFactory<IAuthorizationCodeResponse, AuthorizationCodeResponseExceptionBase> authorizationCodeResponseFactory
+            )
         {
-            if (dependencyInjector == null)
-            {
-                throw new ArgumentNullException("dependencyInjector");
-            }
-            this.DependencyInjector = dependencyInjector;
+            Contract.Requires(accessTokenFactory != null);
+            Contract.Requires(accessTokenResponseFactory != null);
+            Contract.Requires(authorizationCodeFactory != null);
+            Contract.Requires(authorizationCodeResponseFactory != null);
+            AccessTokenFactory = accessTokenFactory;
+            AuthorizationCodeFactory = authorizationCodeFactory;
+            AccessTokenResponseFactory = accessTokenResponseFactory;
+            AuthorizationCodeResponseFactory = authorizationCodeResponseFactory;
         }
 
-        /// <summary>
-        /// Gets the dependency injector that is used to retrieve all of the repositories and factories for this object.
-        /// </summary>
-        public IDependencyInjector DependencyInjector
+        public OAuthProvider(
+            IAccessTokenRepository<IAccessToken> accessTokenRepository,
+            IAuthorizationCodeRepository<IAuthorizationCode> authorizationCodeRepository,
+            IScopeRepository<IScope> scopeRepository,
+            IReadStore<string, IClient> clientRepository,
+            IRefreshTokenRepository<IRefreshToken> refreshTokenRepository
+            )
+            : this()
         {
-            get;
-            private set;
+            Contract.Requires(accessTokenRepository != null);
+            Contract.Requires(authorizationCodeRepository != null);
+            Contract.Requires(scopeRepository != null);
+            Contract.Requires(clientRepository != null);
+            this.AccessTokenRepository = accessTokenRepository;
+            this.AuthorizationCodeRepository = authorizationCodeRepository;
+            this.ScopeRepository = scopeRepository;
+            this.ClientRepository = clientRepository;
+            this.RefreshTokenRepository = refreshTokenRepository;
         }
-
-        private IAccessTokenFactory<IAccessToken> accessTokenFactory;
-
-        private IScopeRepository<IScope> scopeRepository;
 
         /// <summary>
         /// Gets or sets the repository of scopes that this provider has access to.
@@ -81,124 +88,55 @@ namespace OAuthWorks
         /// </remarks>
         public IScopeRepository<IScope> ScopeRepository
         {
-            get
-            {
-                if (this.scopeRepository == null)
-                {
-                    scopeRepository = DependencyInjector.GetInstance<IScopeRepository<IScope>>();
-                }
-                return scopeRepository;
-            }
-            set
-            {
-                this.scopeRepository = value;
-            }
+            get;
+            set;
         }
 
-        private IReadStore<string, IClient> clientRepository;
 
         /// <summary>
         /// Gets or sets the repository that contains <see cref="OAuthWorks.IClient"/> objects.
         /// </summary>
         public IReadStore<string, IClient> ClientRepository
         {
-            get
-            {
-                if (this.clientRepository == null)
-                {
-                    this.clientRepository = DependencyInjector.GetInstance<IReadStore<string, IClient>>();
-                }
-                return clientRepository;
-            }
-            set
-            {
-                this.clientRepository = value;
-            }
+            get;
+            set;
         }
-
-        private IAuthorizationCodeResponseFactory<IAuthorizationCodeResponse, AuthorizationCodeResponseException> authorizationCodeResponseFactory;
-
         /// <summary>
         /// Gets or sets the factory used to create new <see cref="OAuthWorks.IAuthorizationCodeResponse"/> objects.
         /// </summary>
-        public IAuthorizationCodeResponseFactory<IAuthorizationCodeResponse, AuthorizationCodeResponseException> AuthorizationCodeResponseFactory
+        public IAuthorizationCodeResponseFactory<IAuthorizationCodeResponse, AuthorizationCodeResponseExceptionBase> AuthorizationCodeResponseFactory
         {
-            get
-            {
-                if (this.authorizationCodeResponseFactory == null)
-                {
-                    this.authorizationCodeResponseFactory = DependencyInjector.GetInstance<IAuthorizationCodeResponseFactory<IAuthorizationCodeResponse, AuthorizationCodeResponseException>>();
-                }
-                return this.authorizationCodeResponseFactory;
-            }
-            set
-            {
-                this.authorizationCodeResponseFactory = value;
-            }
+            get;
+            set;
         }
-
-        private IAuthorizationCodeRepository<IAuthorizationCode> authorizationCodeRepository;
 
         /// <summary>
         /// Gets or sets the repository of Authorization Code objects that this provider has access to.
         /// </summary>
         public IAuthorizationCodeRepository<IAuthorizationCode> AuthorizationCodeRepository
         {
-            get
-            {
-                if (this.authorizationCodeRepository == null)
-                {
-                    this.authorizationCodeRepository = DependencyInjector.GetInstance<IAuthorizationCodeRepository<IAuthorizationCode>>();
-                }
-                return this.authorizationCodeRepository;
-            }
-            set
-            {
-                this.authorizationCodeRepository = value;
-            }
+            get;
+            set;
         }
 
-        private IAuthorizationCodeFactory<IAuthorizationCode> authorizationCodeFactory;
 
         /// <summary>
         /// Gets or sets the factory that creates Authorization Code objects for this provider.
         /// </summary>
         public IAuthorizationCodeFactory<IAuthorizationCode> AuthorizationCodeFactory
         {
-            get
-            {
-                if (this.authorizationCodeFactory == null)
-                {
-                    this.authorizationCodeFactory = DependencyInjector.GetInstance<IAuthorizationCodeFactory<IAuthorizationCode>>();
-                }
-                return this.authorizationCodeFactory;
-            }
-            set
-            {
-                this.authorizationCodeFactory = value;
-            }
+            get;
+            set;
         }
 
-        private IAccessTokenRepository<IAccessToken> accessTokenRepository;
 
         /// <summary>
         /// Gets or sets the repository of Access Token objects that this provider has access to.
         /// </summary>
         public IAccessTokenRepository<IAccessToken> AccessTokenRepository
         {
-            get
-            {
-                if (accessTokenRepository == null)
-                {
-
-                    accessTokenRepository = DependencyInjector.GetInstance<IAccessTokenRepository<IAccessToken>>();
-                }
-                return this.accessTokenRepository;
-            }
-            set
-            {
-                accessTokenRepository = value;
-            }
+            get;
+            set;
         }
 
         /// <summary>
@@ -206,40 +144,17 @@ namespace OAuthWorks
         /// </summary>
         public IAccessTokenFactory<IAccessToken> AccessTokenFactory
         {
-            get
-            {
-                if (accessTokenFactory == null)
-                {
-                    accessTokenFactory = DependencyInjector.GetInstance<IAccessTokenFactory<IAccessToken>>();
-                }
-                return accessTokenFactory;
-            }
-            set
-            {
-                accessTokenFactory = value;
-            }
+            get;
+            set;
         }
-
-        private IAccessTokenResponseFactory<IAccessTokenResponse, AccessTokenResponseException> accessTokenResponseFactory;
 
         /// <summary>
         /// Gets or sets the factory that creates <see cref="OAuthWorks.IAccessTokenResponse"/> objects for this provider.
         /// </summary>
-        public IAccessTokenResponseFactory<IAccessTokenResponse, AccessTokenResponseException> AccessTokenResponseFactory
+        public IAccessTokenResponseFactory<IAccessTokenResponse, AccessTokenResponseExceptionBase> AccessTokenResponseFactory
         {
-            get
-            {
-                if (accessTokenResponseFactory == null)
-                {
-                    accessTokenResponseFactory = DependencyInjector.GetInstance<IAccessTokenResponseFactory<IAccessTokenResponse, AccessTokenResponseException>>();
-                }
-                return accessTokenResponseFactory;
-            }
-            set
-            {
-                value.ThrowIfNull("value");
-                accessTokenResponseFactory = value;
-            }
+            get;
+            set;
         }
 
         /// <summary>
@@ -337,7 +252,7 @@ namespace OAuthWorks
         {
             request.ThrowIfNull("request");
             IEnumerable<IScope> result = ScopeParser(this, request.Scope != null ? request.Scope : string.Empty);
-            return result.All(s => s != null) ? result : null;
+            return result.All(s => s != null) ? result : new IScope[0];
         }
 
         /// <summary>
@@ -346,7 +261,7 @@ namespace OAuthWorks
         /// </summary>
         /// <param name="request">The request that contains the values that were sent by the client.</param>
         /// <param name="user">The user that the request is for.</param>
-        /// <exception cref="OAuthWorks.AuthorizationCodeResponseException">Thrown if an exception occurs inside this method or if the given request was invalid in some way.</exception>
+        /// <exception cref="OAuthWorks.AuthorizationCodeResponseExceptionBase">Thrown if an exception occurs inside this method or if the given request was invalid in some way.</exception>
         /// <exception cref="System.ArgumentNullException">Thrown if the given request is null.</exception>
         /// <returns>Returns a new <see cref="OAuthWorks.IAuthorizationCodeResponse"/> object that determines what values to put in the outgoing response.</returns>
         public IAuthorizationCodeResponse RequestAuthorizationCode(IAuthorizationCodeRequest request, IUser user)
@@ -397,10 +312,10 @@ namespace OAuthWorks
         /// Requests an access token from the server with the request.
         /// </summary>
         /// <param name="request">The incoming request for an access token.</param>
-        /// <exception cref="OAuthWorks.AccessTokenResponseException">Thrown if the client is unauthorized or if any other exception occured inside this method.</exception>
+        /// <exception cref="OAuthWorks.AccessTokenResponseExceptionBase">Thrown if the client is unauthorized or if any other exception occured inside this method.</exception>
         /// <exception cref="System.ArgumentNullException">Throw if the given request is null or if the given user is null.</exception>
         /// <returns>Returns a new <see cref="OAuthWorks.IAccessTokenResponse"/> object that represents what to </returns>
-        public IAccessTokenResponse RequestAccessToken(IAccessTokenRequest request, IUser currentUser)
+        public IAccessTokenResponse RequestAccessToken(IAuthorizationCodeGrantAccessTokenRequest request, IUser currentUser)
         {
             request.ThrowIfNull("request");
             currentUser.ThrowIfNull("currentUser");
@@ -445,11 +360,16 @@ namespace OAuthWorks
             }
         }
 
+        public IAccessTokenResponse RequestAccessToken(IPasswordCredentialsAccessTokenRequest request)
+        {
+            return null;
+        }
+
         /// <summary>
-        /// Validates the given authorization code in the context of the request and client and throws a <see cref="OAuthWorks.AccessTokenResponseException"/> if the code is invalid.
+        /// Validates the given authorization code in the context of the request and client and throws a <see cref="OAuthWorks.AccessTokenResponseExceptionBase"/> if the code is invalid.
         /// </summary>
         /// <param name="client"></param>
-        private void validateAuthorizationCode(IAuthorizationCode code, IAccessTokenRequest request, IClient client)
+        private void validateAuthorizationCode(IAuthorizationCode code, IAuthorizationCodeGrantAccessTokenRequest request, IClient client)
         {
             if (!(code != null && code.Client.Equals(client) && !code.Expired && code.MatchesValue(request.AuthorizationCode) && Uri.Compare(code.RedirectUri, request.RedirectUri, UriComponents.AbsoluteUri, UriFormat.SafeUnescaped, StringComparison.Ordinal) == 0))
             {
@@ -462,7 +382,7 @@ namespace OAuthWorks
         }
 
         /// <summary>
-        /// Validates the client based on the given request and throws a <see cref="OAuthWorks.AccessTokenResponseException"/> if the client is not valid.
+        /// Validates the client based on the given request and throws a <see cref="OAuthWorks.AccessTokenResponseExceptionBase"/> if the client is not valid.
         /// </summary>
         /// <param name="request"></param>
         /// <param name="client"></param>
@@ -561,26 +481,29 @@ namespace OAuthWorks
         {
             if (disposing)
             {
-                if (this.ClientRepository != null)
+                if (!disposed)
                 {
-                    ClientRepository.Dispose();
+                    if (this.ClientRepository != null)
+                    {
+                        ClientRepository.Dispose();
+                    }
+                    if (this.AccessTokenRepository != null)
+                    {
+                        AccessTokenRepository.Dispose();
+                    }
+                    if (this.ScopeRepository != null)
+                    {
+                        ScopeRepository.Dispose();
+                    }
+                    if (this.AuthorizationCodeRepository != null)
+                    {
+                        this.AuthorizationCodeRepository.Dispose();
+                    }
+                    if (this.RefreshTokenRepository != null)
+                    {
+                        this.RefreshTokenRepository.Dispose();
+                    }
                 }
-                if (this.AccessTokenRepository != null)
-                {
-                    AccessTokenRepository.Dispose();
-                }
-                if (this.ScopeRepository != null)
-                {
-                    ScopeRepository.Dispose();
-                }
-                if (this.AuthorizationCodeRepository != null)
-                {
-                    this.AuthorizationCodeRepository.Dispose();
-                }
-                if (this.RefreshTokenRepository != null)
-                {
-                    this.RefreshTokenRepository.Dispose();
-                }                
             }
             this.disposed = true;
         }

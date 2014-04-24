@@ -15,12 +15,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OAuthWorks
+namespace OAuthWorks.Implementation
 {
     /// <summary>
     /// Defines an implementation of <see cref="OAuthWorks.IAuthorizationCodeRequest"/> that is serializable and deserializable acording to the OAuth 2.0 spec.
@@ -35,7 +36,7 @@ namespace OAuthWorks
         public AuthorizationCodeResponseType ResponseType
         {
             get;
-            set;
+            private set;
         }
         
 
@@ -46,7 +47,7 @@ namespace OAuthWorks
         public string ClientId
         {
             get;
-            set;
+            private set;
         }
 
         /// <summary>
@@ -56,7 +57,7 @@ namespace OAuthWorks
         public string ClientSecret
         {
             get;
-            set;
+            private set;
         }
 
         /// <summary>
@@ -77,7 +78,7 @@ namespace OAuthWorks
         public Uri RedirectUri
         {
             get;
-            set;
+            private set;
         }
 
         /// <summary>
@@ -87,7 +88,7 @@ namespace OAuthWorks
         public string Scope
         {
             get;
-            set;
+            private set;
         }
 
         /// <summary>
@@ -97,7 +98,29 @@ namespace OAuthWorks
         public string State
         {
             get;
-            set;
+            private set;
+        }
+
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AuthorizationCodeRequest"/> class.
+        /// </summary>
+        /// <param name="clientId">The identifier of the client.</param>
+        /// <param name="clientSecret">The secret/password of the client.</param>
+        /// <param name="scope">The scope that is requested by the client.</param>
+        /// <param name="state">The state that is provided by the client.</param>
+        /// <param name="redirectUri">The URI that the user should be redirected to.</param>
+        /// <param name="responseType">Type of the response requested by the client.</param>
+        public AuthorizationCodeRequest(string clientId, string clientSecret, string scope, string state, Uri redirectUri, AuthorizationCodeResponseType responseType)
+        {
+            Contract.Requires(!string.IsNullOrEmpty(clientId));
+            Contract.Requires(!string.IsNullOrEmpty(clientSecret));
+            this.ClientId = clientId;
+            this.ClientSecret = clientSecret;
+            this.Scope = scope;
+            this.State = state;
+            this.RedirectUri = redirectUri;
+            this.ResponseType = responseType;
         }
     }
 }

@@ -143,20 +143,27 @@ namespace OAuthWorks
         /// </summary>
         /// <param name="request">The request that contains the values that were sent by the client.</param>
         /// <param name="user">The user that the request is for.</param>
-        /// <exception cref="OAuthWorks.AuthorizationCodeResponseException">Thrown if an exception occurs inside this method or if the given request was invalid in some way.</exception>
+        /// <exception cref="OAuthWorks.AuthorizationCodeResponseExceptionBase">Thrown if an exception occurs inside this method or if the given request was invalid in some way.</exception>
         /// <exception cref="System.ArgumentNullException">Thrown if the given request is null.</exception>
         /// <returns>Returns a new <see cref="OAuthWorks.IAuthorizationCodeResponse"/> object that determines what values to put in the outgoing response.</returns>
         IAuthorizationCodeResponse RequestAuthorizationCode(IAuthorizationCodeRequest request, IUser user);
 
         /// <summary>
-        /// Requests an access token from the authorization server based on the given request.
+        /// Requests an access token from the authorization server based on the given request using the Authorization Code Grant flow (Section 4.1 [RFC 6749] http://tools.ietf.org/html/rfc6749#section-4.1).
         /// </summary>
         /// <param name="request">The request that contains the required values.</param>
-        /// <exception cref="OAuthWorks.AccessTokenResponseException">Thrown if the given request is invalid or if an unexpected error occurred.</exception>
+        /// <exception cref="OAuthWorks.AccessTokenResponseExceptionBase">Thrown if the given request is invalid or if an unexpected error occurred.</exception>
         /// <exception cref="System.ArgumentNullException">Thrown if one of the given arguments is null.</exception>
         /// <returns>Returns a new <see cref="OAuthWorks.IAccessTokenResponse"/> object that determines what values to put in the outgoing response.</returns>
-        IAccessTokenResponse RequestAccessToken(IAccessTokenRequest request, IUser currentUser);
+        IAccessTokenResponse RequestAccessToken(IAuthorizationCodeGrantAccessTokenRequest request, IUser currentUser);
 
+        /// <summary>
+        /// Requests an access token from the authorization server based on the given request using the Resource Owner Password Credentials flow. (Section 4.3 [RFC 6749] http://tools.ietf.org/html/rfc6749#section-4.3).
+        /// </summary>
+        /// <param name="request">The request that contains the required values.</param>
+        /// <returns>Returns a new <see cref="OAuthWorks.IAccessTokenResponse"/> object that determines what values to put in the outgoing response.</returns>
+        IAccessTokenResponse RequestAccessToken(IPasswordCredentialsAccessTokenRequest request);
+        
         /// <summary>
         /// Revokes access to the given user's account from the given client.
         /// </summary>
@@ -207,7 +214,7 @@ namespace OAuthWorks
             return default(IAuthorizationCodeResponse);
         }
 
-        IAccessTokenResponse IOAuthProvider.RequestAccessToken(IAccessTokenRequest request, IUser currentUser)
+        IAccessTokenResponse IOAuthProvider.RequestAccessToken(IAuthorizationCodeGrantAccessTokenRequest request, IUser currentUser)
         {
             Contract.Requires(request != null);
             Contract.Requires(currentUser != null);
@@ -241,6 +248,12 @@ namespace OAuthWorks
         void IDisposable.Dispose()
         {
             
+        }
+
+        IAccessTokenResponse IOAuthProvider.RequestAccessToken(IPasswordCredentialsAccessTokenRequest request)
+        {
+            Contract.Requires(request != null);
+            return default(IAccessTokenResponse);
         }
     }
 }
