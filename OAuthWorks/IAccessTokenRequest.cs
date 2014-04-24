@@ -26,9 +26,9 @@ namespace OAuthWorks
     public interface IAccessTokenRequest
     {
         /// <summary>
-        /// Gets the authorization that was given to the client.
+        /// Gets the grant type as requested by the client.
         /// </summary>
-        string AuthorizationCode
+        string GrantType
         {
             get;
         }
@@ -53,6 +53,14 @@ namespace OAuthWorks
         /// Gets the secret (password) that was provided by the client.
         /// </summary>
         string ClientSecret
+        {
+            get;
+        }
+
+        /// <summary>
+        /// Gets the scope that is requested by the client.
+        /// </summary>
+        string Scope
         {
             get;
         }

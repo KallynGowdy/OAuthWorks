@@ -20,6 +20,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Ninject;
+using OAuthWorks.Implementation;
 
 namespace OAuthWorks.Tests
 {
@@ -40,11 +42,9 @@ namespace OAuthWorks.Tests
         [TestFixtureSetUp]
         public void SetUp()
         {
-            provider = new OAuthProvider(dependencyInjector)
-            {
-                ScopeParser = (p, s) => s.Split(' ', '-').Select(a => p.ScopeRepository.GetById(a)),
-                ScopeFormatter = (s) => string.Join(" ", s)
-            };
+            provider = (OAuthProvider)DependencyInjector.Kernel.Get<IOAuthProvider>();
+            provider.ScopeParser = (p, s) => s.Split(' ', '-').Select(a => p.ScopeRepository.GetById(a));
+            provider.ScopeFormatter = (s) => string.Join(" ", s);
 
             exampleScope = new Scope
             {
@@ -73,7 +73,7 @@ namespace OAuthWorks.Tests
 
             badClient = new Client("otherSecret")
             {
-                Id="bill",
+                Id = "bill",
                 Name = "Evil",
                 RedirectUris = new Uri[]
                 {
@@ -103,9 +103,9 @@ namespace OAuthWorks.Tests
 
             var scopes = provider.GetRequestedScopes(request);
 
-            if (scopes != null)
+            if (scopes != null && scopes.Count() > 0)
             {
-                Assert.True(scopes.All(s => s != null) && scopes.Count() > 0);
+                Assert.True(scopes.All(s => s != null), "The scopes contained a null entry when it shouldn't have");
             }
             else
             {
@@ -142,7 +142,6 @@ namespace OAuthWorks.Tests
             };
 
             Assert.Throws<AccessTokenResponseException>(() => provider.RequestAccessToken(tokenRequest, user));
-
         }
 
         [TestCase("exampleScope", "state", "secret", "http://example.com/oauth/response/token")]
@@ -178,7 +177,7 @@ namespace OAuthWorks.Tests
                 Assert.True(client.MatchesSecret(secret), "The client's secret was invalid even though it got through.");
                 Assert.NotNull(provider.GetRequestedScopes(codeRequest), "The requested scope was invalid even though it got through.");
             }
-            catch (AuthorizationCodeResponseException e)
+            catch (AuthorizationCodeResponseExceptionBase e)
             {
                 switch (e.ErrorCode)
                 {

@@ -34,6 +34,22 @@ namespace OAuthWorks
         }
 
         /// <summary>
+        /// Gets the user that the refresh token belongs to.
+        /// </summary>
+        IUser User
+        {
+            get;
+        }
+
+        /// <summary>
+        /// Gets the list of scopes that this refresh token provides access to.
+        /// </summary>
+        IEnumerable<IScope> Scopes
+        {
+            get;
+        }
+
+        /// <summary>
         /// Gets whether this token has been revoked by the user.
         /// </summary>
         bool Revoked

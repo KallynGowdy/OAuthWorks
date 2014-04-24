@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-// Copyright 2014 Kallyn Gowdy
+﻿// Copyright 2014 Kallyn Gowdy
 // 
 //    Licensed under the Apache License, Version 2.0 (the "License");
 //    you may not use this file except in compliance with the License.
@@ -15,7 +12,9 @@ using System.Linq;
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 

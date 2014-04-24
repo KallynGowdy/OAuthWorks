@@ -15,6 +15,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,32 +23,30 @@ using System.Threading.Tasks;
 namespace OAuthWorks
 {
     /// <summary>
-    /// Defines a non-generic interface for an object that is identifiable.
+    /// Defines a generic interface for an object that is identifiable.
     /// </summary>
-    public interface IIdentifiable
+    [ContractClass(typeof(IHasIdContract<>))]
+    public interface IHasId<T>
     {
         /// <summary>
         /// Gets the Id of this object.
         /// </summary>
-        object Id
+        T Id
         {
             get;
         }
     }
 
-    /// <summary>
-    /// Defines an interface for an object that is identifiable by a certian type.
-    /// </summary>
-    /// <typeparam name="T">The type of this object's identifier.</typeparam>
-    public interface IIdentifiable<T> : IIdentifiable
+    [ContractClassFor(typeof(IHasId<>))]
+    internal abstract class IHasIdContract<T> : IHasId<T>
     {
-        /// <summary>
-        /// Gets the Id of this object.
-        /// </summary>
-        new T Id
+        T IHasId<T>.Id
         {
-            get;
+            get
+            {
+                Contract.Ensures(Contract.Result<T>() != null);
+                return default(T);
+            }
         }
-
     }
 }

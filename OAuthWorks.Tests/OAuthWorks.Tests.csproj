@@ -63,23 +63,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AccessToken.cs" />
-    <Compile Include="AccessTokenFactory.cs" />
     <Compile Include="AccessTokenRepository.cs" />
     <Compile Include="AccessTokenRequest.cs" />
     <Compile Include="AccessTokenResponse.cs" />
-    <Compile Include="AccessTokenResponseException.cs" />
-    <Compile Include="AccessTokenResponseFactory.cs" />
-    <Compile Include="AuthorizationCode.cs" />
-    <Compile Include="AuthorizationCodeFactory.cs" />
     <Compile Include="AuthorizationCodeRepository.cs" />
     <Compile Include="AuthorizationCodeRequest.cs" />
     <Compile Include="AuthorizationCodeResponse.cs" />
-    <Compile Include="AuthorizationCodeResponseFactory.cs" />
     <Compile Include="Client.cs" />
     <Compile Include="ClientRepository.cs" />
     <Compile Include="DependencyInjector.cs" />
     <Compile Include="DictionaryRepository.cs" />
+    <Compile Include="Implementation\Factories\AccessTokenFactoryTests.cs" />
+    <Compile Include="Implementation\HashedTokenTests.cs" />
     <Compile Include="OAuthProviderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Scope.cs" />
