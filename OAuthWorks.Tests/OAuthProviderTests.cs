@@ -217,7 +217,7 @@ namespace OAuthWorks.Tests
             //You would also determine if the user needs to provide consent using
             //provider.HasAccess(user, client, scope)
 
-            //Then retrieve the 
+            //Then retrieve the code
             IAuthorizationCodeResponse response = provider.RequestAuthorizationCode(codeRequest, user);
 
             Assert.NotNull(response);

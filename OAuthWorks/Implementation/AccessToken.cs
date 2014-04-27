@@ -27,7 +27,7 @@ namespace OAuthWorks.Implementation
     /// <remarks>
     /// For an implemenatation, see <see cref="OAuthWorks.Implementation.HashedAccessToken"/>.
     /// </remarks>
-    public abstract class AccessToken : IAccessToken
+    public abstract class AccessToken : IAccessToken, IHasId<string>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="AccessToken"/> class.

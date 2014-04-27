@@ -31,7 +31,7 @@ namespace OAuthWorks.Tests
         public IAuthorizationCode GetByValue(string authorizationCode)
         {
             string[] splits = authorizationCode.Split('-');
-            return GetById(splits[0]);
+            return GetById(splits.Last());
         }
     }
 }
