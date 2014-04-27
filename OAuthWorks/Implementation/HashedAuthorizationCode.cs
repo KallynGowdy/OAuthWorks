@@ -26,7 +26,7 @@ namespace OAuthWorks.Implementation
     /// <summary>
     /// Defines a class that provides an implementation of <see cref="OAuthWorks.AuthorizationCode"/>.
     /// </summary>
-    public class HashedAuthorizationCode : AuthorizationCode, IHasId<string>
+    public class HashedAuthorizationCode : AuthorizationCode
     {
         /// <summary>
         /// The default number of hash iterations for authorization codes.

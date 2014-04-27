@@ -31,7 +31,7 @@ namespace OAuthWorks.Implementation
     /// This implementation uses PBKDF2. The number of iterations are configurable and the output is 20 bytes (180 bits) long. A salt is generated with the hash as well.
     /// The default number of iterations is 1000. While this is outdated compared to the minimum recommended iterations, the fact that tokens are short lived mitigates this fear.
     /// </remarks>
-    public sealed class HashedAccessToken : AccessToken, IHasId<string>
+    public sealed class HashedAccessToken : AccessToken
     {
         /// <summary>
         /// The number of hash iterations used if not specified.
@@ -42,6 +42,16 @@ namespace OAuthWorks.Implementation
         /// The number of bytes that should be generated for the hash and salt.
         /// </summary>
         public const int DefaultHashLength = 20;
+
+        private static readonly Lazy<IPbkdf2Factory> lazyDefaultPbkdf2Factory = new Lazy<IPbkdf2Factory>(() => new Pbkdf2Sha1Factory());
+
+        public static IPbkdf2Factory DefaultPbkdf2Factory
+        {
+            get
+            {
+                return lazyDefaultPbkdf2Factory.Value;
+            }
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HashedAccessToken"/> class.
@@ -54,13 +64,8 @@ namespace OAuthWorks.Implementation
         /// <param name="tokenType">Type of the token. Describes how the client should handle it.</param>
         /// <param name="expirationDateUtc">The date of expiration in Universal Coordinated Time.</param>
         public HashedAccessToken(string token, string id, IUser user, IClient client, IEnumerable<IScope> scopes, string tokenType, DateTime expirationDateUtc)
-            : base(id, user, client, scopes, tokenType, expirationDateUtc)
+            : this(DefaultPbkdf2Factory, token, id, user, client, scopes, tokenType, expirationDateUtc)
         {
-            this.HashIterations = DefaultHashIterations;
-            Tuple<string, string> hashSalt = generateHash(token, DefaultHashLength, this.HashIterations);
-            this.TokenHash = hashSalt.Item1;
-            this.TokenSalt = hashSalt.Item2;
-            Pbkdf2Factory = new Pbkdf2Sha1Factory();
         }
 
         /// <summary>
@@ -78,10 +83,10 @@ namespace OAuthWorks.Implementation
         {
             Contract.Requires(pbkdf2Factory != null);
             this.HashIterations = DefaultHashIterations;
+            Pbkdf2Factory = pbkdf2Factory;
             Tuple<string, string> hashSalt = generateHash(token, DefaultHashLength, this.HashIterations);
             this.TokenHash = hashSalt.Item1;
             this.TokenSalt = hashSalt.Item2;
-            Pbkdf2Factory = pbkdf2Factory;
         }
 
         /// <summary>
