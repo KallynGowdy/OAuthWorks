@@ -31,7 +31,7 @@ namespace OAuthWorks.Tests
         public IAccessToken GetByToken(string token)
         {
             string[] split = token.Split('-');
-            return this.GetById(split[0]);
+            return this.GetById(split.Last());
         }
 
         public IAccessToken GetByUserAndClient(IUser user, IClient client)

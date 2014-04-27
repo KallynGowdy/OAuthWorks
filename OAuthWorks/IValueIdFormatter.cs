@@ -30,6 +30,7 @@ namespace OAuthWorks
     /// impossible to do efficiently. Therefore the simple solution is to embed the Id in the token/code that we give the client.
     /// The fact that the token/code values are hashed means that no security holes are intruduced by implementing this improvement.
     /// </remarks>
+    [ContractClass(typeof(IValueIdFormatterContract))]
     public interface IValueIdFormatter
     {
         /// <summary>

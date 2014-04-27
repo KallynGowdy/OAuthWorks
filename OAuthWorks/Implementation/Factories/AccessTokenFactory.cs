@@ -32,7 +32,7 @@ namespace OAuthWorks.Implementation.Factories
     public class AccessTokenFactory : IAccessTokenFactory<HashedAccessToken>
     {
         /// <summary>
-        /// The default length of tokens (in bytes) that are generated.
+        /// The default length (in bytes) of tokens that are generated.
         /// </summary>
         /// <value>28</value>
         public const int DefaultTokenLength = 28;
@@ -44,9 +44,50 @@ namespace OAuthWorks.Implementation.Factories
         public const int DefaultTokenLifetime = 3600;
 
         /// <summary>
+        /// The default length (in bytes) of identifiers that are generated.
+        /// </summary>
+        public const int DefaultIdLength = 8;
+
+        /// <summary>
+        /// The default pseudorandom value generator.
+        /// </summary>
+        public static readonly Func<int, string> DefaultValueGenerator = GenerateToken;
+
+        private static readonly Lazy<IValueIdFormatter> lazyDefaultIdFormatter = new Lazy<IValueIdFormatter>(() => new ValueIdFormatter());
+
+        /// <summary>
+        /// Gets the function that, given an integer generates a string that represents that many pseudorandom bytes.
+        /// </summary>
+        public Func<int, string> ValueGenerator
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// Gets the default formatter for Ids and tokens.
+        /// </summary>
+        public static IValueIdFormatter DefaultIdFormatter
+        {
+            get
+            {
+                return lazyDefaultIdFormatter.Value;
+            }
+        }
+
+        /// <summary>
         /// Gets the length (in bytes) of tokens that are generated with this factory.
         /// </summary>
         public int TokenLength
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// Gets the length (in bytes) of the identifiers that are generated with this factory.
+        /// </summary>
+        public int IdLength
         {
             get;
             private set;
@@ -62,9 +103,19 @@ namespace OAuthWorks.Implementation.Factories
         }
 
         /// <summary>
+        /// Gets the formatter that combines the Id and token together.
+        /// </summary>
+        public IValueIdFormatter IdFormatter
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="AccessTokenFactory"/> class.
         /// </summary>
-        public AccessTokenFactory() : this(DefaultTokenLength, DefaultTokenLifetime)
+        public AccessTokenFactory()
+            : this(DefaultTokenLength, DefaultTokenLifetime, DefaultIdLength)
         {
         }
 
@@ -73,19 +124,41 @@ namespace OAuthWorks.Implementation.Factories
         /// </summary>
         /// <param name="tokenLength">The Length of the tokens (in bytes) that are generated from this factory.</param>
         /// <param name="tokenLifetime">The lifetime of the generated tokens in seconds.</param>
-        public AccessTokenFactory(int tokenLength, int tokenLifetime)
+        /// <param name="idLength">The length (in bytes) of identifiers that are generated from this factory.</param>
+        public AccessTokenFactory(int tokenLength, int tokenLifetime, int idLength)
+            : this(tokenLength, tokenLifetime, idLength, DefaultIdFormatter, DefaultValueGenerator)
+        {
+
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AccessTokenFactory"/> class.
+        /// </summary>
+        /// <param name="tokenLength">The Length of the tokens (in bytes) that are generated from this factory.</param>
+        /// <param name="tokenLifetime">The lifetime of the generated tokens in seconds.</param>
+        /// <param name="idLength">The length (in bytes) of identifiers that are generated from this factory.</param>
+        /// <param name="idFormatter">The formatter that combines the generated ids and tokens.</param>
+        /// <param name="valueGenerator">A function that, given an integer returns a string that represents that many pseudorandom bytes.</param>
+        public AccessTokenFactory(int tokenLength, int tokenLifetime, int idLength, IValueIdFormatter idFormatter, Func<int ,string> valueGenerator)
         {
             Contract.Requires(tokenLength >= 10);
             Contract.Requires(tokenLifetime >= 1);
+            Contract.Requires(idLength >= 4);
+            Contract.Requires(idFormatter != null);
+            Contract.Requires(valueGenerator != null);
+            this.IdLength = idLength;
             this.TokenLength = tokenLength;
             this.TokenLifetime = tokenLifetime;
+            this.IdFormatter = idFormatter;
+            this.ValueGenerator = valueGenerator;
         }
 
         public ICreatedToken<HashedAccessToken> Create(IClient client, IUser user, IEnumerable<IScope> scopes)
         {
-            string token = GenerateToken(TokenLength);
-            string id = token.Substring(0, 8);
-            return new CreatedToken<HashedAccessToken>(new HashedAccessToken(token, id, user, client, scopes, "bearer", DateTime.UtcNow.AddSeconds(TokenLifetime)), token);
+            string token = ValueGenerator(TokenLength);
+            string id = ValueGenerator(IdLength);
+            string formatted = IdFormatter.FormatValue(id, token);
+            return new CreatedToken<HashedAccessToken>(new HashedAccessToken(formatted, id, user, client, scopes, "bearer", DateTime.UtcNow.AddSeconds(TokenLifetime)), formatted);
         }
 
         public HashedAccessToken Create()
