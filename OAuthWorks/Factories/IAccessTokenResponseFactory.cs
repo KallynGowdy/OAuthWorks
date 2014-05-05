@@ -31,11 +31,11 @@ namespace OAuthWorks.Factories
         where TResponseException : Exception, IAccessTokenResponseError
     {
         /// <summary>
-        /// Gets a new <see cref="OAuthWorks.IAccessTokenResponse"/> object given the distributed access token, refresh token, access token type, granted scope, and expiration date.
+        /// Gets a new <see cref="OAuthWorks.IAccessTokenResponse"/> object given the distributed access refreshToken, refresh refreshToken, access refreshToken type, granted scope, and expiration date.
         /// </summary>
-        /// <param name="accessToken">The access token that grants access to the resources governed by the scope.</param>
-        /// <param name="refreshToken">The refresh token that allows retrieval of additional access tokens.</param>
-        /// <param name="tokenType">The type of token that is returned.</param>
+        /// <param name="accessToken">The access refreshToken that grants access to the resources governed by the scope.</param>
+        /// <param name="refreshToken">The refresh refreshToken that allows retrieval of additional access tokens.</param>
+        /// <param name="tokenType">The type of refreshToken that is returned.</param>
         /// <param name="scope"></param>
         /// <param name="expirationDateUtc"></param>
         /// <returns>Returns a new <see cref="OAuthWorks.IAccessTokenResponse"/> object.</returns>

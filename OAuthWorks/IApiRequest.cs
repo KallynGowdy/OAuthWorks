@@ -16,34 +16,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace OAuthWorks.Tests
+namespace OAuthWorks
 {
-    class AuthorizationCodeResponse : IAuthorizationCodeResponse
+    /// <summary>
+    /// Defines an interface for an object that represents a basic request to an API that contains some sort of OAuth 2.0 authentication mecanizm.
+    /// </summary>
+    public interface IApiRequest
     {
-        public string Code
-        {
-            get;
-            set;
-        }
 
-        public string State
-        {
-            get;
-            set;
-        }
-
-        public bool IsError
-        {
-            get;
-            set;
-        }
-
-        public IAuthorizationCodeResponseError ErrorCode
-        {
-            get;
-            set;
-        }
     }
 }

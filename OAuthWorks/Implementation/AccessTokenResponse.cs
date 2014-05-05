@@ -23,13 +23,13 @@ using System.Threading.Tasks;
 namespace OAuthWorks.Implementation
 {
     /// <summary>
-    /// Defines a class that provides a basic implementation of an access token response. (Section 5.1 [RFC 6749] http://tools.ietf.org/html/rfc6749#section-5.1).
+    /// Defines a class that provides a basic implementation of an access refreshToken response. (Section 5.1 [RFC 6749] http://tools.ietf.org/html/rfc6749#section-5.1).
     /// </summary>
     [DataContract]
     public class AccessTokenResponse : IAccessTokenResponse
     {
         /// <summary>
-        /// Gets the access token that provides access to certian scopes.
+        /// Gets the access refreshToken that provides access to certian scopes.
         /// </summary>
         [DataMember(Name = "access_token")]
         public string AccessToken
@@ -39,7 +39,7 @@ namespace OAuthWorks.Implementation
         }
 
         /// <summary>
-        /// Gets the type of the token as required by RCF 6749 Section 7.1 (http://tools.ietf.org/html/rfc6749#section-7.1)
+        /// Gets the type of the refreshToken as required by RCF 6749 Section 7.1 (http://tools.ietf.org/html/rfc6749#section-7.1)
         /// </summary>
         [DataMember(Name = "token_type")]
         public string TokenType
@@ -49,7 +49,7 @@ namespace OAuthWorks.Implementation
         }
 
         /// <summary>
-        /// Gets the scope of the access that is granted by the access token.
+        /// Gets the scope of the access that is granted by the access refreshToken.
         /// </summary>
         [DataMember(Name = "scope")]
         public string Scope
@@ -59,7 +59,7 @@ namespace OAuthWorks.Implementation
         }
 
         /// <summary>
-        /// Gets the refresh token that is used to retrieve new access tokens without user interaction.
+        /// Gets the refresh refreshToken that is used to retrieve new access tokens without user interaction.
         /// </summary>
         [DataMember(Name = "refresh_token")]
         public string RefreshToken
@@ -69,7 +69,7 @@ namespace OAuthWorks.Implementation
         }
 
         /// <summary>
-        /// Gets the lifetime of the access token in seconds.
+        /// Gets the lifetime of the access refreshToken in seconds.
         /// </summary>
         [DataMember(Name = "expires_in")]
         public int ExpiresIn
@@ -92,11 +92,11 @@ namespace OAuthWorks.Implementation
         /// <summary>
         /// Initializes a new instance of the <see cref="AccessTokenResponse"/> class.
         /// </summary>
-        /// <param name="token">The token, REQUIRED.</param>
-        /// <param name="expirationDateUtc">The expiration date of the token as expressed in Universal Coordinated Time.</param>
-        /// <param name="scope">The scope of the token, REQUIRED.</param>
-        /// <param name="tokenType">Type of the token as described by Section 7.1 [RFC 6749] (http://tools.ietf.org/html/rfc6749#section-7.1).</param>
-        /// <param name="refreshToken">The refresh token that can be used by the client to obtain new access tokens.</param>
+        /// <param name="refreshToken">The refreshToken, REQUIRED.</param>
+        /// <param name="expirationDateUtc">The expiration date of the refreshToken as expressed in Universal Coordinated Time.</param>
+        /// <param name="scope">The scope of the refreshToken, REQUIRED.</param>
+        /// <param name="tokenType">Type of the refreshToken as described by Section 7.1 [RFC 6749] (http://tools.ietf.org/html/rfc6749#section-7.1).</param>
+        /// <param name="refreshToken">The refresh refreshToken that can be used by the client to obtain new access tokens.</param>
         public AccessTokenResponse(string token, DateTime expirationDateUtc, string scope, string tokenType, string refreshToken)
         {
             Contract.Requires(!string.IsNullOrEmpty(token));

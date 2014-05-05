@@ -26,12 +26,12 @@ namespace OAuthWorks.Implementation
     public class ValueIdFormatter : IValueIdFormatter
     {
         /// <summary>
-        /// Formats the given Id and token into one value that is returned.
+        /// Formats the given Id and refreshToken into one value that is returned.
         /// </summary>
-        /// <param name="id">The Id that should be integrated into the given token.</param>
-        /// <param name="token">The token that the Id should be integrated into.</param>
+        /// <param name="id">The Id that should be integrated into the given refreshToken.</param>
+        /// <param name="refreshToken">The refreshToken that the Id should be integrated into.</param>
         /// <returns>
-        /// Returns a new string that, contains both the given token and Id in a way that they're both easily retrievable.
+        /// Returns a new string that, contains both the given refreshToken and Id in a way that they're both easily retrievable.
         /// </returns>
         public string FormatValue(string id, string token)
         {
@@ -51,11 +51,11 @@ namespace OAuthWorks.Implementation
         }
 
         /// <summary>
-        /// Gets the token value that is stored in the given formatted value.
+        /// Gets the refreshToken value that is stored in the given formatted value.
         /// </summary>
         /// <param name="formattedToken">A value that was generated using <see cref="OAuthWorks.IValueIdFormatter.FormatValue(System.String, System.String)" />.</param>
         /// <returns>
-        /// Returns the token value that was stored in the given formatted value.
+        /// Returns the refreshToken value that was stored in the given formatted value.
         /// </returns>
         public string GetToken(string formattedToken)
         {

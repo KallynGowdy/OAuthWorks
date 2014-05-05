@@ -39,10 +39,11 @@ namespace OAuthWorks.DataAccess.Repositories
         T GetByValue(string authorizationCode);
 
         /// <summary>
-        /// Gets a list of Authorization codes by the given client.
+        /// Gets a list of Authorization codes that were granted to the given client by the given user.
         /// </summary>
-        /// <param name="client">The client </param>
-        /// <returns></returns>
-        //IEnumerable<T> GetByClient(IClient client);
+        /// <param name="client">The client that the codes were granted to.</param>
+        /// <param name="user">The user that granted the client access to the codes.</param>
+        /// <returns>Returns a list of <see cref="OAuthWorks.IAuthorizationCode"/> objects that belong to the user and were granted to the client.</returns>        
+        IEnumerable<T> GetByUserAndClient(IUser user, IClient client);
     }
 }

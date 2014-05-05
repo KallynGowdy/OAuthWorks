@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 namespace OAuthWorks
 {
     /// <summary>
-    /// Defines an interface for an object that defines that an error/exception occurred in a client's access token request.
+    /// Defines an interface for an object that defines that an error/exception occurred in a client's access refreshToken request.
     /// </summary>
     public interface IAccessTokenResponseError
     {

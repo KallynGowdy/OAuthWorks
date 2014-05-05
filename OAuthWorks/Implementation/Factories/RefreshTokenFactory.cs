@@ -30,8 +30,8 @@ namespace OAuthWorks.Implementation.Factories
         /// <summary>
         /// The default length (in bytes) of tokens that are generated.
         /// </summary>
-        /// <value>28</value>
-        public const int DefaultTokenLength = 28;
+        /// <value>50</value>
+        public const int DefaultTokenLength = 50;
 
         /// <summary>
         /// The default length (in bytes) of identifiers that are generated.
@@ -84,7 +84,7 @@ namespace OAuthWorks.Implementation.Factories
         }
 
         /// <summary>
-        /// Gets the formatter that combines the Id and token together.
+        /// Gets the formatter that combines the Id and refreshToken together.
         /// </summary>
         public IValueIdFormatter IdFormatter
         {
@@ -134,8 +134,8 @@ namespace OAuthWorks.Implementation.Factories
         /// Gets a new <see cref="OAuthWorks.IRefreshToken"/> that can be used by the given <see cref="OAuthWorks.IClient"/> for the given <see cref="OAuthWorks.IUser"/> for the given
         /// enumerable <see cref="OAuthWorks.IScope"/> objects.
         /// </summary>
-        /// <param name="generatedToken">The token that was generated as it should be returned to the client.</param>
-        /// <param name="client">The client that will be using the issued refresh token.</param>
+        /// <param name="generatedToken">The refreshToken that was generated as it should be returned to the client.</param>
+        /// <param name="client">The client that will be using the issued refresh refreshToken.</param>
         /// <param name="user">The user that is granting access to the given client for the given scopes.</param>
         /// <param name="scopes">The enumerable list of <see cref="OAuthWorks.IScope"/> objects that define what access the client has to the
         /// user's account and data.</param>

@@ -38,5 +38,15 @@ namespace OAuthWorks.Tests
         {
             return Entities.SingleOrDefault(a => a.Client.Equals(client) && a.User.Equals(user));
         }
+
+        public void Remove(IAccessToken token)
+        {
+            base.RemoveById(((IHasId<string>)token).Id);
+        }
+
+        public new System.Collections.IEnumerator GetEnumerator()
+        {
+            return base.GetEnumerator();
+        }
     }
 }

@@ -26,9 +26,9 @@ namespace OAuthWorks
     public interface IToken
     {
         /// <summary>
-        /// Determines if the given token value matches the one stored internally.
+        /// Determines if the given refreshToken value matches the one stored internally.
         /// </summary>
-        /// <param name="token">The token to compare to the internal one.</param>
+        /// <param name="refreshToken">The refreshToken to compare to the internal one.</param>
         /// <returns>Returns true if the two tokens match, otherwise false.</returns>
         bool MatchesValue(string token);
     }

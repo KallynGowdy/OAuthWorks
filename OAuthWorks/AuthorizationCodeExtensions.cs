@@ -12,33 +12,29 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-using OAuthWorks.DataAccess.Repositories;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OAuthWorks.Tests
+namespace OAuthWorks
 {
-    class AuthorizationCodeRepository : DictionaryRepository<IAuthorizationCode>, IAuthorizationCodeRepository<IAuthorizationCode>
+    /// <summary>
+    /// Defines a static class that provides extension methods for <see cref="OAuthWorks.IAuthorizationCode"/> objects.
+    /// </summary>
+    public static class AuthorizationCodeExtensions
     {
-        public AuthorizationCodeRepository()
+        /// <summary>
+        /// Determines if the authorization code is valid for use by the client.
+        /// </summary>
+        /// <param name="code">The code that should be validated.</param>
+        /// <returns>Returns true if the code has not been revoked and has not expired. Otherwise false.</returns>
+        public static bool IsValid(this IAuthorizationCode code)
         {
-            IdSelector = c => ((IHasId<string>)c).Id;
+            Contract.Requires(code != null);
+            return !code.Revoked && !code.Expired;
         }
-
-        public IAuthorizationCode GetByValue(string authorizationCode)
-        {
-            string[] splits = authorizationCode.Split('-');
-            return GetById(splits.Last());
-        }
-
-
-        public IEnumerable<IAuthorizationCode> GetByUserAndClient(IUser user, IClient client)
-        {
-            return Entities.Where(t => t.Client.Equals(client) && t.User.Equals(user));
-        }
-
     }
 }

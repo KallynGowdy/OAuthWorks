@@ -43,7 +43,15 @@ namespace OAuthWorks
         }
 
         /// <summary>
-        /// Gets the redirect Uri that was used by the client when retrieving this token.
+        /// Gets whether this authorization code has been revoked from the client.
+        /// </summary>
+        bool Revoked
+        {
+            get;
+        }
+
+        /// <summary>
+        /// Gets the redirect Uri that was used by the client when retrieving this refreshToken.
         /// </summary>
         Uri RedirectUri
         {
@@ -81,6 +89,11 @@ namespace OAuthWorks
         {
             get;
         }
+        
+        /// <summary>
+        /// Revokes the ability to use this authorization code from the client.
+        /// </summary>
+        void Revoke();
     }
 
     internal abstract class IAuthorizationCodeContract : IAuthorizationCode
@@ -90,6 +103,14 @@ namespace OAuthWorks
             get
             {
                 Contract.Ensures(!Contract.Result<bool>() && DateTime.UtcNow < ((IAuthorizationCode)this).ExpirationDateUtc);
+                return default(bool);
+            }
+        }
+
+        bool IAuthorizationCode.Revoked
+        {
+            get
+            {
                 return default(bool);
             }
         }
@@ -130,6 +151,11 @@ namespace OAuthWorks
                 Contract.Ensures(Contract.Result<IClient>() != null);
                 return default(IClient);
             }
+        }
+
+        void IAuthorizationCode.Revoke()
+        {
+            
         }
     }
 }

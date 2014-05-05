@@ -12,67 +12,35 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace OAuthWorks
 {
     /// <summary>
-    /// Defines an interface for a request for an access refreshToken by a client.
+    /// Defines an interface for an object that represents a request for a new access refreshToken through the use of a refresh refreshToken.
     /// </summary>
-    [ContractClass(typeof(IAccessTokenRequestContract))]
-    public interface IAccessTokenRequest
+    [ContractClass(typeof(ITokenRefreshRequestContract))]
+    public interface ITokenRefreshRequest : IAccessTokenRequest
     {
         /// <summary>
-        /// Gets the grant type as requested by the client.
+        /// Gets the refresh refreshToken that was provided by the client.
         /// </summary>
-        string GrantType
-        {
-            get;
-        }
-
-        /// <summary>
-        /// Gets the Id of the client.
-        /// </summary>
-        string ClientId
-        {
-            get;
-        }
-
-        /// <summary>
-        /// Gets the redirect uri that was provided in getting the authorization code.
-        /// </summary>
-        Uri RedirectUri
-        {
-            get;
-        }
-
-        /// <summary>
-        /// Gets the secret (password) that was provided by the client.
-        /// </summary>
-        string ClientSecret
-        {
-            get;
-        }
-
-        /// <summary>
-        /// Gets the scope that is requested by the client.
-        /// </summary>
-        string Scope
+        string RefreshToken
         {
             get;
         }
     }
 
-    [ContractClassFor(typeof(IAccessTokenRequest))]
-    internal abstract class IAccessTokenRequestContract : IAccessTokenRequest
+    [ContractClassFor(typeof(ITokenRefreshRequest))]
+    internal abstract class ITokenRefreshRequestContract : ITokenRefreshRequest
     {
 
-        string IAccessTokenRequest.GrantType
+        string ITokenRefreshRequest.RefreshToken
         {
             get
             {
@@ -81,11 +49,18 @@ namespace OAuthWorks
             }
         }
 
+        string IAccessTokenRequest.GrantType
+        {
+            get
+            {
+                return default(string);
+            }
+        }
+
         string IAccessTokenRequest.ClientId
         {
             get
             {
-                Contract.Ensures(Contract.Result<string>() != null);
                 return default(string);
             }
         }
@@ -102,7 +77,6 @@ namespace OAuthWorks
         {
             get
             {
-                Contract.Ensures(Contract.Result<string>() != null);
                 return default(string);
             }
         }
@@ -111,7 +85,6 @@ namespace OAuthWorks
         {
             get
             {
-                Contract.Ensures(Contract.Result<string>() != null);
                 return default(string);
             }
         }

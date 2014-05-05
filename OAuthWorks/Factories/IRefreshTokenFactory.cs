@@ -30,8 +30,8 @@ namespace OAuthWorks.Factories
         /// Gets a new <see cref="OAuthWorks.IRefreshToken"/> that can be used by the given <see cref="OAuthWorks.IClient"/> for the given <see cref="OAuthWorks.IUser"/> for the given
         /// enumerable <see cref="OAuthWorks.IScope"/> objects.
         /// </summary>
-        /// <param name="generatedToken">The token that was generated as it should be returned to the client.</param>
-        /// <param name="client">The client that will be using the issued refresh token.</param>
+        /// <param name="generatedToken">The refreshToken that was generated as it should be returned to the client.</param>
+        /// <param name="client">The client that will be using the issued refresh refreshToken.</param>
         /// <param name="user">The user that is granting access to the given client for the given scopes.</param>
         /// <param name="scopes">The enumerable list of <see cref="OAuthWorks.IScope"/> objects that define what access the client has to the
         /// user's account and data.</param>

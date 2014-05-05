@@ -12,33 +12,29 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-using OAuthWorks.DataAccess.Repositories;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OAuthWorks.Tests
+namespace OAuthWorks
 {
-    class AuthorizationCodeRepository : DictionaryRepository<IAuthorizationCode>, IAuthorizationCodeRepository<IAuthorizationCode>
+    /// <summary>
+    /// Defines a static class that contains extension methods for <see cref="OAuthWorks.IRefreshToken"/> objects.
+    /// </summary>
+    public static class RefreshTokenExtensions
     {
-        public AuthorizationCodeRepository()
+        /// <summary>
+        /// Determines if the token is in a valid, usable state for the client that was given it.
+        /// </summary>
+        /// <param name="token">The token to determine validity for.</param>
+        /// <returns>Returns true if the token has not been revoked and if it has not expired. Otherwise false.</returns>
+        public static bool IsValid(this IRefreshToken token)
         {
-            IdSelector = c => ((IHasId<string>)c).Id;
+            Contract.Requires(token != null);
+            return !token.Revoked && !token.Expired;
         }
-
-        public IAuthorizationCode GetByValue(string authorizationCode)
-        {
-            string[] splits = authorizationCode.Split('-');
-            return GetById(splits.Last());
-        }
-
-
-        public IEnumerable<IAuthorizationCode> GetByUserAndClient(IUser user, IClient client)
-        {
-            return Entities.Where(t => t.Client.Equals(client) && t.User.Equals(user));
-        }
-
     }
 }

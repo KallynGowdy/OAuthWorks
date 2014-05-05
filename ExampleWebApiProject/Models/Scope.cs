@@ -12,50 +12,60 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
+using OAuthWorks;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace OAuthWorks.Tests
+namespace ExampleWebApiProject.Models
 {
-    public class AccessTokenRequest : IAuthorizationCodeGrantAccessTokenRequest
+    public class Scope : IScope
     {
-        public string AuthorizationCode
+        [Key]
+        public string Id
         {
             get;
             set;
         }
 
-        public string ClientId
+        public string Description
         {
             get;
             set;
         }
 
-        public Uri RedirectUri
+        public virtual ICollection<AuthorizationCode> ReferencedCodes
         {
             get;
             set;
         }
 
-        public string ClientSecret
+        public bool Equals(IScope other)
         {
-            get;
-            set;
+            return Equals(other as Scope);
         }
 
-        public string GrantType
+        public bool Equals(Scope other)
         {
-            get;
-            set;
+            return other != null &&
+                other.Id == this.Id;
         }
 
-        public string Scope
+        public override bool Equals(object obj)
         {
-            get;
-            set;
+            return Equals(obj as IScope);
+        }
+
+        public override int GetHashCode()
+        {
+            return this.Id.GetHashCode() * 23;
+        }
+
+        public override string ToString()
+        {
+            return Id;
         }
     }
 }

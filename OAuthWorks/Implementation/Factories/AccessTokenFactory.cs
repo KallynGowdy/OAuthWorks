@@ -27,15 +27,16 @@ namespace OAuthWorks.Implementation.Factories
     /// Defines a class that provides a basic implementation of <see cref="OAuthWorks.Factories.IAccessTokenFactory{T}"/>.
     /// </summary>
     /// <remarks>
-    /// This factory produces <see cref="OAuthWorks.Implementation.HashedAccessToken"/> objects.
+    /// This factory produces <see cref="OAuthWorks.Implementation.HashedAccessToken"/> objects. 
+    /// All of the tokens that it produces are Bearer tokens.
     /// </remarks>
     public class AccessTokenFactory : IAccessTokenFactory<HashedAccessToken>
     {
         /// <summary>
         /// The default length (in bytes) of tokens that are generated.
         /// </summary>
-        /// <value>28</value>
-        public const int DefaultTokenLength = 28;
+        /// <value>40</value>
+        public const int DefaultTokenLength = 40;
 
         /// <summary>
         /// The default lifetime of tokens generated in seconds.
@@ -103,7 +104,7 @@ namespace OAuthWorks.Implementation.Factories
         }
 
         /// <summary>
-        /// Gets the formatter that combines the Id and token together.
+        /// Gets the formatter that combines the Id and refreshToken together.
         /// </summary>
         public IValueIdFormatter IdFormatter
         {
@@ -153,15 +154,15 @@ namespace OAuthWorks.Implementation.Factories
             this.ValueGenerator = valueGenerator;
         }
 
-        public ICreatedToken<HashedAccessToken> Create(IClient client, IUser user, IEnumerable<IScope> scopes)
+        public virtual ICreatedToken<HashedAccessToken> Create(IClient client, IUser user, IEnumerable<IScope> scopes)
         {
             string token = ValueGenerator(TokenLength);
             string id = ValueGenerator(IdLength);
             string formatted = IdFormatter.FormatValue(id, token);
-            return new CreatedToken<HashedAccessToken>(new HashedAccessToken(formatted, id, user, client, scopes, "bearer", DateTime.UtcNow.AddSeconds(TokenLifetime)), formatted);
+            return new CreatedToken<HashedAccessToken>(new HashedAccessToken(formatted, id, user, client, scopes, "Bearer", DateTime.UtcNow.AddSeconds(TokenLifetime)), formatted);
         }
 
-        public HashedAccessToken Create()
+        public virtual HashedAccessToken Create()
         {
             return null;
         }
