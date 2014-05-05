@@ -1,4 +1,4 @@
-﻿using OAuthWorks.Implementation;
+using OAuthWorks.Implementation;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;

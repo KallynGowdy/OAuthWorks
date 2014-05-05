@@ -23,37 +23,31 @@ using System.Threading.Tasks;
 namespace OAuthWorks.Implementation
 {
     /// <summary>
-    /// Defines a class that provides a basic implementation of <see cref="IAuthorizationCodeGrantAccessTokenRequest"/>.
+    /// Defines a class that provides a basic implementation of <see cref="OAuthWorks.ITokenRefreshRequest"/>.
     /// </summary>
     [DataContract]
-    public class AuthorizationCodeGrantAccessTokenRequest : AccessTokenRequest, IAuthorizationCodeGrantAccessTokenRequest
+    public class TokenRefreshRequest : AccessTokenRequest, ITokenRefreshRequest
     {
-        /// <summary>
-        /// Gets the authorization that was given to the client.
-        /// </summary>
-        [DataMember(Name = "code")]
-        public string AuthorizationCode
+        [DataMember(Name = "refresh_token")]
+        public string RefreshToken
         {
             get;
             private set;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AuthorizationCodeGrantAccessTokenRequest"/> class.
+        /// Initializes a new instance of the <see cref="TokenRefreshRequest"/> class.
         /// </summary>
-        /// <param name="authorizationCode">The authorization code.</param>
+        /// <param name="refreshToken">The refresh refreshToken.</param>
         /// <param name="clientId">The id of the client making the request.</param>
         /// <param name="clientSecret">The secret of the client making the request.</param>
+        /// <param name="grantType">The type of grant requested by the client.</param>
         /// <param name="scope">The scope requested by the client.</param>
-        /// <param name="redirectUri">The redirect URI provided by the client when requesting an authorization code.</param>
-        public AuthorizationCodeGrantAccessTokenRequest(string authorizationCode, string clientId, string clientSecret, Uri redirectUri)
-            : base(clientId, clientSecret, "authorization_code", null, redirectUri)
+        public TokenRefreshRequest(string refreshToken, string clientId, string clientSecret, string grantType, string scope)
+            : base(clientId, clientSecret, grantType, scope, null)
         {
-            Contract.Requires(!string.IsNullOrEmpty(authorizationCode));
-            this.AuthorizationCode = authorizationCode;
-            this.ClientId = clientId;
-            this.ClientSecret = clientSecret;
-            this.RedirectUri = redirectUri;
+            Contract.Requires(!string.IsNullOrEmpty(refreshToken));
+            RefreshToken = refreshToken;
         }
     }
 }

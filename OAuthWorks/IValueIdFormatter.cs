@@ -25,20 +25,20 @@ namespace OAuthWorks
     /// Defines an interface for an object that formats a given id into a value such that the item is then retrievable by it's value.
     /// </summary>
     /// <remarks>
-    /// In the OAuth 2.0 protocol, the client is only required to provide the actual value of the access token or authorization code.
+    /// In the OAuth 2.0 protocol, the client is only required to provide the actual value of the access refreshToken or authorization code.
     /// In order to store the tokens/codes securely, they need to be hashed. However, that would make retrieving the tokens/codes
-    /// impossible to do efficiently. Therefore the simple solution is to embed the Id in the token/code that we give the client.
-    /// The fact that the token/code values are hashed means that no security holes are intruduced by implementing this improvement.
+    /// impossible to do efficiently. Therefore the simple solution is to embed the Id in the refreshToken/code that we give the client.
+    /// The fact that the refreshToken/code values are hashed means that no security holes are intruduced by implementing this improvement.
     /// </remarks>
     [ContractClass(typeof(IValueIdFormatterContract))]
     public interface IValueIdFormatter
     {
         /// <summary>
-        /// Formats the given Id and token into one value that is returned.
+        /// Formats the given Id and refreshToken into one value that is returned.
         /// </summary>
-        /// <param name="id">The Id that should be integrated into the given token.</param>
-        /// <param name="token">The token that the Id should be integrated into.</param>
-        /// <returns>Returns a new string that, contains both the given token and Id in a way that they're both easily retrievable.</returns>
+        /// <param name="id">The Id that should be integrated into the given refreshToken.</param>
+        /// <param name="refreshToken">The refreshToken that the Id should be integrated into.</param>
+        /// <returns>Returns a new string that, contains both the given refreshToken and Id in a way that they're both easily retrievable.</returns>
         string FormatValue(string id, string token);
 
         /// <summary>
@@ -49,10 +49,10 @@ namespace OAuthWorks
         string GetId(string formattedToken);
 
         /// <summary>
-        /// Gets the token value that is stored in the given formatted value.
+        /// Gets the refreshToken value that is stored in the given formatted value.
         /// </summary>
         /// <param name="formattedToken">A value that was generated using <see cref="OAuthWorks.IValueIdFormatter.FormatValue(System.String, System.String)"/>.</param>
-        /// <returns>Returns the token value that was stored in the given formatted value.</returns>
+        /// <returns>Returns the refreshToken value that was stored in the given formatted value.</returns>
         string GetToken(string formattedToken);
     }
 

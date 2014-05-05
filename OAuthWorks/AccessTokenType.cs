@@ -26,9 +26,9 @@ namespace OAuthWorks
     public enum AccessTokenType
     {
         /// <summary>
-        /// Defines that the granted access token is a bearer token.
+        /// Defines that the granted access refreshToken is a bearer refreshToken.
         /// It is used in the http authorization header with the word "Bearer" prefixing the
-        /// actual access token.
+        /// actual access refreshToken.
         /// </summary>
         Bearer
     }

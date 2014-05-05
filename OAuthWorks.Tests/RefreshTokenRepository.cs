@@ -12,6 +12,8 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
+using OAuthWorks.DataAccess.Repositories;
+using OAuthWorks.Implementation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,42 +22,32 @@ using System.Threading.Tasks;
 
 namespace OAuthWorks.Tests
 {
-    public class AccessTokenResponse : IAccessTokenResponse
+    class RefreshTokenRepository : DictionaryRepository<IRefreshToken>, IRefreshTokenRepository<IRefreshToken>
     {
-
-        public string AccessToken
+        public RefreshTokenRepository()
         {
-            get;
-            set;
+            IdSelector = t => ((IHasId<string>)t).Id;
         }
 
-        public string TokenType
+        public void Remove(IRefreshToken token)
         {
-            get;
-            set;
+            base.RemoveById(((IHasId<string>)token).Id);
         }
 
-        public string Scope
+        public IRefreshToken GetByUserAndClient(IUser user, IClient client)
         {
-            get;
-            set;
+            return Entities.SingleOrDefault(t => t.User.Equals(user) && t.Client.Equals(client));
         }
 
-        public string RefreshToken
+        public IRefreshToken GetByValue(string token)
         {
-            get;
-            set;
+            string id = token.Split('-').Last();
+            return base.GetById(id);
         }
 
-        public int ExpiresIn
+        public new System.Collections.IEnumerator GetEnumerator()
         {
-            get { return (int)(ExpirationDateUtc - DateTime.UtcNow).TotalSeconds; }
-        }
-
-        public DateTime ExpirationDateUtc
-        {
-            get;
-            set;
+            return base.GetEnumerator();
         }
     }
 }

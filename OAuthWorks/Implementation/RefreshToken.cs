@@ -26,18 +26,27 @@ namespace OAuthWorks.Implementation
     /// </summary>
     public abstract class RefreshToken : IRefreshToken
     {
-        protected RefreshToken(IUser user, IClient client, IEnumerable<IScope> scopes)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RefreshToken"/> class.
+        /// </summary>
+        /// <param name="user">The user that this token belongs to.</param>
+        /// <param name="client">The client that has access to this token.</param>
+        /// <param name="scopes">The scopes that this token provides access to.</param>
+        /// <param name="expirationDateUtc">The date in UTC that this token should expire. Null means no expiration.</param>
+        protected RefreshToken(IUser user, IClient client, IEnumerable<IScope> scopes, DateTime? expirationDateUtc)
         {
             Contract.Requires(user != null);
             Contract.Requires(client != null);
             Contract.Requires(scopes != null);
+            Contract.Requires(expirationDateUtc == null || expirationDateUtc > DateTime.UtcNow);
             this.Client = client;
             this.User = user;
             this.Scopes = scopes;
+            this.ExpirationDateUtc = expirationDateUtc;
         }
 
         /// <summary>
-        /// Gets the client that this token belongs to.
+        /// Gets the client that this refreshToken belongs to.
         /// </summary>
         public virtual IClient Client
         {
@@ -46,7 +55,7 @@ namespace OAuthWorks.Implementation
         }
 
         /// <summary>
-        /// Gets whether this token has been revoked by the user.
+        /// Gets whether this refreshToken has been revoked by the user.
         /// </summary>
         public virtual bool Revoked
         {
@@ -55,9 +64,9 @@ namespace OAuthWorks.Implementation
         }
 
         /// <summary>
-        /// Determines if the given token value matches the one stored internally.
+        /// Determines if the given refreshToken value matches the one stored internally.
         /// </summary>
-        /// <param name="token">The token to compare to the internal one.</param>
+        /// <param name="refreshToken">The refreshToken to compare to the internal one.</param>
         /// <returns>
         /// Returns true if the two tokens match, otherwise false.
         /// </returns>
@@ -65,7 +74,7 @@ namespace OAuthWorks.Implementation
 
 
         /// <summary>
-        /// Gets the user that the refresh token belongs to.
+        /// Gets the user that the refresh refreshToken belongs to.
         /// </summary>
         public virtual IUser User
         {
@@ -74,12 +83,40 @@ namespace OAuthWorks.Implementation
         }
 
         /// <summary>
-        /// Gets the list of scopes that this refresh token provides access to.
+        /// Gets the list of scopes that this refresh refreshToken provides access to.
         /// </summary>
         public virtual IEnumerable<IScope> Scopes
         {
             get;
             set;
+        }
+
+        /// <summary>
+        /// Revokes access from the client to be able to use this refreshToken for retrieving more access tokens.
+        /// </summary>
+        public virtual void Revoke()
+        {
+            this.Revoked = true;
+        }
+
+        /// <summary>
+        /// Gets whether this refresh token has expired.
+        /// </summary>
+        public bool Expired
+        {
+            get
+            {
+                return !(ExpirationDateUtc == null || ExpirationDateUtc > DateTime.UtcNow);
+            }
+        }
+
+        /// <summary>
+        /// Gets the date in universal coordinated time that this refresh token expires. Null defines that it does not expire.
+        /// </summary>
+        public DateTime? ExpirationDateUtc
+        {
+            get;
+            protected set;
         }
     }
 }

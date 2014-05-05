@@ -26,7 +26,7 @@ namespace OAuthWorks.Implementation
     /// <summary>
     /// Defines a class that provides an implementation of <see cref="OAuthWorks.AuthorizationCode"/>.
     /// </summary>
-    public class HashedAuthorizationCode : AuthorizationCode
+    public class HashedAuthorizationCode : AuthorizationCode, IHasId<string>
     {
         /// <summary>
         /// The default number of hash iterations for authorization codes.
@@ -105,7 +105,7 @@ namespace OAuthWorks.Implementation
         /// Initializes a new instance of the <see cref="HashedAuthorizationCode"/> class.
         /// </summary>
         /// <param name="id">The identifier.</param>
-        /// <param name="token">The token.</param>
+        /// <param name="refreshToken">The refreshToken.</param>
         /// <param name="user">The user.</param>
         /// <param name="client">The client.</param>
         /// <param name="scopes">The scopes.</param>
@@ -121,7 +121,7 @@ namespace OAuthWorks.Implementation
         /// Initializes a new instance of the <see cref="HashedAuthorizationCode"/> class.
         /// </summary>
         /// <param name="id">The identifier.</param>
-        /// <param name="token">The token.</param>
+        /// <param name="refreshToken">The refreshToken.</param>
         /// <param name="hashLength">Length of the hash.</param>
         /// <param name="hashIterations">The hash iterations.</param>
         /// <param name="pbkdf2Factory">The PBKDF2 factory.</param>
@@ -165,9 +165,9 @@ namespace OAuthWorks.Implementation
         }
 
         /// <summary>
-        /// Determines if the given token value matches the one stored internally.
+        /// Determines if the given refreshToken value matches the one stored internally.
         /// </summary>
-        /// <param name="token">The token to compare to the internal one.</param>
+        /// <param name="refreshToken">The refreshToken to compare to the internal one.</param>
         /// <returns>
         /// Returns true if the two tokens match, otherwise false.
         /// </returns>

@@ -21,12 +21,12 @@ using System.Text;
 namespace OAuthWorks
 {
     /// <summary>
-    /// Defines an interface for an object that contains values that should be returned in response to a client's access token request.
+    /// Defines an interface for an object that contains values that should be returned in response to a client's access refreshToken request.
     /// </summary>
     public interface IAccessTokenResponse
     {
         /// <summary>
-        /// Gets the access token that provides access to certian scopes.
+        /// Gets the access refreshToken that provides access to certian scopes.
         /// </summary>
         string AccessToken
         {
@@ -34,7 +34,7 @@ namespace OAuthWorks
         }
 
         /// <summary>
-        /// Gets the type of the token as required by RCF 6749 Section 7.1 (http://tools.ietf.org/html/rfc6749#section-7.1)
+        /// Gets the type of the refreshToken as required by RCF 6749 Section 7.1 (http://tools.ietf.org/html/rfc6749#section-7.1)
         /// </summary>
         string TokenType
         {
@@ -42,7 +42,7 @@ namespace OAuthWorks
         }
 
         /// <summary>
-        /// Gets the scope of the access that is granted by the access token.
+        /// Gets the scope of the access that is granted by the access refreshToken.
         /// </summary>
         string Scope
         {
@@ -50,7 +50,7 @@ namespace OAuthWorks
         }
 
         /// <summary>
-        /// Gets the refresh token that is used to retrieve new access tokens without user interaction.
+        /// Gets the refresh refreshToken that is used to retrieve new access tokens without user interaction.
         /// </summary>
         string RefreshToken
         {
@@ -58,7 +58,7 @@ namespace OAuthWorks
         }
 
         /// <summary>
-        /// Gets the lifetime of the access token in seconds.
+        /// Gets the lifetime of the access refreshToken in seconds.
         /// </summary>
         int ExpiresIn
         {

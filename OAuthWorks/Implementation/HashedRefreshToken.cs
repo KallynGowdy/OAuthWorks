@@ -17,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -25,12 +26,13 @@ namespace OAuthWorks.Implementation
 {
     /// <summary>
     /// Defines a class that provides an implementation of <see cref="OAuthWorks.Implementation.RefreshToken"/> by using hashing
-    /// as validation for token values.
+    /// as validation for refreshToken values.
     /// </summary>
+    [DataContract]
     public class HashedRefreshToken : RefreshToken, IHasId<string>
     {
         /// <summary>
-        /// The default number of iterations used for hashing token values.
+        /// The default number of iterations used for hashing refreshToken values.
         /// </summary>
         /// <remarks>
         /// Because Refresh Tokens can live possibly forever, it is important to treat them just like passwords.
@@ -50,11 +52,18 @@ namespace OAuthWorks.Implementation
         public const int DefaultHashSize = 20;
 
         /// <summary>
-        /// Gets or sets the token hash.
+        /// The default lifetime (in seconds) of these refresh tokens.
+        /// </summary>
+        /// <value>31,536,000 or 1 year</value>
+        public const int DefaultLifetime = 31536000;
+
+        /// <summary>
+        /// Gets or sets the refreshToken hash.
         /// </summary>
         /// <value>
-        /// The token hash.
+        /// The refreshToken hash.
         /// </value>
+        [DataMember(Name="TokenHash")]
         public string TokenHash
         {
             get;
@@ -62,11 +71,12 @@ namespace OAuthWorks.Implementation
         }
 
         /// <summary>
-        /// Gets or sets the token salt.
+        /// Gets or sets the refreshToken salt.
         /// </summary>
         /// <value>
-        /// The token salt.
+        /// The refreshToken salt.
         /// </value>
+        [DataMember(Name="TokenSalt")]
         public string TokenSalt
         {
             get;
@@ -74,11 +84,12 @@ namespace OAuthWorks.Implementation
         }
 
         /// <summary>
-        /// Gets the number of iterations used when hashing the token.
+        /// Gets the number of iterations used when hashing the refreshToken.
         /// </summary>
         /// <value>
         /// The hash iterations.
         /// </value>
+        [DataMember(Name="HashIterations")]
         public int HashIterations
         {
             get;
@@ -86,8 +97,9 @@ namespace OAuthWorks.Implementation
         }
 
         /// <summary>
-        /// Gets or sets the Id of the token.
+        /// Gets or sets the Id of the refreshToken.
         /// </summary>
+        [DataMember(Name="Id")]
         public virtual string Id
         {
             get;
@@ -109,8 +121,8 @@ namespace OAuthWorks.Implementation
         /// <summary>
         /// Initializes a new instance of the <see cref="HashedRefreshToken"/> class.
         /// </summary>
-        /// <param name="id">The Id of the token.</param>
-        /// <param name="token">The token.</param>
+        /// <param name="id">The Id of the refreshToken.</param>
+        /// <param name="refreshToken">The refreshToken.</param>
         /// <param name="user">The user.</param>
         /// <param name="client">The client.</param>
         /// <param name="scopes">The scopes.</param>
@@ -123,14 +135,14 @@ namespace OAuthWorks.Implementation
         /// <summary>
         /// Initializes a new instance of the <see cref="HashedRefreshToken"/> class.
         /// </summary>
-        /// <param name="token">The token.</param>
+        /// <param name="refreshToken">The refreshToken.</param>
         /// <param name="hashIterations">The hash iterations.</param>
         /// <param name="hashLength">Length of the hash.</param>
         /// <param name="user">The user.</param>
         /// <param name="client">The client.</param>
         /// <param name="scopes">The scopes.</param>
         public HashedRefreshToken(string id, string token, int hashIterations, int hashLength, IUser user, IClient client, IEnumerable<IScope> scopes)
-            : base(user, client, scopes)
+            : base(user, client, scopes, DateTime.UtcNow.AddSeconds(DefaultLifetime))
         {
             Contract.Requires(!string.IsNullOrEmpty(token));
             Contract.Requires(!string.IsNullOrEmpty(id));
@@ -157,9 +169,9 @@ namespace OAuthWorks.Implementation
         }
 
         /// <summary>
-        /// Determines if the given token value matches the one stored internally.
+        /// Determines if the given refreshToken value matches the one stored internally.
         /// </summary>
-        /// <param name="token">The token to compare to the internal one.</param>
+        /// <param name="refreshToken">The refreshToken to compare to the internal one.</param>
         /// <returns>
         /// Returns true if the two tokens match, otherwise false.
         /// </returns>

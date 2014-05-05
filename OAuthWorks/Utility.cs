@@ -40,5 +40,21 @@ namespace OAuthWorks
             }
             Contract.EndContractBlock();
         }
+
+        /// <summary>
+        /// Executes the given action on every one of the objects in this enumerable list.
+        /// </summary>
+        /// <typeparam name="T">The type of the objects being enumerated.</typeparam>
+        /// <param name="objects">The enumerable list of objects to perform the action on.</param>
+        /// <param name="action">The action that should be performed for each object in the list.</param>
+        public static void ForEach<T>(this IEnumerable<T> objects, Action<T> action)
+        {
+            Contract.Requires(objects != null);
+            Contract.Requires(action != null);
+            foreach (T a in objects)
+            {
+                action(a);
+            }
+        }
     }
 }

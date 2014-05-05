@@ -34,32 +34,43 @@ namespace OAuthWorks.DataAccess.Repositories
         //IEnumerable<T> GetByUser(IUser user);
 
         /// <summary>
-        /// Gets an access token that matches the given token value.
+        /// Removes the given refreshToken from this repository.
+        /// </summary>
+        /// <param name="refreshToken">The refreshToken to remove.</param>
+        void Remove(T token);
+
+        /// <summary>
+        /// Gets an access refreshToken that matches the given refreshToken value.
         /// </summary>
         /// <remarks>
-        /// This method is used to retrieve tokens from a repository based on the actual token as it would be given by a client.
-        /// This allows for custom storage schemes that encode a token Id inside the access token returned to the client since the OAuth 2.0 spec
+        /// This method is used to retrieve tokens from a repository based on the actual refreshToken as it would be given by a client.
+        /// This allows for custom storage schemes that encode a refreshToken Id inside the access refreshToken returned to the client since the OAuth 2.0 spec
         /// does not define how access tokens should be stored or retrieved.
         /// 
-        /// One method of storing tokens would be to encode the Id of the token at the beginning of the value:
+        /// One method of storing tokens would be to encode the Id of the refreshToken at the beginning of the value:
         /// 
         /// <code>
         /// string returnedToken = string.Format("{0}-{1}", id, generatedAccessToken); 
         /// </code>
         /// 
-        /// This would then allow quick lookup of the token in a database without comprimizing database security with cleartext tokens.
-        /// The token could be stored in a database in seperate values 
+        /// This would then allow quick lookup of the refreshToken in a database without comprimizing database security with cleartext tokens.
+        /// The refreshToken could be stored in a database in seperate values 
         /// </remarks>
-        /// <param name="token">The token value as it would be given in a request from a client.</param>
+        /// <param name="refreshToken">The refreshToken value as it would be given in a request from a client.</param>
         /// <returns></returns>
         T GetByToken(string token);
 
         /// <summary>
-        /// Gets an access token based on the given user and client.
+        /// Gets the active access refreshToken that can be used by the given client to gain access to the given user's account.
         /// </summary>
-        /// <param name="user">The user that owns access to the token.</param>
+        /// <remarks>
+        /// Note that only one access refreshToken is returned. This is by design, while many access tokens will no doubt be used to gain access to a
+        /// user's account, there should only be one that is useable by the client for a given user. This minimizes the attack vector and provides
+        /// easier refreshToken management. Once a refreshToken is revoked or expired, it can be deleted. 
+        /// </remarks>
+        /// <param name="user">The user that owns access to the refreshToken.</param>
         /// <param name="client">The client that has been granted access to the client.</param>
-        /// <returns>Returns the token that was granted to the client to access the user's account.</returns>
+        /// <returns>Returns the refreshToken that was granted to the client to access the user's account.</returns>
         T GetByUserAndClient(IUser user, IClient client);
     }
 }

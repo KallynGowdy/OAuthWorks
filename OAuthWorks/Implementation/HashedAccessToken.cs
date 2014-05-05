@@ -17,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -31,7 +32,8 @@ namespace OAuthWorks.Implementation
     /// This implementation uses PBKDF2. The number of iterations are configurable and the output is 20 bytes (180 bits) long. A salt is generated with the hash as well.
     /// The default number of iterations is 1000. While this is outdated compared to the minimum recommended iterations, the fact that tokens are short lived mitigates this fear.
     /// </remarks>
-    public sealed class HashedAccessToken : AccessToken
+    [DataContract]
+    public class HashedAccessToken : AccessToken
     {
         /// <summary>
         /// The number of hash iterations used if not specified.
@@ -56,12 +58,12 @@ namespace OAuthWorks.Implementation
         /// <summary>
         /// Initializes a new instance of the <see cref="HashedAccessToken"/> class.
         /// </summary>
-        /// <param name="token">The token stored in this object.</param>
-        /// <param name="id">The id of the token.</param>
-        /// <param name="user">The user that this token belongs to.</param>
-        /// <param name="client">The client that has access to this token.</param>
-        /// <param name="scopes">The scopes that this token provides access to.</param>
-        /// <param name="tokenType">Type of the token. Describes how the client should handle it.</param>
+        /// <param name="refreshToken">The refreshToken stored in this object.</param>
+        /// <param name="id">The id of the refreshToken.</param>
+        /// <param name="user">The user that this refreshToken belongs to.</param>
+        /// <param name="client">The client that has access to this refreshToken.</param>
+        /// <param name="scopes">The scopes that this refreshToken provides access to.</param>
+        /// <param name="tokenType">Type of the refreshToken. Describes how the client should handle it.</param>
         /// <param name="expirationDateUtc">The date of expiration in Universal Coordinated Time.</param>
         public HashedAccessToken(string token, string id, IUser user, IClient client, IEnumerable<IScope> scopes, string tokenType, DateTime expirationDateUtc)
             : this(DefaultPbkdf2Factory, token, id, user, client, scopes, tokenType, expirationDateUtc)
@@ -71,12 +73,12 @@ namespace OAuthWorks.Implementation
         /// <summary>
         /// Initializes a new instance of the <see cref="HashedAccessToken"/> class.
         /// </summary>
-        /// <param name="token">The token stored in this object.</param>
-        /// <param name="id">The id of the token.</param>
-        /// <param name="user">The user that this token belongs to.</param>
-        /// <param name="client">The client that has access to this token.</param>
-        /// <param name="scopes">The scopes that this token provides access to.</param>
-        /// <param name="tokenType">Type of the token. Describes how the client should handle it.</param>
+        /// <param name="refreshToken">The refreshToken stored in this object.</param>
+        /// <param name="id">The id of the refreshToken.</param>
+        /// <param name="user">The user that this refreshToken belongs to.</param>
+        /// <param name="client">The client that has access to this refreshToken.</param>
+        /// <param name="scopes">The scopes that this refreshToken provides access to.</param>
+        /// <param name="tokenType">Type of the refreshToken. Describes how the client should handle it.</param>
         /// <param name="expirationDateUtc">The date of expiration in Universal Coordinated Time.</param>
         public HashedAccessToken(IPbkdf2Factory pbkdf2Factory, string token, string id, IUser user, IClient client, IEnumerable<IScope> scopes, string tokenType, DateTime expirationDateUtc)
             : base(id, user, client, scopes, tokenType, expirationDateUtc)
@@ -84,7 +86,7 @@ namespace OAuthWorks.Implementation
             Contract.Requires(pbkdf2Factory != null);
             this.HashIterations = DefaultHashIterations;
             Pbkdf2Factory = pbkdf2Factory;
-            Tuple<string, string> hashSalt = generateHash(token, DefaultHashLength, this.HashIterations);
+            Tuple<string, string> hashSalt = GenerateHash(token, DefaultHashLength, this.HashIterations);
             this.TokenHash = hashSalt.Item1;
             this.TokenSalt = hashSalt.Item2;
         }
@@ -102,8 +104,9 @@ namespace OAuthWorks.Implementation
         }
 
         /// <summary>
-        /// Gets the hash that represents the token.
+        /// Gets the hash that represents the refreshToken.
         /// </summary>
+        [DataMember(Name="TokenHash")]
         public string TokenHash
         {
             get;
@@ -113,6 +116,7 @@ namespace OAuthWorks.Implementation
         /// <summary>
         /// Gets the salt that was used in creating the hash.
         /// </summary>
+        [DataMember(Name = "TokenSalt")]
         public string TokenSalt
         {
             get;
@@ -120,8 +124,9 @@ namespace OAuthWorks.Implementation
         }
 
         /// <summary>
-        /// Gets the number of iterations used to hash the token.
+        /// Gets the number of iterations used to hash the refreshToken.
         /// </summary>
+        [DataMember(Name = "HashIterations")]
         public int HashIterations
         {
             get;
@@ -129,9 +134,9 @@ namespace OAuthWorks.Implementation
         }
 
         /// <summary>
-        /// Determines if the given token value matches the one stored internally.
+        /// Determines if the given refreshToken value matches the one stored internally.
         /// </summary>
-        /// <param name="token">The token to compare to the internal one.</param>
+        /// <param name="refreshToken">The refreshToken to compare to the internal one.</param>
         /// <returns>
         /// Returns true if the two tokens match, otherwise false.
         /// </returns>
@@ -149,7 +154,14 @@ namespace OAuthWorks.Implementation
             return target.SequenceEqual(hash);
         }
 
-        private Tuple<string, string> generateHash(string password, int length, int iterations)
+        /// <summary>
+        /// Generates a new hash using the given password, output length and iterations.
+        /// </summary>
+        /// <param name="password">The password that should be hashed.</param>
+        /// <param name="length">The length (in bytes) of the hash to output.</param>
+        /// <param name="iterations">The number of iterations that should be applied to the password to generate the hash.</param>
+        /// <returns>Returns a new tuple where the first element represents the generated hash and the second represents the generated salt.</returns>
+        protected Tuple<string, string> GenerateHash(string password, int length, int iterations)
         {
             using (IPbkdf2 pbkdf2 = Pbkdf2Factory.Create(Encoding.UTF8.GetBytes(password), length, iterations))
             {

@@ -28,7 +28,7 @@ namespace OAuthWorks
     public interface IAccessToken : IToken
     {
         /// <summary>
-        /// Gets the client that has access to this token.
+        /// Gets the client that has access to this refresh token.
         /// </summary>
         IClient Client
         {
@@ -36,7 +36,7 @@ namespace OAuthWorks
         }
 
         /// <summary>
-        /// Gets the scopes that this token grants access to.
+        /// Gets the scopes that this refresh token grants access to.
         /// </summary>
         IEnumerable<IScope> Scopes
         {
@@ -44,7 +44,7 @@ namespace OAuthWorks
         }
 
         /// <summary>
-        /// Gets the user that the token belongs to.
+        /// Gets the user that the refresh token belongs to.
         /// </summary>
         IUser User
         {
@@ -52,10 +52,10 @@ namespace OAuthWorks
         }
 
         /// <summary>
-        /// Gets the type of the token which describes how the client should handle it.
+        /// Gets the type of the refreshToken which describes how the client should handle it.
         /// </summary>
         /// <remarks>
-        /// The token type is used to define how the client should handle the token itself.
+        /// The refreshToken type is used to define how the client should handle the refresh token itself.
         /// Common types are "bearer" and "mac".
         /// </remarks>
         string TokenType
@@ -64,7 +64,7 @@ namespace OAuthWorks
         }
 
         /// <summary>
-        /// Gets the expiration date of this token in Universal Coordinated Time.
+        /// Gets the expiration date of this refresh token in Universal Coordinated Time.
         /// </summary>
         DateTime ExpirationDateUtc
         {
@@ -72,7 +72,7 @@ namespace OAuthWorks
         }
 
         /// <summary>
-        /// Gets whether this token has expired.
+        /// Gets whether this refresh token has expired.
         /// </summary>
         bool Expired
         {
@@ -80,7 +80,7 @@ namespace OAuthWorks
         }
 
         /// <summary>
-        /// Gets whether the token has been revoked by the user.
+        /// Gets whether the refresh token has been revoked by the user.
         /// </summary>
         bool Revoked
         {
@@ -88,7 +88,7 @@ namespace OAuthWorks
         }
 
         /// <summary>
-        /// Causes this token to become invalidated and no longer usable by a client.
+        /// Causes this refresh token to become invalidated and no longer usable by a client.
         /// </summary>
         void Revoke();
     }

@@ -45,7 +45,7 @@ namespace OAuthWorks
         }
 
         /// <summary>
-        /// Gets the uri at which the client should make a request for an access token.
+        /// Gets the uri at which the client should make a request for an access refreshToken.
         /// </summary>
         string AccessTokenUri
         {

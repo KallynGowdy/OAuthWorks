@@ -16,8 +16,8 @@ namespace OAuthWorks.Implementation.Factories
         /// <summary>
         /// The default length of the generated codes in bytes.
         /// </summary>
-        /// <value>28</value>
-        public const int DefaultCodeLength = 28;
+        /// <value>40</value>
+        public const int DefaultCodeLength = 40;
 
         /// <summary>
         /// The default length of the generated identifiers in bytes.
@@ -86,7 +86,7 @@ namespace OAuthWorks.Implementation.Factories
         }
 
         /// <summary>
-        /// Gets the formatter that combines the Id and token together.
+        /// Gets the formatter that combines the Id and refreshToken together.
         /// </summary>
         public IValueIdFormatter IdFormatter
         {

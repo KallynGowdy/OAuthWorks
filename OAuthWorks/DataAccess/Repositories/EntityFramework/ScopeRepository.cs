@@ -27,7 +27,7 @@
 //    public class ScopeRepository<T> : IScopeRepository<T> where T : IScope
 //    {
 
-//        public IEnumerable<T> GetByToken(IAccessToken token)
+//        public IEnumerable<T> GetByToken(IAccessToken refreshToken)
 //        {
 //            throw new NotImplementedException();
 //        }

@@ -23,56 +23,79 @@ using System.Threading.Tasks;
 namespace OAuthWorks.Implementation
 {
     /// <summary>
-    /// Defines a class that provides a basic implementation of <see cref="IPasswordCredentialsAccessTokenRequest"/>.
+    /// Defines a base class that provides an implementation of <see cref="OAuthWorks.IAccessTokenRequest"/>.
     /// </summary>
     [DataContract]
-    public class PasswordCredentialsAccessTokenRequest : AccessTokenRequest, IPasswordCredentialsAccessTokenRequest
+    public abstract class AccessTokenRequest : IAccessTokenRequest
     {
         /// <summary>
-        /// Gets the identifier of the user who's credentials are going to be used.
+        /// Gets the grant type as requested by the client.
         /// </summary>
-        [DataMember(Name = "username")]
-        public string Username
+        [DataMember(Name = "grant_type")]
+        public string GrantType
         {
             get;
-            private set;
+            protected set;
         }
 
         /// <summary>
-        /// Gets or sets the password provided in the request.
+        /// Gets the Id of the client.
         /// </summary>
-        [DataMember(Name = "password")]
-        public string Password
+        [DataMember(Name = "client_id")]
+        public string ClientId
         {
             get;
-            private set;
+            protected set;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PasswordCredentialsAccessTokenRequest"/> class.
+        /// Gets the redirect uri that was provided in getting the authorization code.
         /// </summary>
-        /// <param name="username">The username.</param>
-        /// <param name="password">The password.</param>
+        [DataMember(Name = "redirect_uri")]
+        public Uri RedirectUri
+        {
+            get;
+            protected set;
+        }
+
+        /// <summary>
+        /// Gets the secret (password) that was provided by the client.
+        /// </summary>
+        [DataMember(Name = "client_secret")]
+        public string ClientSecret
+        {
+            get;
+            protected set;
+        }
+
+        /// <summary>
+        /// Gets the scope that is requested by the client.
+        /// </summary>
+        [DataMember(Name = "scope")]
+        public string Scope
+        {
+            get;
+            protected set;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AccessTokenRequest"/> class.
+        /// </summary>
         /// <param name="clientId">The id of the client making the request.</param>
         /// <param name="clientSecret">The secret of the client making the request.</param>
         /// <param name="grantType">The type of grant requested by the client.</param>
         /// <param name="scope">The scope requested by the client.</param>
         /// <param name="redirectUri">The redirect URI provided by the client when requesting an authorization code.</param>
-        public PasswordCredentialsAccessTokenRequest(string username, string password, string clientId, string clientSecret, string grantType, Uri redirectUri, string scope)
-            : base(clientId, clientSecret, grantType, scope, redirectUri)
+        protected AccessTokenRequest(string clientId, string clientSecret, string grantType, string scope, Uri redirectUri)
         {
-            Contract.Requires(!string.IsNullOrEmpty(username));
-            Contract.Requires(!string.IsNullOrEmpty(password));
             Contract.Requires(!string.IsNullOrEmpty(clientId));
             Contract.Requires(!string.IsNullOrEmpty(clientSecret));
             Contract.Requires(!string.IsNullOrEmpty(grantType));
             this.ClientId = clientId;
             this.ClientSecret = clientSecret;
-            this.Username = username;
-            this.Password = password;
             this.GrantType = grantType;
-            this.RedirectUri = redirectUri;
             this.Scope = scope;
+            this.RedirectUri = redirectUri;
         }
     }
 }

@@ -26,7 +26,7 @@ namespace OAuthWorks
     public enum AuthorizationCodeResponseType
     {
         /// <summary>
-        /// Defines that the response should be an Authorization Code that the client can exchange for a token.
+        /// Defines that the response should be an Authorization Code that the client can exchange for a refreshToken.
         /// </summary>
         Code
     }

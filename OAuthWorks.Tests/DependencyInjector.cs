@@ -48,8 +48,9 @@ namespace OAuthWorks.Tests
                  k.Inject<IAuthorizationCodeRepository<IAuthorizationCode>>(),
                  k.Inject<IScopeRepository<IScope>>(),
                  k.Inject<IReadStore<string, IClient>>(),
-                 null
+                 k.Inject<IRefreshTokenRepository<IRefreshToken>>()
                 ));
+            Kernel.Bind<IRefreshTokenRepository<IRefreshToken>>().To<RefreshTokenRepository>();
         }
 
         public T GetInstance<T>()

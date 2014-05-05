@@ -24,14 +24,14 @@ using System.Threading.Tasks;
 namespace OAuthWorks.Factories
 {
     /// <summary>
-    /// Defines an interface for a factory that creates access token objects.
+    /// Defines an interface for a factory that creates access refreshToken objects.
     /// </summary>
     public interface IAccessTokenFactory<out TAccessToken> : IFactory<TAccessToken> where TAccessToken : IAccessToken
     {
         /// <summary>
         /// Gets a new <see cref="OAuthWorks.IAccessToken"/> object given the <see cref="OAuthWorks.IClient"/>, <see cref="OAuthWorks.IUser"/> and the list of scopes that the client has access to.
         /// </summary>
-        /// <param name="client">The client that should have access to the new token.</param>
+        /// <param name="client">The client that should have access to the new refreshToken.</param>
         /// <param name="user">The user that is giving access to the client.</param>
         /// <param name="scopes">The list of scopes that the client should have access to.</param>
         /// <returns>Returns a new OAuthWorks.CreatedToken(of TAccessToken) object.</returns>

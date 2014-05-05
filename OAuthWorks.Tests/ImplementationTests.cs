@@ -12,6 +12,8 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
+using NUnit.Framework;
+using OAuthWorks.DataAccess.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,42 +22,31 @@ using System.Threading.Tasks;
 
 namespace OAuthWorks.Tests
 {
-    public class AccessTokenRequest : IAuthorizationCodeGrantAccessTokenRequest
+    /// <summary>
+    /// Defines a class which contains tests for OAuthWorks.Implementation classes.
+    /// </summary>
+    [TestFixture]
+    public class ImplementationTests
     {
-        public string AuthorizationCode
+
+        IRefreshTokenRepository<IRefreshToken> refreshTokens;
+        IAccessTokenRepository<IAccessToken> accessTokens;
+        IAuthorizationCodeRepository<IAuthorizationCode> authorizationCodes;
+        IScopeRepository<IScope> scopes;
+        IUser user;
+
+        [SetUp]
+        public void SetUp()
         {
-            get;
-            set;
+            accessTokens = new AccessTokenRepository();
+            authorizationCodes = new AuthorizationCodeRepository();
+            scopes = new ScopeRepository();
+            user = new User
+            {
+                Id = "User"
+            };
         }
 
-        public string ClientId
-        {
-            get;
-            set;
-        }
-
-        public Uri RedirectUri
-        {
-            get;
-            set;
-        }
-
-        public string ClientSecret
-        {
-            get;
-            set;
-        }
-
-        public string GrantType
-        {
-            get;
-            set;
-        }
-
-        public string Scope
-        {
-            get;
-            set;
-        }
+        
     }
 }

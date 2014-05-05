@@ -26,7 +26,7 @@ namespace OAuthWorks
     public interface IRefreshToken : IToken
     {
         /// <summary>
-        /// Gets the client that this token belongs to.
+        /// Gets the client that this refreshToken belongs to.
         /// </summary>
         IClient Client
         {
@@ -34,7 +34,7 @@ namespace OAuthWorks
         }
 
         /// <summary>
-        /// Gets the user that the refresh token belongs to.
+        /// Gets the user that the refresh refreshToken belongs to.
         /// </summary>
         IUser User
         {
@@ -42,7 +42,7 @@ namespace OAuthWorks
         }
 
         /// <summary>
-        /// Gets the list of scopes that this refresh token provides access to.
+        /// Gets the list of scopes that this refresh refreshToken provides access to.
         /// </summary>
         IEnumerable<IScope> Scopes
         {
@@ -50,11 +50,32 @@ namespace OAuthWorks
         }
 
         /// <summary>
-        /// Gets whether this token has been revoked by the user.
+        /// Gets whether this refresh token has been revoked from the client.
         /// </summary>
         bool Revoked
         {
             get;
         }
+
+        /// <summary>
+        /// Gets whether this refresh token has expired.
+        /// </summary>
+        bool Expired
+        {
+            get;
+        }
+
+        /// <summary>
+        /// Gets the date that this refresh token expires. Null defines that it does not expire.
+        /// </summary>
+        DateTime? ExpirationDateUtc
+        {
+            get;
+        }
+
+        /// <summary>
+        /// Revokes access from the client to be able to use this refreshToken for retrieving more access tokens.
+        /// </summary>
+        void Revoke();
     }
 }

@@ -14,36 +14,27 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OAuthWorks.Tests
+namespace OAuthWorks
 {
-    class AuthorizationCodeResponse : IAuthorizationCodeResponse
+    /// <summary>
+    /// Defines a static class that provides extension methods for <see cref="OAuthWorks.IAuthorizationCode"/> objects.
+    /// </summary>
+    public static class AuthorizationCodeExtensions
     {
-        public string Code
+        /// <summary>
+        /// Determines if the authorization code is valid for use by the client.
+        /// </summary>
+        /// <param name="code">The code that should be validated.</param>
+        /// <returns>Returns true if the code has not been revoked and has not expired. Otherwise false.</returns>
+        public static bool IsValid(this IAuthorizationCode code)
         {
-            get;
-            set;
-        }
-
-        public string State
-        {
-            get;
-            set;
-        }
-
-        public bool IsError
-        {
-            get;
-            set;
-        }
-
-        public IAuthorizationCodeResponseError ErrorCode
-        {
-            get;
-            set;
+            Contract.Requires(code != null);
+            return !code.Revoked && !code.Expired;
         }
     }
 }
