@@ -87,11 +87,14 @@ namespace ExampleWebApiProject.Repositories
             }
             disposed = true;
         }
+<<<<<<< Updated upstream
+=======
 
 
         public IEnumerable<IAuthorizationCode> GetByUserAndClient(IUser user, IClient client)
         {
             return context.AuthorizationCodes.Where(c => c.User.Id.Equals(user.Id) && c.Client.Equals(client));
         }
+>>>>>>> Stashed changes
     }
 }

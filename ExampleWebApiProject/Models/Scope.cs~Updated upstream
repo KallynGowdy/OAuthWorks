@@ -44,28 +44,13 @@ namespace ExampleWebApiProject.Models
 
         public bool Equals(IScope other)
         {
-            return Equals(other as Scope);
+            return other is Scope && Equals((Scope)other);
         }
 
         public bool Equals(Scope other)
         {
             return other != null &&
                 other.Id == this.Id;
-        }
-
-        public override bool Equals(object obj)
-        {
-            return Equals(obj as IScope);
-        }
-
-        public override int GetHashCode()
-        {
-            return this.Id.GetHashCode() * 23;
-        }
-
-        public override string ToString()
-        {
-            return Id;
         }
     }
 }

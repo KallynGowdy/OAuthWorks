@@ -27,13 +27,21 @@ namespace ExampleWebApiProject.Controllers
 
         [Route("api/v1/authorizationCode")]
         [HttpGet]
+<<<<<<< Updated upstream
+        public AuthorizationCodeResponse RequestAuthorizationCode(string clientId, string clientSecret, string redirectUri, AuthorizationCodeResponseType responseType, string scope, string state)
+=======
         public IAuthorizationCodeResponse RequestAuthorizationCode(string clientId, string clientSecret, string redirectUri, AuthorizationCodeResponseType responseType, string scope, string state)
+>>>>>>> Stashed changes
         {
             using (DatabaseContext context = new DatabaseContext())
             using (Provider = new OAuthProvider
             {
                 AuthorizationCodeFactory = new AuthorizationCodeFactory(),
                 AuthorizationCodeRepository = new AuthorizationCodeRepository(context),
+<<<<<<< Updated upstream
+                AuthorizationCodeResponseFactory = new AuthorizationCodeResponseFactory(),
+=======
+>>>>>>> Stashed changes
                 ScopeRepository = new ScopeRepository(context),
                 ClientRepository = new ClientRepository(context)
             })
@@ -53,9 +61,13 @@ namespace ExampleWebApiProject.Controllers
                 {
                     User user = context.Users.Find(User.Identity.Name);
 
+<<<<<<< Updated upstream
+                    return (AuthorizationCodeResponse)Provider.RequestAuthorizationCode(request, user);
+=======
                     IAuthorizationCodeResponse response = Provider.RequestAuthorizationCode(request, user);
                     context.SaveChanges();
                     return response;
+>>>>>>> Stashed changes
                 }
                 else
                 {
@@ -63,6 +75,8 @@ namespace ExampleWebApiProject.Controllers
                 }
             }
         }
+<<<<<<< Updated upstream
+=======
 
         [Route("api/v1/accessToken")]
         [HttpPost]
@@ -83,5 +97,6 @@ namespace ExampleWebApiProject.Controllers
                 return response;
             }
         }
+>>>>>>> Stashed changes
     }
 }

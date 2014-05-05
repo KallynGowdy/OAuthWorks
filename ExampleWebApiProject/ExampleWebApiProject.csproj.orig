@@ -92,12 +92,28 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+<<<<<<< Updated upstream
+    <Compile Include="Migrations\201404211740596_Initial.cs" />
+    <Compile Include="Migrations\201404211740596_Initial.Designer.cs">
+      <DependentUpon>201404211740596_Initial.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201404211753069_ChangedIdGenerationMode.cs" />
+    <Compile Include="Migrations\201404211753069_ChangedIdGenerationMode.Designer.cs">
+      <DependentUpon>201404211753069_ChangedIdGenerationMode.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201404211911206_AddedHashedValues.cs" />
+    <Compile Include="Migrations\201404211911206_AddedHashedValues.Designer.cs">
+      <DependentUpon>201404211911206_AddedHashedValues.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Configuration.cs" />
+=======
     <Compile Include="Migrations\201405042051435_Initial.cs" />
     <Compile Include="Migrations\201405042051435_Initial.Designer.cs">
       <DependentUpon>201405042051435_Initial.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccessToken.cs" />
+>>>>>>> Stashed changes
     <Compile Include="Models\AuthorizationCode.cs" />
     <Compile Include="Models\Client.cs" />
     <Compile Include="Models\DatabaseContext.cs" />
@@ -106,7 +122,10 @@
     <Compile Include="Models\Scope.cs" />
     <Compile Include="Models\User.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+<<<<<<< Updated upstream
+=======
     <Compile Include="Repositories\AccessTokenRepository.cs" />
+>>>>>>> Stashed changes
     <Compile Include="Repositories\AuthorizationCodeRepository.cs" />
     <Compile Include="Repositories\ClientRepository.cs" />
     <Compile Include="Repositories\ScopeRepository.cs" />
@@ -130,8 +149,19 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+<<<<<<< Updated upstream
+    <EmbeddedResource Include="Migrations\201404211740596_Initial.resx">
+      <DependentUpon>201404211740596_Initial.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201404211753069_ChangedIdGenerationMode.resx">
+      <DependentUpon>201404211753069_ChangedIdGenerationMode.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201404211911206_AddedHashedValues.resx">
+      <DependentUpon>201404211911206_AddedHashedValues.cs</DependentUpon>
+=======
     <EmbeddedResource Include="Migrations\201405042051435_Initial.resx">
       <DependentUpon>201405042051435_Initial.cs</DependentUpon>
+>>>>>>> Stashed changes
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

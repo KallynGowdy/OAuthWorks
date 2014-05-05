@@ -36,7 +36,11 @@ namespace ExampleWebApiProject.Models
         }
 
         /// <summary>
+<<<<<<< Updated upstream
         /// Gets or sets the redirect Uri that was used by the client when retrieving this token.
+=======
+        /// Gets or sets the redirect Uri that was used by the client when retrieving this refreshToken.
+>>>>>>> Stashed changes
         /// </summary>
         public string RedirectUri
         {
@@ -45,7 +49,11 @@ namespace ExampleWebApiProject.Models
         }
 
         /// <summary>
+<<<<<<< Updated upstream
         /// Gets the redirect Uri that was used by the client when retrieving this token.
+=======
+        /// Gets the redirect Uri that was used by the client when retrieving this refreshToken.
+>>>>>>> Stashed changes
         /// </summary>
         Uri IAuthorizationCode.RedirectUri
         {
@@ -110,9 +118,15 @@ namespace ExampleWebApiProject.Models
         }
 
         /// <summary>
+<<<<<<< Updated upstream
         /// Determines if the given token value matches the one stored internally.
         /// </summary>
         /// <param name="token">The token to compare to the internal one.</param>
+=======
+        /// Determines if the given refreshToken value matches the one stored internally.
+        /// </summary>
+        /// <param name="refreshToken">The refreshToken to compare to the internal one.</param>
+>>>>>>> Stashed changes
         /// <returns>
         /// Returns true if the two tokens match, otherwise false.
         /// </returns>
@@ -137,6 +151,8 @@ namespace ExampleWebApiProject.Models
         {
             get { return Client; }
         }
+<<<<<<< Updated upstream
+=======
 
 
         public bool Revoked
@@ -149,5 +165,6 @@ namespace ExampleWebApiProject.Models
         {
             Revoked = true;
         }
+>>>>>>> Stashed changes
     }
 }

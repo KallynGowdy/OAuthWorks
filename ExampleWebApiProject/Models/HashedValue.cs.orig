@@ -56,6 +56,8 @@ namespace ExampleWebApiProject.Models
             set;
         }
 
+<<<<<<< Updated upstream
+=======
         public HashedValue(string hash, string salt, int iterationsUsed)
         {
             this.Hash = hash;
@@ -63,6 +65,7 @@ namespace ExampleWebApiProject.Models
             this.HashIterations = iterationsUsed;
         }
 
+>>>>>>> Stashed changes
         public HashedValue()
         {
 

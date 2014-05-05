@@ -1,5 +1,9 @@
+<<<<<<< Updated upstream
+﻿using System;
+=======
 ﻿using OAuthWorks.Implementation;
 using System;
+>>>>>>> Stashed changes
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
@@ -32,11 +36,14 @@ namespace ExampleWebApiProject.Models
             get;
             set;
         }
+<<<<<<< Updated upstream
+=======
 
         public DbSet<AccessToken> AccessTokens
         {
             get;
             set;
         }
+>>>>>>> Stashed changes
     }
 }
