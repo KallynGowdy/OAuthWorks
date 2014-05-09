@@ -89,7 +89,7 @@ namespace ExampleWebApiProject.Models
         {
             using (System.Security.Cryptography.Rfc2898DeriveBytes pbkdf2 = new System.Security.Cryptography.Rfc2898DeriveBytes(value, salt, iterations))
             {
-                byte[] b = pbkdf2.GetBytes(salt.Length - 2);
+                byte[] b = pbkdf2.GetBytes(Convert.FromBase64String(Hash).Length);
                 return Convert.ToBase64String(b);
             }
         }

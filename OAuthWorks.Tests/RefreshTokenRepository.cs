@@ -34,9 +34,9 @@ namespace OAuthWorks.Tests
             base.RemoveById(((IHasId<string>)token).Id);
         }
 
-        public IRefreshToken GetByUserAndClient(IUser user, IClient client)
+        public IEnumerable<IRefreshToken> GetByUserAndClient(IUser user, IClient client)
         {
-            return Entities.SingleOrDefault(t => t.User.Equals(user) && t.Client.Equals(client));
+            return Entities.Where(t => t.User.Equals(user) && t.Client.Equals(client));
         }
 
         public IRefreshToken GetByValue(string token)

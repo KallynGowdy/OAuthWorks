@@ -30,8 +30,8 @@ namespace OAuthWorks.Implementation.Factories
         /// <summary>
         /// The default length (in bytes) of tokens that are generated.
         /// </summary>
-        /// <value>50</value>
-        public const int DefaultTokenLength = 50;
+        /// <value>20</value>
+        public const int DefaultTokenLength = 20;
 
         /// <summary>
         /// The default length (in bytes) of identifiers that are generated.

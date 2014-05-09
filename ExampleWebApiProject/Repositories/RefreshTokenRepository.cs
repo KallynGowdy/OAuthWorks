@@ -23,37 +23,37 @@ using System.Web;
 
 namespace ExampleWebApiProject.Repositories
 {
-    public class AccessTokenRepository : IAccessTokenRepository<IAccessToken>
+    public class RefreshTokenRepository : IRefreshTokenRepository<IRefreshToken>
     {
-        private DatabaseContext context;
+        DatabaseContext context;
 
-        public AccessTokenRepository(DatabaseContext context)
+        public RefreshTokenRepository(DatabaseContext context)
         {
             this.context = context;
         }
 
-        public void Remove(IAccessToken token)
+        public void Remove(IRefreshToken token)
         {
             IHasId<string> id = token as IHasId<string>;
             if (id != null)
             {
-                context.AccessTokens.Remove(context.AccessTokens.Find(id.Id));
+                context.RefreshTokens.Remove(context.RefreshTokens.Find(id.Id));
             }
         }
 
-        public IAccessToken GetByToken(string token)
+        public IEnumerable<IRefreshToken> GetByUserAndClient(IUser user, IClient client)
         {
-            return context.AccessTokens.Find(token.Split('-').Last());
+            return context.RefreshTokens.Where(t => t.User.Equals(user) && t.Client.Equals(client));
         }
 
-        public IEnumerable<IAccessToken> GetByUserAndClient(IUser user, IClient client)
+        public IRefreshToken GetByValue(string token)
         {
-            return context.AccessTokens.Where(t => t.User.Id.Equals(user.Id) && t.Client.Name.Equals(client.Name));
+            return context.RefreshTokens.Find(token.Split('-').Last());
         }
 
-        public IAccessToken GetById(string id)
+        public IRefreshToken GetById(string id)
         {
-            return context.AccessTokens.Find(id);
+            return context.RefreshTokens.Find(id);
         }
 
         public void Dispose()
@@ -61,30 +61,30 @@ namespace ExampleWebApiProject.Repositories
             context.Dispose();
         }
 
-        public void Add(IAccessToken obj)
+        public void Add(IRefreshToken obj)
         {
-            context.AccessTokens.Add(new ExampleWebApiProject.Models.AccessToken((HashedAccessToken)obj));
+            context.RefreshTokens.Add(new ExampleWebApiProject.Models.RefreshToken((HashedRefreshToken)obj));
         }
 
-        public void Update(IAccessToken obj)
+        public void Update(IRefreshToken obj)
         {
-            context.AccessTokens.Attach(new ExampleWebApiProject.Models.AccessToken((HashedAccessToken)obj));
+            context.RefreshTokens.Attach(new ExampleWebApiProject.Models.RefreshToken((HashedRefreshToken)obj));
             context.Entry(obj).State = System.Data.Entity.EntityState.Modified;
         }
 
         public void RemoveById(string id)
         {
-            context.AccessTokens.Remove(context.AccessTokens.Find(id));
+            context.RefreshTokens.Remove(context.RefreshTokens.Find(id));
         }
 
-        public IEnumerator<IAccessToken> GetEnumerator()
+        public IEnumerator<IRefreshToken> GetEnumerator()
         {
-            return context.AccessTokens.AsEnumerable().GetEnumerator();
+            return context.RefreshTokens.AsEnumerable().GetEnumerator();
         }
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
-            return this.GetEnumerator();
+            return GetEnumerator();
         }
     }
 }

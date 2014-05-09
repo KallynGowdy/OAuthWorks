@@ -61,16 +61,15 @@ namespace OAuthWorks.DataAccess.Repositories
         T GetByToken(string token);
 
         /// <summary>
-        /// Gets the active access refreshToken that can be used by the given client to gain access to the given user's account.
+        /// Gets the list of access tokens that have been issued to the given client that provide access to the given user's account.
         /// </summary>
         /// <remarks>
-        /// Note that only one access refreshToken is returned. This is by design, while many access tokens will no doubt be used to gain access to a
-        /// user's account, there should only be one that is useable by the client for a given user. This minimizes the attack vector and provides
-        /// easier refreshToken management. Once a refreshToken is revoked or expired, it can be deleted. 
+        /// Note that while only one access token *should* be active at a time, this method returns all of the access tokens that relate to the given user and client.
+        /// The reason for this is to prevent any sort of circumvention of deletion or revocation of old access tokens which could possibly let a client misbehave.
         /// </remarks>
         /// <param name="user">The user that owns access to the refreshToken.</param>
         /// <param name="client">The client that has been granted access to the client.</param>
-        /// <returns>Returns the refreshToken that was granted to the client to access the user's account.</returns>
-        T GetByUserAndClient(IUser user, IClient client);
+        /// <returns>Returns the list of access tokens that were granted to the client used to access the user's account.</returns>
+        IEnumerable<T> GetByUserAndClient(IUser user, IClient client);
     }
 }

@@ -25,6 +25,10 @@ namespace ExampleWebApiProject.Models
     [DataContract(Name = "AccessToken")]
     public class AccessToken : IAccessToken
     {
+        public AccessToken()
+        {
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AccessToken"/> class using the given <see cref="OAuthWorks.Implementation.HashedAccessToken"/> as a reference.
         /// </summary>
@@ -36,6 +40,7 @@ namespace ExampleWebApiProject.Models
             User = (User)token.User;
             Scopes = token.Scopes.Cast<Scope>().ToList();
             ExpirationDateUtc = token.ExpirationDateUtc;
+            Revoked = token.Revoked;
             Id = token.Id;
         }
 
@@ -51,7 +56,10 @@ namespace ExampleWebApiProject.Models
             set;
         }
 
-        public HashedValue TokenValue
+        /// <summary>
+        /// Gets or sets the hashed token value.
+        /// </summary>
+        public virtual HashedValue TokenValue
         {
             get;
             set;

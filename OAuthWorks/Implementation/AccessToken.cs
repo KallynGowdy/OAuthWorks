@@ -60,7 +60,7 @@ namespace OAuthWorks.Implementation
         /// Gets or sets the id of this refreshToken.
         /// </summary>
         [DataMember(Name="Id")]
-        public virtual string Id
+        public string Id
         {
             get;
             protected set;
@@ -70,7 +70,7 @@ namespace OAuthWorks.Implementation
         /// Gets the client that has access to this refresh token.
         /// </summary>
         [DataMember(Name="Client")]
-        public virtual IClient Client
+        public IClient Client
         {
             get;
             protected set;
@@ -91,7 +91,7 @@ namespace OAuthWorks.Implementation
         /// Gets the scopes that this refreshToken grants access to.
         /// </summary>
         [DataMember(Name="Scopes")]
-        public virtual IEnumerable<IScope> Scopes
+        public IEnumerable<IScope> Scopes
         {
             get;
             protected set;
@@ -112,7 +112,7 @@ namespace OAuthWorks.Implementation
         /// Gets the user that the refreshToken belongs to.
         /// </summary>
         [DataMember(Name="User")]
-        public virtual IUser User
+        public IUser User
         {
             get;
             protected set;
@@ -168,7 +168,7 @@ namespace OAuthWorks.Implementation
         /// Gets whether the refreshToken has been revoked by the user.
         /// </summary>
         [DataMember(Name="Revoked")]
-        public virtual bool Revoked
+        public bool Revoked
         {
             get;
             protected set;

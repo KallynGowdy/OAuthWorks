@@ -73,12 +73,35 @@ namespace ExampleWebApiProject.Controllers
             {
                 AccessTokenRepository = new AccessTokenRepository(context),
                 AuthorizationCodeRepository = new AuthorizationCodeRepository(context),
+                RefreshTokenRepository = new RefreshTokenRepository(context),
                 ClientRepository = new ClientRepository(context),
-                ScopeRepository = new ScopeRepository(context)
-
+                ScopeRepository = new ScopeRepository(context),
+                DistributeRefreshTokens = true,
+                DeleteRevokedTokens = true
             })
             {
                 IAccessTokenResponse response = Provider.RequestAccessToken(request);
+                context.SaveChanges();
+                return response;
+            }
+        }
+
+        [Route("api/v1/refreshToken")]
+        [HttpPost]
+        public IAccessTokenResponse RefreshAccessToken(TokenRefreshRequest request)
+        {
+            using(DatabaseContext context = new DatabaseContext())
+            using (Provider = new OAuthProvider
+            {
+                AccessTokenRepository = new AccessTokenRepository(context),
+                RefreshTokenRepository = new RefreshTokenRepository(context),
+                ClientRepository = new ClientRepository(context),
+                ScopeRepository = new ScopeRepository(context),
+                DistributeRefreshTokens = true,
+                DeleteRevokedTokens = true
+            })
+            {
+                IAccessTokenResponse response = Provider.RefreshAccessToken(request);
                 context.SaveChanges();
                 return response;
             }

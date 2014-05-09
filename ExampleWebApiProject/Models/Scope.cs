@@ -42,6 +42,18 @@ namespace ExampleWebApiProject.Models
             set;
         }
 
+        public virtual ICollection<RefreshToken> ReferencedRefreshTokens
+        {
+            get;
+            set;
+        }
+
+        public virtual ICollection<AccessToken> ReferencedAccessTokens
+        {
+            get;
+            set;
+        }
+
         public bool Equals(IScope other)
         {
             return Equals(other as Scope);

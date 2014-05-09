@@ -38,5 +38,11 @@ namespace ExampleWebApiProject.Models
             get;
             set;
         }
+
+        public DbSet<RefreshToken> RefreshTokens
+        {
+            get;
+            set;
+        }
     }
 }
