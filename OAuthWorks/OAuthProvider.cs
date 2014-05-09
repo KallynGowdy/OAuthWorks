@@ -344,13 +344,10 @@ namespace OAuthWorks
                 if (RefreshTokenFactory != null && DistributeRefreshTokens)
                 {
                     refreshToken = RefreshTokenFactory.Create(client, code.User, code.Scopes);
+                    RefreshTokenRepository.Add(refreshToken.Token);
                 }
                 //store refresh and access tokens
                 AccessTokenRepository.Add(accessToken.Token);
-                if (RefreshTokenRepository != null && refreshToken != null)
-                {
-                    RefreshTokenRepository.Add(refreshToken.Token);
-                }
 
                 return AccessTokenResponseFactory.Create(
                     accessToken.TokenValue,
@@ -387,16 +384,22 @@ namespace OAuthWorks
                 IRefreshToken refreshToken = RefreshTokenRepository.GetByValue(request.RefreshToken);
                 validateRefreshToken(refreshToken, request, client);
 
-                IAccessToken oldToken = AccessTokenRepository.GetByUserAndClient(refreshToken.User, client);
-                if (oldToken != null && !oldToken.Revoked)
+                foreach (IAccessToken oldToken in AccessTokenRepository.GetByUserAndClient(refreshToken.User, client).ToArray())
                 {
-                    oldToken.Revoke();
+                    if (oldToken != null)
+                    {
+                        if (!oldToken.Revoked)
+                        {
+                            oldToken.Revoke();
+                        }
+
+                        if (DeleteRevokedTokens)
+                        {
+                            AccessTokenRepository.Remove(oldToken);
+                        }
+                    }
                 }
 
-                if (DeleteRevokedTokens)
-                {
-                    AccessTokenRepository.Remove(oldToken);
-                }
                 string refreshValue = request.RefreshToken;
 
                 if (!ReuseRefreshTokens)
@@ -504,17 +507,12 @@ namespace OAuthWorks
 
             AuthorizationCodeRepository.GetByUserAndClient(user, client).Where(c => c != null && !c.Revoked).ForEach(c => c.Revoke());
 
-            IAccessToken token = AccessTokenRepository.GetByUserAndClient(user, client);
-            if (token != null && !token.Revoked)
+            foreach (IAccessToken token in AccessTokenRepository.GetByUserAndClient(user, client).Where(t => t != null && !t.Revoked))
             {
                 token.Revoke();
             }
 
-            IRefreshToken refreshToken = RefreshTokenRepository.GetByUserAndClient(user, client);
-            if (refreshToken != null && !refreshToken.Revoked)
-            {
-                refreshToken.Revoke();
-            }
+            RefreshTokenRepository.GetByUserAndClient(user, client).Where(t => t != null & !t.Revoked).ForEach(t => t.Revoke());
         }
 
         /// <summary>
@@ -526,8 +524,8 @@ namespace OAuthWorks
         /// <returns>Returns true if the client has access to the given users resources restricted by the given scope, otherwise false.</returns>
         public bool HasAccess(IUser user, IClient client, IScope scope)
         {
-            IAccessToken token = AccessTokenRepository.GetByUserAndClient(user, client);
-            if (token != null && !token.Revoked && !token.Expired)
+            IAccessToken token = AccessTokenRepository.GetByUserAndClient(user, client).FirstOrDefault(t => !t.Revoked && !t.Expired);
+            if (token != null)
             {
                 return ScopeRepository.Any(a => a.Equals(scope) && token.Scopes.Contains(a));
             }

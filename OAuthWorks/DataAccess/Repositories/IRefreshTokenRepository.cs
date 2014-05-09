@@ -35,14 +35,13 @@ namespace OAuthWorks.DataAccess.Repositories
         /// Gets the refresh refreshToken that can be used by the given client to retrive access tokens for the given user's account.
         /// </summary>
         /// <remarks>
-        /// Note that only one refreshToken is returned. This is by design, each client should only have one refresh refreshToken for each user.
-        /// If an organization needs to have access to a user's account through multiple methods, then they need to act as two different clients.
-        /// This simplifies management of tokens by our server by allowing deletion of revoked tokens.
+        /// Note that while only one refresh token *should* be active at a time, the usage of this method by <see cref="OAuthWorks.OAuthProvider"/>
+        /// requires that all refresh tokens be retrievable, that way unused/old tokens will be able to be easily destroyed.
         /// </remarks>
         /// <param name="user">The user that owns the accout that the refreshToken gives access to.</param>
         /// <param name="client">The client that maintains possesion of the refresh refreshToken.</param>
         /// <returns>Returns the refresh tokens that can be used by the given client for the given user's account if one exists. Otherwise returns null.</returns>
-        TRefreshToken GetByUserAndClient(IUser user, IClient client);
+        IEnumerable<TRefreshToken> GetByUserAndClient(IUser user, IClient client);
 
         /// <summary>
         /// Gets a refresh refreshToken by the value that was given to the client.

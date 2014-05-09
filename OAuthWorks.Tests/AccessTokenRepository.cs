@@ -34,9 +34,9 @@ namespace OAuthWorks.Tests
             return this.GetById(split.Last());
         }
 
-        public IAccessToken GetByUserAndClient(IUser user, IClient client)
+        public IEnumerable<IAccessToken> GetByUserAndClient(IUser user, IClient client)
         {
-            return Entities.SingleOrDefault(a => a.Client.Equals(client) && a.User.Equals(user));
+            return Entities.Where(a => a.Client.Equals(client) && a.User.Equals(user));
         }
 
         public void Remove(IAccessToken token)
