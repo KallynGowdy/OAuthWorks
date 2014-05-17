@@ -23,31 +23,29 @@ using System.Threading.Tasks;
 namespace OAuthWorks.Factories
 {
     /// <summary>
-    /// Defines an interface for a <see cref="OAuthWorks.IFactory"/> object that produces <see cref="OAuthWorks.IAccessTokenResponse"/> objects.
+    /// Defines an interface for a <see cref="OAuthWorks.IFactory"/> object that produces <see cref="OAuthWorks.ISuccessfulAccessTokenResponse"/> objects.
     /// </summary>
-    public interface IAccessTokenResponseFactory<out TAccessTokenResponse, out TResponseException> :
-        IFactory<TAccessTokenResponse>
-        where TAccessTokenResponse : IAccessTokenResponse
-        where TResponseException : Exception, IAccessTokenResponseError
+    public interface IAccessTokenResponseFactory :
+        IFactory<ISuccessfulAccessTokenResponse>
     {
         /// <summary>
-        /// Gets a new <see cref="OAuthWorks.IAccessTokenResponse"/> object given the distributed access refreshToken, refresh refreshToken, access refreshToken type, granted scope, and expiration date.
+        /// Gets a new <see cref="OAuthWorks.ISuccessfulAccessTokenResponse"/> object given the distributed access refreshToken, refresh refreshToken, access refreshToken type, granted scope, and expiration date.
         /// </summary>
         /// <param name="accessToken">The access refreshToken that grants access to the resources governed by the scope.</param>
         /// <param name="refreshToken">The refresh refreshToken that allows retrieval of additional access tokens.</param>
         /// <param name="tokenType">The type of refreshToken that is returned.</param>
         /// <param name="scope"></param>
         /// <param name="expirationDateUtc"></param>
-        /// <returns>Returns a new <see cref="OAuthWorks.IAccessTokenResponse"/> object.</returns>
-        TAccessTokenResponse Create(string accessToken, string refreshToken, string tokenType, string scope, DateTime expirationDateUtc);
+        /// <returns>Returns a new <see cref="OAuthWorks.ISuccessfulAccessTokenResponse"/> object.</returns>
+        ISuccessfulAccessTokenResponse Create(string accessToken, string refreshToken, string tokenType, string scope, DateTime expirationDateUtc);
 
         /// <summary>
-        /// Gets a new <see cref="OAuthWorks.IAccessTokenResponse"/> object used for error responsed to the client given the error type, error description and error description uri.
+        /// Gets a new <see cref="OAuthWorks.IUnsuccessfulAccessTokenResponse"/> object used for error responsed to the client given the error type, error description and error description uri.
         /// </summary>
         /// <param name="errorCode">The error code that describes the basic problem.</param>
         /// <param name="errorDescription">A more in-depth description of the error. May be null.</param>
         /// <param name="errorUri">A uri where a developer can go to find information about the error.</param>
-        /// <returns>Returns a new <see cref="OAuthWorks.IAccessTokenResponse"/> object.</returns>
-        TResponseException CreateError(AccessTokenRequestError errorCode, string errorDescription, Uri errorUri, Exception innerException);
+        /// <returns>Returns a new <see cref="OAuthWorks.IUnsuccessfulAccessTokenResponse"/> object.</returns>
+        IUnsuccessfulAccessTokenResponse CreateError(AccessTokenRequestError errorCode, string errorDescription, Uri errorUri, Exception innerException);
     }
 }

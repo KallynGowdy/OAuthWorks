@@ -111,7 +111,6 @@ namespace OAuthWorks
         {
             get
             {
-                Contract.Ensures(Contract.Result<string>() != null);
                 return default(string);
             }
         }

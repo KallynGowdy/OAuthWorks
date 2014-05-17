@@ -150,8 +150,6 @@ namespace OAuthWorks
         /// Requests an access refreshToken from the authorization server based on the given request using the Authorization Code Grant flow (Section 4.1 [RFC 6749] http://tools.ietf.org/html/rfc6749#section-4.1).
         /// </summary>
         /// <param name="request">The request that contains the required values.</param>
-        /// <exception cref="OAuthWorks.AccessTokenResponseExceptionBase">Thrown if the given request is invalid or if an unexpected error occurred.</exception>
-        /// <exception cref="System.ArgumentNullException">Thrown if one of the given arguments is null.</exception>
         /// <returns>Returns a new <see cref="OAuthWorks.IAccessTokenResponse"/> object that determines what values to put in the outgoing response.</returns>
         IAccessTokenResponse RequestAccessToken(IAuthorizationCodeGrantAccessTokenRequest request);
 
@@ -213,14 +211,12 @@ namespace OAuthWorks
 
         IEnumerable<IScope> IOAuthProvider.GetRequestedScopes(IAuthorizationCodeRequest request)
         {
-            Contract.Requires(request != null);
             Contract.Ensures(Contract.Result<IEnumerable<IScope>>() != null);
             return default(IEnumerable<IScope>);
         }
 
         IAuthorizationCodeResponse IOAuthProvider.RequestAuthorizationCode(IAuthorizationCodeRequest request, IUser user)
         {
-            Contract.Requires(request != null);
             Contract.Requires(user != null);
             Contract.Ensures(Contract.Result<IAuthorizationCodeResponse>() != null);
             return default(IAuthorizationCodeResponse);
@@ -228,14 +224,12 @@ namespace OAuthWorks
 
         IAccessTokenResponse IOAuthProvider.RequestAccessToken(IAuthorizationCodeGrantAccessTokenRequest request)
         {
-            Contract.Requires(request != null);
             Contract.Ensures(Contract.Result<IAccessTokenResponse>() != null);
             return default(IAccessTokenResponse);
         }
 
         IAccessTokenResponse IOAuthProvider.RefreshAccessToken(ITokenRefreshRequest request)
         {
-            Contract.Requires(request != null);
             Contract.Ensures(Contract.Result<IAccessTokenResponse>() != null);
             return default(IAccessTokenResponse);
         }
@@ -271,7 +265,6 @@ namespace OAuthWorks
 
         IAccessTokenResponse IOAuthProvider.RequestAccessToken(IPasswordCredentialsAccessTokenRequest request)
         {
-            Contract.Requires(request != null);
             return default(IAccessTokenResponse);
         }
     }

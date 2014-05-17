@@ -90,7 +90,7 @@ namespace ExampleWebApiProject.Controllers
         [HttpPost]
         public IAccessTokenResponse RefreshAccessToken(TokenRefreshRequest request)
         {
-            using(DatabaseContext context = new DatabaseContext())
+            using (DatabaseContext context = new DatabaseContext())
             using (Provider = new OAuthProvider
             {
                 AccessTokenRepository = new AccessTokenRepository(context),

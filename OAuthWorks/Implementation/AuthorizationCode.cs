@@ -61,7 +61,7 @@ namespace OAuthWorks.Implementation
         /// <summary>
         /// Gets the redirect Uri that was used by the client when retrieving this refreshToken.
         /// </summary>
-        public virtual Uri RedirectUri
+        public Uri RedirectUri
         {
             get;
             protected set;
@@ -70,7 +70,7 @@ namespace OAuthWorks.Implementation
         /// <summary>
         /// Gets the scopes that this code grants access to.
         /// </summary>
-        public virtual IEnumerable<IScope> Scopes
+        public IEnumerable<IScope> Scopes
         {
             get;
             protected set;
@@ -79,7 +79,7 @@ namespace OAuthWorks.Implementation
         /// <summary>
         /// Gets the expiration date of this authorization code in Universal Coordinated Time.
         /// </summary>
-        public virtual DateTime ExpirationDateUtc
+        public DateTime ExpirationDateUtc
         {
             get;
             protected set;
@@ -88,7 +88,7 @@ namespace OAuthWorks.Implementation
         /// <summary>
         /// Gets the user that this authorization code belongs to.
         /// </summary>
-        public virtual IUser User
+        public IUser User
         {
             get;
             protected set;
@@ -97,7 +97,7 @@ namespace OAuthWorks.Implementation
         /// <summary>
         /// Gets the client that this authorization code was granted to.
         /// </summary>
-        public virtual IClient Client
+        public IClient Client
         {
             get;
             protected set;

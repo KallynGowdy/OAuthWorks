@@ -15,6 +15,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -23,36 +24,57 @@ namespace OAuthWorks.Implementation
     /// <summary>
     /// Defines a class that provides a basic implementation of <see cref="OAuthWorks.AccessTokenResponseExceptionBase"/>.
     /// </summary>
-    public class AccessTokenResponseException : AccessTokenResponseExceptionBase
+    [DataContract]
+    public class UnsuccessfulAccessTokenResponse : IUnsuccessfulAccessTokenResponse
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="AccessTokenResponseException"/> class.
+        /// Initializes a new instance of the <see cref="UnsuccessfulAccessTokenResponse"/> class.
         /// </summary>
         /// <param name="errorCode">The error code.</param>
         /// <param name="errorDescription">The error description.</param>
         /// <param name="errorUri">The error URI.</param>
-        public AccessTokenResponseException(AccessTokenRequestError errorCode, string errorDescription, Uri errorUri)
+        public UnsuccessfulAccessTokenResponse(AccessTokenRequestError errorCode, string errorDescription, Uri errorUri)
             : this(errorCode, errorDescription, errorUri, null)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AccessTokenResponseException"/> class.
+        /// Initializes a new instance of the <see cref="UnsuccessfulAccessTokenResponse"/> class.
         /// </summary>
         /// <param name="errorCode">The error code.</param>
         /// <param name="errorDescription">The error description.</param>
         /// <param name="errorUri">The error URI.</param>
         /// <param name="innerException">The exception that caused the error to occur.</param>
-        public AccessTokenResponseException(AccessTokenRequestError errorCode, string errorDescription, Uri errorUri, Exception innerException) : base(errorDescription, innerException)
+        public UnsuccessfulAccessTokenResponse(AccessTokenRequestError errorCode, string errorDescription, Uri errorUri, Exception innerException)
         {
             this.errorCode = errorCode;
             this.errorDescription = errorDescription;
             this.errorUri = errorUri;
+            this.innerException = innerException;
         }
 
-        private AccessTokenRequestError errorCode;
-        private string errorDescription;
-        private Uri errorUri;
+        [DataMember(Name = "error_code")]
+        private readonly AccessTokenRequestError errorCode;
+
+        [DataMember(Name ="error_description")]
+        private readonly string errorDescription;
+
+        [DataMember(Name ="error_uri")]
+        private readonly Uri errorUri;
+
+        private readonly Exception innerException;
+
+        /// <summary>
+        /// Gets the exception that caused this error to occur.
+        /// </summary>
+        /// <returns></returns>
+        public Exception InnerException
+        {
+            get
+            {
+                return innerException;
+            }
+        }
 
         /// <summary>
         /// Gets the error code.
@@ -60,7 +82,7 @@ namespace OAuthWorks.Implementation
         /// <value>
         /// The error code.
         /// </value>
-        public override AccessTokenRequestError ErrorCode
+        public AccessTokenRequestError ErrorCode
         {
             get
             {
@@ -74,7 +96,7 @@ namespace OAuthWorks.Implementation
         /// <value>
         /// The error description.
         /// </value>
-        public override string ErrorDescription
+        public string ErrorDescription
         {
             get
             {
@@ -88,11 +110,35 @@ namespace OAuthWorks.Implementation
         /// <value>
         /// The error URI.
         /// </value>
-        public override Uri ErrorUri
+        public Uri ErrorUri
         {
             get
             {
                 return this.errorUri;
+            }
+        }
+
+        /// <summary>
+        /// Gets the error code that describes what was wrong with the request.
+        /// </summary>
+        /// <returns>Returns a <see cref="AccessTokenRequestError" /> object that describes what was wrong with the request.</returns>
+        public AccessTokenRequestError Error
+        {
+            get
+            {
+                return errorCode;
+            }
+        }
+
+        /// <summary>
+        /// Gets whether the request was successful.
+        /// </summary>
+        /// <returns>Returns whether the request by the client was successful.</returns>
+        public bool IsSuccessful
+        {
+            get
+            {
+                return false;
             }
         }
     }

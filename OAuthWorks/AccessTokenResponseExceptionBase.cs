@@ -15,6 +15,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -26,6 +27,12 @@ namespace OAuthWorks
     [Serializable]
     public abstract class AccessTokenResponseExceptionBase : Exception, IAccessTokenResponseError
     {
+        protected AccessTokenResponseExceptionBase(SerializationInfo info, StreamingContext context) : base(info, context)
+        {
+        }
+
+        protected AccessTokenResponseExceptionBase() : base() { }
+
         protected AccessTokenResponseExceptionBase(string message) : base(message) { }
 
         protected AccessTokenResponseExceptionBase(string message, Exception innerException) : base(message, innerException) { }

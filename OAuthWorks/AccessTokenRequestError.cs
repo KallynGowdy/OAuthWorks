@@ -51,7 +51,7 @@ namespace OAuthWorks
         InvalidClient,
 
         /// <summary>
-        /// Defines that the provided authorization grant (authorization code, resource owner credentials) or refresh refreshToken is invalid,
+        /// Defines that the provided authorization grant (authorization code, resource owner credentials) or refresh token is invalid,
         /// expired, revoked, does not match the redirection URI used in the authorization request, or was issued to another client. (RFC 6749 Section 5.1)
         /// </summary>
         [EnumMember(Value="invalid_grant")]

@@ -26,8 +26,20 @@ namespace OAuthWorks.Implementation
     /// Defines a class that provides a basic implementation of an access refreshToken response. (Section 5.1 [RFC 6749] http://tools.ietf.org/html/rfc6749#section-5.1).
     /// </summary>
     [DataContract]
-    public class AccessTokenResponse : IAccessTokenResponse
+    public class SuccessfulAccessTokenResponse : ISuccessfulAccessTokenResponse
     {
+        /// <summary>
+        /// Gets whether the request was successful.
+        /// </summary>
+        /// <returns>Returns whether the request by the client was successful.</returns>
+        public bool IsSuccessful
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         /// <summary>
         /// Gets the access refreshToken that provides access to certian scopes.
         /// </summary>
@@ -90,14 +102,14 @@ namespace OAuthWorks.Implementation
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AccessTokenResponse"/> class.
+        /// Initializes a new instance of the <see cref="SuccessfulAccessTokenResponse"/> class.
         /// </summary>
         /// <param name="refreshToken">The refreshToken, REQUIRED.</param>
         /// <param name="expirationDateUtc">The expiration date of the refreshToken as expressed in Universal Coordinated Time.</param>
         /// <param name="scope">The scope of the refreshToken, REQUIRED.</param>
         /// <param name="tokenType">Type of the refreshToken as described by Section 7.1 [RFC 6749] (http://tools.ietf.org/html/rfc6749#section-7.1).</param>
         /// <param name="refreshToken">The refresh refreshToken that can be used by the client to obtain new access tokens.</param>
-        public AccessTokenResponse(string token, DateTime expirationDateUtc, string scope, string tokenType, string refreshToken)
+        public SuccessfulAccessTokenResponse(string token, DateTime expirationDateUtc, string scope, string tokenType, string refreshToken)
         {
             Contract.Requires(!string.IsNullOrEmpty(token));
             Contract.Requires(!string.IsNullOrEmpty(scope));

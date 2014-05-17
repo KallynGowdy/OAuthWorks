@@ -87,6 +87,7 @@ namespace OAuthWorks.Tests
             ((ClientRepository)provider.ClientRepository).Add(badClient);
         }
 
+
         [Test]
         public void TestRefreshAccessToken()
         {
@@ -110,7 +111,7 @@ namespace OAuthWorks.Tests
                 "exampleScope"
             );
 
-            var response = provider.RefreshAccessToken(refreshRequest);
+            ISuccessfulAccessTokenResponse response = provider.RefreshAccessToken(refreshRequest) as ISuccessfulAccessTokenResponse;
 
             Assert.That(response, Is.Not.Null);
             Assert.That(response.AccessToken, Is.Not.Null);
@@ -177,7 +178,7 @@ namespace OAuthWorks.Tests
                 redirectUri: new Uri(redirectUri)
             );
 
-            Assert.Throws<AccessTokenResponseException>(() => provider.RequestAccessToken(tokenRequest));
+            Assert.That(provider.RequestAccessToken(tokenRequest) is IUnsuccessfulAccessTokenResponse);
         }
 
         [TestCase("exampleScope", "state", "secret", "http://example.com/oauth/response/token")]
@@ -242,7 +243,13 @@ namespace OAuthWorks.Tests
 
             var response = provider.RequestAuthorizationCode(codeRequest, user);
 
-            var tokenResponse = provider.RequestAccessToken(new AuthorizationCodeGrantAccessTokenRequest(response.Code, clientId, clientSecret, new Uri(redirectUri)));
+            Assert.NotNull(response);
+
+            var tokenResponse = provider.RequestAccessToken(
+                new AuthorizationCodeGrantAccessTokenRequest(response.Code, clientId, clientSecret, new Uri(redirectUri))
+                ) as ISuccessfulAccessTokenResponse;
+
+            Assert.NotNull(tokenResponse);
 
             Assert.True(provider.HasAccess(user, client, exampleScope));
 
@@ -295,7 +302,7 @@ namespace OAuthWorks.Tests
                 authorizationCode: response.Code
             );
 
-            var tokenResponse = provider.RequestAccessToken(tokenRequest);
+            ISuccessfulAccessTokenResponse tokenResponse = provider.RequestAccessToken(tokenRequest) as ISuccessfulAccessTokenResponse;
 
             Assert.NotNull(tokenResponse);
 
@@ -330,10 +337,9 @@ namespace OAuthWorks.Tests
                 scope: tokenResponse.Scope
             );
 
-            var newTokenResponse = provider.RefreshAccessToken(refreshRequest);
+            ISuccessfulAccessTokenResponse newTokenResponse = provider.RefreshAccessToken(refreshRequest) as ISuccessfulAccessTokenResponse;
 
             Assert.NotNull(newTokenResponse);
-
 
             token = provider.AccessTokenRepository.GetByToken(newTokenResponse.AccessToken);
 

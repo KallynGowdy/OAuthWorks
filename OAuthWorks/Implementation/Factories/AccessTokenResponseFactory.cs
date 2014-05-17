@@ -24,32 +24,32 @@ namespace OAuthWorks.Implementation.Factories
     /// <summary>
     /// Defines a class that provides a basic implementation of <see cref="IAccessTokenResponseFactory"/>.
     /// </summary>
-    public class AccessTokenResponseFactory : IAccessTokenResponseFactory<AccessTokenResponse, AccessTokenResponseException>
+    public class AccessTokenResponseFactory : IAccessTokenResponseFactory
     {
         /// <summary>
-        /// Gets a new <see cref="OAuthWorks.IAccessTokenResponse"/> object given the distributed access refreshToken, refresh refreshToken, access refreshToken type, granted scope, and expiration date.
+        /// Gets a new <see cref="OAuthWorks.ISuccessfulAccessTokenResponse"/> object given the distributed access refreshToken, refresh refreshToken, access refreshToken type, granted scope, and expiration date.
         /// </summary>
         /// <param name="accessToken">The access refreshToken that grants access to the resources governed by the scope.</param>
         /// <param name="refreshToken">The refresh refreshToken that allows retrieval of additional access tokens.</param>
         /// <param name="tokenType">The type of refreshToken that is returned.</param>
         /// <param name="scope"></param>
         /// <param name="expirationDateUtc"></param>
-        /// <returns>Returns a new <see cref="OAuthWorks.IAccessTokenResponse"/> object.</returns>
-        public AccessTokenResponse Create(string accessToken, string refreshToken, string tokenType, string scope, DateTime expirationDateUtc)
+        /// <returns>Returns a new <see cref="OAuthWorks.ISuccessfulAccessTokenResponse"/> object.</returns>
+        public ISuccessfulAccessTokenResponse Create(string accessToken, string refreshToken, string tokenType, string scope, DateTime expirationDateUtc)
         {
-            return new AccessTokenResponse(accessToken, expirationDateUtc, scope, tokenType, refreshToken);
+            return new SuccessfulAccessTokenResponse(accessToken, expirationDateUtc, scope, tokenType, refreshToken);
         }
 
         /// <summary>
-        /// Gets a new <see cref="OAuthWorks.IAccessTokenResponse"/> object used for error responsed to the client given the error type, error description and error description uri.
+        /// Gets a new <see cref="OAuthWorks.ISuccessfulAccessTokenResponse"/> object used for error responsed to the client given the error type, error description and error description uri.
         /// </summary>
         /// <param name="errorCode">The error code that describes the basic problem.</param>
         /// <param name="errorDescription">A more in-depth description of the error. May be null.</param>
         /// <param name="errorUri">A uri where a developer can go to find information about the error.</param>
-        /// <returns>Returns a new <see cref="OAuthWorks.IAccessTokenResponse"/> object.</returns>
-        public AccessTokenResponseException CreateError(AccessTokenRequestError errorCode, string errorDescription, Uri errorUri, Exception innerException)
+        /// <returns>Returns a new <see cref="OAuthWorks.ISuccessfulAccessTokenResponse"/> object.</returns>
+        public IUnsuccessfulAccessTokenResponse CreateError(AccessTokenRequestError errorCode, string errorDescription, Uri errorUri, Exception innerException)
         {
-            return new AccessTokenResponseException(errorCode, errorDescription, errorUri, innerException);
+            return new UnsuccessfulAccessTokenResponse(errorCode, errorDescription, errorUri, innerException);
         }
 
         /// <summary>
@@ -65,7 +65,7 @@ namespace OAuthWorks.Implementation.Factories
         /// implementation defines. Therefore beware when calling this method without proper documentation on the specific behaviour.
         /// </remarks>
         /// <returns>Returns the default value for objects of the type T.</returns>
-        public AccessTokenResponse Create()
+        public ISuccessfulAccessTokenResponse Create()
         {
             return null;
         }

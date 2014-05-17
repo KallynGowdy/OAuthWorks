@@ -81,11 +81,12 @@
     <Compile Include="AccessTokenType.cs" />
     <Compile Include="AccessTokenTypes.cs" />
     <Compile Include="AuthorizationCodeExtensions.cs" />
+    <Compile Include="IAccessTokenResponse.cs" />
     <Compile Include="IApiRequest.cs" />
     <Compile Include="Implementation\AccessToken.cs" />
     <Compile Include="Implementation\AccessTokenRequest.cs" />
     <Compile Include="Implementation\AccessTokenResponseError.cs" />
-    <Compile Include="Implementation\AccessTokenResponseException.cs" />
+    <Compile Include="Implementation\UnsuccessfulAccessTokenResponse.cs" />
     <Compile Include="Implementation\AuthorizationCode.cs" />
     <Compile Include="Implementation\AuthorizationCodeGrantAccessTokenRequest.cs" />
     <Compile Include="Implementation\AuthorizationCodeRequest.cs" />
@@ -131,7 +132,7 @@
     <Compile Include="DataAccess\Repositories\IAccessTokenRepository.cs" />
     <Compile Include="DataAccess\Repositories\IAuthorizationCodeRepository.cs" />
     <Compile Include="IAccessTokenRequest.cs" />
-    <Compile Include="IAccessTokenResponse.cs" />
+    <Compile Include="ISuccessfulAccessTokenResponse.cs" />
     <Compile Include="IAuthorizationCode.cs" />
     <Compile Include="IAuthorizationCodeResponseError.cs" />
     <Compile Include="IAuthorizationCodeRequest.cs" />
@@ -146,6 +147,7 @@
     <Compile Include="DataAccess\Repositories\IRepository.cs" />
     <Compile Include="DataAccess\Repositories\IScopeRepository.cs" />
     <Compile Include="ITokenRefreshRequest.cs" />
+    <Compile Include="IUnsuccessfulAccessTokenRequest.cs" />
     <Compile Include="IUser.cs" />
     <Compile Include="DataAccess\Repositories\IUserRepository.cs" />
     <Compile Include="IValueIdFormatter.cs" />

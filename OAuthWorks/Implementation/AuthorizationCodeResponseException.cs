@@ -26,6 +26,7 @@ namespace OAuthWorks.Implementation
     /// Defines a class that provides a basic implemenatation of <see cref="IAuthorizationCodeResponseError"/>.
     /// </summary>
     [DataContract]
+    [Serializable]
     public class AuthorizationCodeResponseException : AuthorizationCodeResponseExceptionBase
     {
         /// <summary>
@@ -69,6 +70,14 @@ namespace OAuthWorks.Implementation
             get;
             protected set;
         }
+
+        public AuthorizationCodeResponseException() : base() { }
+
+        public AuthorizationCodeResponseException(string message) : base(message) { }
+
+        public AuthorizationCodeResponseException(string message, Exception innerException) : base(message, innerException) { }
+
+        protected AuthorizationCodeResponseException(SerializationInfo info, StreamingContext context) : base(info, context) { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthorizationCodeResponseError"/> class.
