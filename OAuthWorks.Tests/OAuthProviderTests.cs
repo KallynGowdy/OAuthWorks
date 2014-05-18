@@ -87,6 +87,65 @@ namespace OAuthWorks.Tests
             ((ClientRepository)provider.ClientRepository).Add(badClient);
         }
 
+        private class InvalidAccessTokenRequest : IAuthorizationCodeGrantAccessTokenRequest
+        {
+            public string AuthorizationCode
+            {
+                get;
+                set;
+            }
+
+            public string ClientId
+            {
+                get;
+                set;
+            }
+
+            public string ClientSecret
+            {
+                get;
+                set;
+            }
+
+            public string GrantType
+            {
+                get;
+                set;
+            }
+
+            public Uri RedirectUri
+            {
+                get;
+                set;
+            }
+
+            public string Scope
+            {
+                get;
+                set;
+            }
+        }
+
+        [Test]
+        [TestCase(null, "secret", "code", "access_token", "http://example.com/oauth/response/token", AccessTokenRequestError.InvalidRequest)]
+        [TestCase("", "secret", "code", "access_token", "http://example.com/oauth/response/token", AccessTokenRequestError.InvalidRequest)]
+        [TestCase("bob", null, "code", "access_token", "http://example.com/oauth/response/token", AccessTokenRequestError.InvalidRequest)]
+        [TestCase("bob", "", "code", "access_token", "http://example.com/oauth/response/token", AccessTokenRequestError.InvalidRequest)]
+        [TestCase("bob", "secret", null, "access_token", "http://example.com/oauth/response/token", AccessTokenRequestError.InvalidRequest)]
+        [TestCase("bob", "secret", "", "access_token", "http://example.com/oauth/response/token", AccessTokenRequestError.InvalidRequest)]
+        [TestCase("bob", "secret", "code", "access_token", null, AccessTokenRequestError.InvalidRequest)]
+        [TestCase("bob", "secret", "code", null, "http://example.com/oauth/response/token", AccessTokenRequestError.InvalidRequest)]
+        [TestCase("bob", "secret", "code", "", "http://example.com/oauth/response/token", AccessTokenRequestError.InvalidRequest)]
+        [TestCase("bob", "secret", "code", "not_access_token", "http://example.com/oauth/response/token", AccessTokenRequestError.InvalidRequest)]
+        public void TestInvalidAccessTokenRequest(string clientId, string clientSecret, string authorizationCode, string grantType, string redirectUri, AccessTokenRequestError expectedError)
+        {
+            var request = new InvalidAccessTokenRequest { ClientId = clientId, ClientSecret = clientSecret, AuthorizationCode = authorizationCode, GrantType = grantType, RedirectUri = (redirectUri != null ? new Uri(redirectUri) : null) };
+
+            IUnsuccessfulAccessTokenResponse response = provider.RequestAccessToken(request) as IUnsuccessfulAccessTokenResponse;
+
+            Assert.NotNull(response);
+            Assert.AreEqual(expectedError, response.Error);
+        }
 
         [Test]
         public void TestRefreshAccessToken()
@@ -122,6 +181,7 @@ namespace OAuthWorks.Tests
             Assert.That(refresh.Token.IsValid(), Is.False);
         }
 
+        [Test]
         [TestCase("exampleScope", "state", "secret", "http://example.com/oauth/response/token")]
         [TestCase("nonExistantScope", "state", "secret", "http://example.com/oauth/response/token")]
         [TestCase("otherScope, exampleScope", "state", "secret", "http://example.com/oauth/response/token")]
@@ -150,6 +210,7 @@ namespace OAuthWorks.Tests
             }
         }
 
+        [Test]
         [TestCase("exampleScope", "state", "secret", "otherSecret", "http://example.com/oauth/response/token")]
         public void TestInvalidClientTokenRetrieval(string scope, string state, string secret, string badSecret, string redirectUri)
         {
@@ -168,7 +229,7 @@ namespace OAuthWorks.Tests
                 state: state
             );
 
-            var response = provider.RequestAuthorizationCode(request, user);
+            ISuccessfulAuthorizationCodeResponse response = provider.RequestAuthorizationCode(request, user) as ISuccessfulAuthorizationCodeResponse;
 
             AuthorizationCodeGrantAccessTokenRequest tokenRequest = new AuthorizationCodeGrantAccessTokenRequest
             (
@@ -181,6 +242,7 @@ namespace OAuthWorks.Tests
             Assert.That(provider.RequestAccessToken(tokenRequest) is IUnsuccessfulAccessTokenResponse);
         }
 
+        [Test]
         [TestCase("exampleScope", "state", "secret", "http://example.com/oauth/response/token")]
         [TestCase("nonExistantScope", "state", "secret", "http://example.com/oauth/response/token")]
         [TestCase("exampleScope", "state", "badSecret", "http://example.com/oauth/response/token")]
@@ -202,35 +264,37 @@ namespace OAuthWorks.Tests
                 state: state
             );
 
-            try
+            IAuthorizationCodeResponse response = provider.RequestAuthorizationCode(codeRequest, user);
+
+            Assert.NotNull(response);
+
+            if ((ISuccessfulAuthorizationCodeResponse success = response as ISuccessfulAuthorizationCodeResponse) != null)
             {
-                var response = provider.RequestAuthorizationCode(codeRequest, user);
-
-                Assert.NotNull(response);
-
-                Assert.AreEqual(response.State, state);
+                Assert.AreEqual(success.State, state);
 
                 Assert.True(client.IsValidRedirectUri(new Uri(redirectUri)), "The client did not have a valid redirect Uri even though it was able to retrieve a code.");
                 Assert.True(client.MatchesSecret(secret), "The client's secret was invalid even though it got through.");
                 Assert.NotNull(provider.GetRequestedScopes(codeRequest), "The requested scope was invalid even though it got through.");
             }
-            catch (AuthorizationCodeResponseExceptionBase e)
+            else
             {
-                switch (e.ErrorCode)
+                IUnsuccessfulAuthorizationCodeResponse unsuccess = (IUnsuccessfulAuthorizationCodeResponse)response;
+                switch (unsuccess.ErrorCode)
                 {
-                    case AuthorizationRequestCodeErrorType.UnauthorizedClient:
+                    case AuthorizationCodeRequestErrorType.UnauthorizedClient:
                         Assert.False(client.MatchesSecret(secret));
                         break;
-                    case AuthorizationRequestCodeErrorType.InvalidScope:
+                    case AuthorizationCodeRequestErrorType.InvalidScope:
                         Assert.IsEmpty(provider.GetRequestedScopes(codeRequest));
                         break;
-                    case AuthorizationRequestCodeErrorType.InvalidRequest:
+                    case AuthorizationCodeRequestErrorType.InvalidRequest:
                         Assert.False(client.IsValidRedirectUri(codeRequest.RedirectUri));
                         break;
                 }
             }
         }
 
+        [Test]
         [TestCase("bob", "secret", "exampleScope", "state", "http://example.com/oauth/response/token")]
         public void TestRevokeAccess(string clientId, string clientSecret, string scope, string state, string redirectUri)
         {
@@ -241,7 +305,7 @@ namespace OAuthWorks.Tests
 
             AuthorizationCodeRequest codeRequest = new AuthorizationCodeRequest(clientId, clientSecret, scope, state, new Uri(redirectUri), AuthorizationCodeResponseType.Code);
 
-            var response = provider.RequestAuthorizationCode(codeRequest, user);
+            ISuccessfulAuthorizationCodeResponse response = provider.RequestAuthorizationCode(codeRequest, user) as ISuccessfulAuthorizationCodeResponse;
 
             Assert.NotNull(response);
 
@@ -290,7 +354,7 @@ namespace OAuthWorks.Tests
             //provider.HasAccess(user, client, scope)
 
             //Then retrieve the code
-            IAuthorizationCodeResponse response = provider.RequestAuthorizationCode(codeRequest, user);
+            ISuccessfulAuthorizationCodeResponse response = provider.RequestAuthorizationCode(codeRequest, user) as ISuccessfulAuthorizationCodeResponse;
 
             Assert.NotNull(response);
 

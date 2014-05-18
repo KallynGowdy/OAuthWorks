@@ -47,7 +47,7 @@ namespace OAuthWorks
             IAccessTokenFactory<IAccessToken> accessTokenFactory,
             IAccessTokenResponseFactory accessTokenResponseFactory,
             IAuthorizationCodeFactory<IAuthorizationCode> authorizationCodeFactory,
-            IAuthorizationCodeResponseFactory<IAuthorizationCodeResponse, AuthorizationCodeResponseExceptionBase> authorizationCodeResponseFactory,
+            IAuthorizationCodeResponseFactory authorizationCodeResponseFactory,
             IRefreshTokenFactory<IRefreshToken> refreshTokenFactory
             )
         {
@@ -108,7 +108,7 @@ namespace OAuthWorks
         /// <summary>
         /// Gets or sets the factory used to create new <see cref="OAuthWorks.IAuthorizationCodeResponse"/> objects.
         /// </summary>
-        public IAuthorizationCodeResponseFactory<IAuthorizationCodeResponse, AuthorizationCodeResponseExceptionBase> AuthorizationCodeResponseFactory
+        public IAuthorizationCodeResponseFactory AuthorizationCodeResponseFactory
         {
             get;
             set;
@@ -221,7 +221,7 @@ namespace OAuthWorks
         private Func<AccessTokenRequestError, IClient, Uri> accessTokenErrorUriProvider = (e, c) => null;
 
         /// <summary>
-        /// Gets or sets the error description provider. That is, a function that, given the error and client, returns a string describing the problem.
+        /// Gets or sets the access token error description provider. That is, a function that, given the error and client, returns a string describing the problem.
         /// </summary>
         public Func<AccessTokenRequestError, IClient, string> AccessTokenErrorDescriptionProvider
         {
@@ -233,6 +233,25 @@ namespace OAuthWorks
             {
                 value.ThrowIfNull("value");
                 accessTokenErrorDescriptionProvider = value;
+            }
+        }
+
+        private Func<AuthorizationCodeRequestErrorType, string> authorizationCodeErrorDescriptionProvider = e => null;
+
+        /// <summary>
+        /// Gets or sets the error description provider. That is, a function that, given the error, returns a string describing the problem.
+        /// </summary>
+        /// <returns></returns>
+        public Func<AuthorizationCodeRequestErrorType, string> AuthorizationCodeErrorDescriptionProvider
+        {
+            get
+            {
+                return authorizationCodeErrorDescriptionProvider;
+            }
+            set
+            {
+                value.ThrowIfNull("value");
+                authorizationCodeErrorDescriptionProvider = value;
             }
         }
 
@@ -277,45 +296,51 @@ namespace OAuthWorks
         /// <returns>Returns a new <see cref="OAuthWorks.IAuthorizationCodeResponse"/> object that determines what values to put in the outgoing response.</returns>
         public IAuthorizationCodeResponse RequestAuthorizationCode(IAuthorizationCodeRequest request, IUser user)
         {
-            request.ThrowIfNull("request");
-            try
+            if (IsValidRequest(request))
             {
-                IClient client = ClientRepository.GetById(request.ClientId);
-                if (client != null && client.MatchesSecret(request.ClientSecret))
+                try
                 {
-                    if (client.IsValidRedirectUri(request.RedirectUri))
+                    IClient client = ClientRepository.GetById(request.ClientId);
+                    if (client != null && client.MatchesSecret(request.ClientSecret))
                     {
-                        IEnumerable<IScope> scopes = GetRequestedScopes(request);
-
-                        if (scopes != null && scopes.Any())
+                        if (client.IsValidRedirectUri(request.RedirectUri))
                         {
-                            ICreatedToken<IAuthorizationCode> authCode = AuthorizationCodeFactory.Create(request.RedirectUri, user, client, scopes);
+                            IEnumerable<IScope> scopes = GetRequestedScopes(request);
 
-                            //put the authorization code in the repository
-                            AuthorizationCodeRepository.Add(authCode.Token);
+                            if (scopes != null && scopes.Any())
+                            {
+                                ICreatedToken<IAuthorizationCode> authCode = AuthorizationCodeFactory.Create(request.RedirectUri, user, client, scopes);
 
-                            //return a successful response
-                            return AuthorizationCodeResponseFactory.Create(authCode.TokenValue, request.State);
+                                //put the authorization code in the repository
+                                AuthorizationCodeRepository.Add(authCode.Token);
+
+                                //return a successful response
+                                return AuthorizationCodeResponseFactory.Create(authCode.TokenValue, request.State);
+                            }
+                            else
+                            {
+                                return CreateAuthorizationCodeError(AuthorizationCodeRequestErrorType.InvalidScope, request.State);
+                            }
                         }
                         else
                         {
-                            throw AuthorizationCodeResponseFactory.CreateError(AuthorizationRequestCodeErrorType.InvalidScope, "One or more of the given scopes were invalid.", null, request.State, null);
+                            //Invalid redirect
+                            return CreateAuthorizationCodeError(AuthorizationCodeRequestErrorType.InvalidRequest, request.State);
                         }
                     }
                     else
                     {
-                        //Invalid redirect
-                        throw AuthorizationCodeResponseFactory.CreateError(AuthorizationRequestCodeErrorType.InvalidRequest, "The given redirect uri was invalid", null, request.State, null);
+                        return CreateAuthorizationCodeError(AuthorizationCodeRequestErrorType.UnauthorizedClient, request.State);
                     }
                 }
-                else
+                catch (SystemException e)
                 {
-                    throw AuthorizationCodeResponseFactory.CreateError(AuthorizationRequestCodeErrorType.UnauthorizedClient, "The client is not authorized to access this resource.", null, request.State, null);
+                    return CreateAuthorizationCodeError(AuthorizationCodeRequestErrorType.ServerError, request.State, e);
                 }
             }
-            catch (SystemException e)
+            else
             {
-                throw AuthorizationCodeResponseFactory.CreateError(AuthorizationRequestCodeErrorType.ServerError, "The server encountered an error while processing the request.", null, request.State, e);
+                return CreateAuthorizationCodeError(AuthorizationCodeRequestErrorType.InvalidRequest, null);
             }
         }
 
@@ -331,13 +356,13 @@ namespace OAuthWorks
                 try
                 {
                     IClient client = ClientRepository.GetById(request.ClientId);
-                    if(!IsValidClient(request, client))
+                    if (!IsValidClient(request, client))
                     {
                         return CreateAccessTokenError(AccessTokenRequestError.InvalidClient, client);
                     }
 
                     IAuthorizationCode code = AuthorizationCodeRepository.GetByValue(request.AuthorizationCode);
-                    if(!IsValidAuthorizationCode(code, request, client))
+                    if (!IsValidAuthorizationCode(code, request, client))
                     {
                         return CreateAccessTokenError(AccessTokenRequestError.InvalidGrant, client);
                     }
@@ -362,21 +387,13 @@ namespace OAuthWorks
                 }
                 catch (SystemException e)
                 {
-                    //Server error
-                    return AccessTokenResponseFactory.CreateError(
-                        AccessTokenRequestError.ServerError,
-                        AccessTokenErrorDescriptionProvider(AccessTokenRequestError.ServerError, null),
-                        AccessTokenErrorUriProvider(AccessTokenRequestError.ServerError, null),
-                        e);
+                    // Server error
+                    return CreateAccessTokenError(AccessTokenRequestError.ServerError, null, e);
                 }
             }
             else
             {
-                return AccessTokenResponseFactory.CreateError(
-                    AccessTokenRequestError.InvalidRequest,
-                    AccessTokenErrorDescriptionProvider(AccessTokenRequestError.InvalidRequest, null),
-                    AccessTokenErrorUriProvider(AccessTokenRequestError.InvalidRequest, null),
-                    null);
+                return CreateAccessTokenError(AccessTokenRequestError.InvalidRequest, null, null);
             }
         }
 
@@ -457,6 +474,20 @@ namespace OAuthWorks
         /// </summary>
         /// <param name="request">The request the examine for faults.</param>
         /// <returns>Returns true if the request is valid and therefore relatively safe for use in database transactions.</returns>
+        private bool IsValidRequest(IAuthorizationCodeRequest request)
+        {
+            return request != null &&
+                !string.IsNullOrEmpty(request.ClientId) &&
+                !string.IsNullOrEmpty(request.ClientSecret) &&
+                !string.IsNullOrEmpty(request.Scope) &&
+                request.RedirectUri != null;
+        }
+
+        /// <summary>
+        /// Determines if the given request contains acceptable values for processing.
+        /// </summary>
+        /// <param name="request">The request the examine for faults.</param>
+        /// <returns>Returns true if the request is valid and therefore relatively safe for use in database transactions.</returns>
         private static bool IsValidRequest(ITokenRefreshRequest request)
         {
             return request != null &&
@@ -477,8 +508,20 @@ namespace OAuthWorks
                 request.RedirectUri != null &&
                 !string.IsNullOrEmpty(request.ClientId) &&
                 !string.IsNullOrEmpty(request.ClientSecret) &&
-                !string.IsNullOrEmpty(request.GrantType) &&
-                !string.IsNullOrEmpty(request.AuthorizationCode);
+                !string.IsNullOrEmpty(request.AuthorizationCode) &&
+                "access_token" == request.GrantType;
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="IUnsuccessfulAuthorizationCodeResponse"/> object that represents the given error code with the given exception.
+        /// </summary>
+        /// <param name="errorCode">The <see cref="AuthorizationCodeRequestErrorType"/> object that specifies what basic error occurred.</param>
+        /// <param name="state">The state that was sent by the client in the request.</param>
+        /// <param name="innerException">The exception that caused the error to occur.</param>
+        /// <returns>Returns a new <see cref="IUnsuccessfulAuthorizationCodeResponse"/> object that represents a valid OAuth 2.0 Authorization Code Error resposne.</returns>
+        private IUnsuccessfulAuthorizationCodeResponse CreateAuthorizationCodeError(AuthorizationCodeRequestErrorType errorCode, string state, Exception innerException = null)
+        {
+            return AuthorizationCodeResponseFactory.CreateError(errorCode, AuthorizationCodeErrorDescriptionProvider(errorCode), null, state, innerException);
         }
 
         /// <summary>
@@ -504,9 +547,10 @@ namespace OAuthWorks
         /// <returns>
         /// Returns a new <see cref="OAuthWorks.ISuccessfulAccessTokenResponse" /> object that determines what values to put in the outgoing response.
         /// </returns>
+        /// <exception cref="System.NotImplementedException"></exception>
         public IAccessTokenResponse RequestAccessToken(IPasswordCredentialsAccessTokenRequest request)
         {
-            return null;
+            throw new NotImplementedException();
         }
 
         /// <summary>

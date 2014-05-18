@@ -47,7 +47,7 @@ namespace OAuthWorks.Implementation
         /// <param name="scope">The scope requested by the client.</param>
         /// <param name="redirectUri">The redirect URI provided by the client when requesting an authorization code.</param>
         public AuthorizationCodeGrantAccessTokenRequest(string authorizationCode, string clientId, string clientSecret, Uri redirectUri)
-            : base(clientId, clientSecret, "authorization_code", null, redirectUri)
+            : base(clientId, clientSecret, "access_token", null, redirectUri)
         {
             Contract.Requires(!string.IsNullOrEmpty(authorizationCode));
             this.AuthorizationCode = authorizationCode;

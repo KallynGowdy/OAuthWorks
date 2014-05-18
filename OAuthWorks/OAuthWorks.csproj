@@ -77,7 +77,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AccessTokenExtensions.cs" />
-    <Compile Include="AccessTokenResponseExceptionBase.cs" />
     <Compile Include="AccessTokenType.cs" />
     <Compile Include="AccessTokenTypes.cs" />
     <Compile Include="AuthorizationCodeExtensions.cs" />
@@ -85,12 +84,10 @@
     <Compile Include="IApiRequest.cs" />
     <Compile Include="Implementation\AccessToken.cs" />
     <Compile Include="Implementation\AccessTokenRequest.cs" />
-    <Compile Include="Implementation\AccessTokenResponseError.cs" />
     <Compile Include="Implementation\UnsuccessfulAccessTokenResponse.cs" />
     <Compile Include="Implementation\AuthorizationCode.cs" />
     <Compile Include="Implementation\AuthorizationCodeGrantAccessTokenRequest.cs" />
     <Compile Include="Implementation\AuthorizationCodeRequest.cs" />
-    <Compile Include="AuthorizationCodeResponseExceptionBase.cs" />
     <Compile Include="AuthorizationCodeResponseType.cs" />
     <Compile Include="AuthorizationRequestCodeErrorType.cs" />
     <Compile Include="AccessTokenRequestError.cs" />
@@ -103,13 +100,11 @@
     <Compile Include="IAccessToken.cs" />
     <Compile Include="Factories\IAccessTokenFactory.cs" />
     <Compile Include="Factories\IAuthorizationCodeFactory.cs" />
-    <Compile Include="IAccessTokenResponseError.cs" />
     <Compile Include="IAuthorizationCodeGrantAccessTokenRequest.cs" />
     <Compile Include="ICreatedToken.cs" />
     <Compile Include="IDependencyInjector.cs" />
-    <Compile Include="Implementation\AccessTokenResponse.cs" />
-    <Compile Include="Implementation\AuthorizationCodeResponse.cs" />
-    <Compile Include="Implementation\AuthorizationCodeResponseException.cs" />
+    <Compile Include="Implementation\SuccessfulAccessTokenResponse.cs" />
+    <Compile Include="Implementation\SuccessfulAuthorizationCodeResponse.cs" />
     <Compile Include="Implementation\Factories\AuthorizationCodeResponseFactory.cs" />
     <Compile Include="Implementation\Factories\AccessTokenFactory.cs" />
     <Compile Include="Implementation\Factories\AccessTokenResponseFactory.cs" />
@@ -125,16 +120,18 @@
     <Compile Include="Implementation\PasswordCredentialsAccessTokenRequest.cs" />
     <Compile Include="Implementation\RefreshToken.cs" />
     <Compile Include="Implementation\TokenRefreshRequest.cs" />
+    <Compile Include="Implementation\UnsuccessfulAuthorizationCodeResponse.cs" />
     <Compile Include="Implementation\ValueIdFormatter.cs" />
     <Compile Include="IPasswordCredentialsAccessTokenRequest.cs" />
     <Compile Include="IRefreshToken.cs" />
+    <Compile Include="ISuccessfulAuthorizationCodeResponse.cs" />
     <Compile Include="IToken.cs" />
     <Compile Include="DataAccess\Repositories\IAccessTokenRepository.cs" />
     <Compile Include="DataAccess\Repositories\IAuthorizationCodeRepository.cs" />
     <Compile Include="IAccessTokenRequest.cs" />
     <Compile Include="ISuccessfulAccessTokenResponse.cs" />
     <Compile Include="IAuthorizationCode.cs" />
-    <Compile Include="IAuthorizationCodeResponseError.cs" />
+    <Compile Include="IUnsuccessfulAuthorizationCodeResponse.cs" />
     <Compile Include="IAuthorizationCodeRequest.cs" />
     <Compile Include="IAuthorizationCodeResponse.cs" />
     <Compile Include="IClient.cs" />

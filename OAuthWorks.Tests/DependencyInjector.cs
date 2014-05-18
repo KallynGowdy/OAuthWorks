@@ -35,7 +35,7 @@ namespace OAuthWorks.Tests
             Kernel.Bind<IAccessTokenRepository<IAccessToken>>().To<AccessTokenRepository>();
             Kernel.Bind<IAuthorizationCodeRepository<IAuthorizationCode>>().To<AuthorizationCodeRepository>();
             Kernel.Bind<IAuthorizationCodeFactory<IAuthorizationCode>>().To<AuthorizationCodeFactory>();
-            Kernel.Bind<IAuthorizationCodeResponseFactory<IAuthorizationCodeResponse, AuthorizationCodeResponseExceptionBase>>().To<AuthorizationCodeResponseFactory>();
+            Kernel.Bind<IAuthorizationCodeResponseFactory>().To<AuthorizationCodeResponseFactory>();
 
             Kernel.Bind(typeof(IAccessTokenResponseFactory)).To<AccessTokenResponseFactory>();
 

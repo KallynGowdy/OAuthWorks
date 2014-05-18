@@ -25,17 +25,20 @@ namespace OAuthWorks.Implementation
     /// Defines a class that provides a basic implementation of <see cref="OAuthWorks.IAuthorizationCodeResponse"/>.
     /// </summary>
     [DataContract]
-    public class AuthorizationCodeResponse : IAuthorizationCodeResponse
+    public class SuccessfulAuthorizationCodeResponse : ISuccessfulAuthorizationCodeResponse
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="AuthorizationCodeResponse"/> class.
+        /// Initializes a new instance of the <see cref="SuccessfulAuthorizationCodeResponse"/> class.
         /// </summary>
-        /// <param name="code">The authorization code that is granted to the client.</param>
-        /// <param name="state">The state that the client provided.</param>
-        public AuthorizationCodeResponse(string code, string state)
+        /// <param name="code">The code that should be returned to the client.</param>
+        /// <param name="state">The state that should be returned to the client.</param>
+        /// <exception cref="System.ArgumentException">The given code must not be null or empty.;code</exception>
+        public SuccessfulAuthorizationCodeResponse(string code, string state)
         {
-            Contract.Requires(!string.IsNullOrEmpty(code));
-            Contract.Requires(!string.IsNullOrEmpty(state));
+            if (string.IsNullOrEmpty(code))
+            {
+                throw new ArgumentException("The given code must not be null or empty.", "code");
+            }
             this.Code = code;
             this.State = state;
         }
@@ -47,7 +50,19 @@ namespace OAuthWorks.Implementation
         public string Code
         {
             get;
-            protected set;
+            private set;
+        }
+
+        /// <summary>
+        /// Gets whether the request for an authorization code was successful.
+        /// </summary>
+        /// <returns>Returns whether the request was successful.</returns>
+        public bool IsSuccessful
+        {
+            get
+            {
+                return true;
+            }
         }
 
         /// <summary>
@@ -57,7 +72,7 @@ namespace OAuthWorks.Implementation
         public string State
         {
             get;
-            protected set;
+            private set;
         }
     }
 }

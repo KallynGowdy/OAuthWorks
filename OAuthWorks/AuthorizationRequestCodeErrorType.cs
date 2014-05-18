@@ -23,7 +23,7 @@ namespace OAuthWorks
     /// <summary>
     /// Defines an enum that contains a list of error codes as defined in RFC 6749, Section 4.1.2.1, http://tools.ietf.org/html/rfc6749#section-4.1.2.1.
     /// </summary>
-    public enum AuthorizationRequestCodeErrorType
+    public enum AuthorizationCodeRequestErrorType
     {
         /// <summary>
         /// Defines that the request is missing a required parameter, includes an invalid parameter value, includes a parameter more than once,

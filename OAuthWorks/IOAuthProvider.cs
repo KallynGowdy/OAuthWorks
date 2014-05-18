@@ -149,6 +149,12 @@ namespace OAuthWorks
         /// <summary>
         /// Requests an access refreshToken from the authorization server based on the given request using the Authorization Code Grant flow (Section 4.1 [RFC 6749] http://tools.ietf.org/html/rfc6749#section-4.1).
         /// </summary>
+        /// <remarks>
+        /// This method is used to distribute access tokens according to the Authorization Code Grant flow (Section 4.1 [RFC 6749] http://tools.ietf.org/html/rfc6749#section-4.1).
+        /// Classes implementing this method should be able to handle any input and return a valid output without throwing an exception.
+        /// Not only would that cause a performance improvement for handling invalid requests, but it makes it easier to pass on to the client.
+        /// Make sure to save/commit any changes recorded by the unit of work object (DataContext) after calling this method so that it is saved to the datastore.
+        /// </remarks>
         /// <param name="request">The request that contains the required values.</param>
         /// <returns>Returns a new <see cref="OAuthWorks.IAccessTokenResponse"/> object that determines what values to put in the outgoing response.</returns>
         IAccessTokenResponse RequestAccessToken(IAuthorizationCodeGrantAccessTokenRequest request);
@@ -164,6 +170,11 @@ namespace OAuthWorks
         /// Requests a new access refreshToken from the authorizaiton server based on the given request.
         /// </summary>
         /// <param name="request">The request that contains the required values for refreshing an access refreshToken.</param>
+        /// <remarks>
+        /// This method distributes new access tokens according to the OAuth 2.0 refresh token flow. (Section 6 [RFC 6749] http://tools.ietf.org/html/rfc6749#section-6)
+        /// Classes implementing this method should be able to handle any input and return a valid (non-null) output without throwing an exception.
+        /// Make sure to save/commit any changes recorded by the unit or work object (DataContext) after callin this method so that it is saved to the datastore.
+        /// </remarks>
         /// <returns>Returns a new <see cref="OAuthWorks.IAccessTokenResponse"/> object that determines what values to put in the outgoing response.</returns>
         IAccessTokenResponse RefreshAccessToken(ITokenRefreshRequest request);
 
