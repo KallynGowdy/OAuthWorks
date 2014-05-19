@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Net;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
@@ -101,6 +102,7 @@ namespace OAuthWorks.Implementation
             get;
             private set;
         }
+
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SuccessfulAccessTokenResponse"/> class.

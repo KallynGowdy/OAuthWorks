@@ -23,6 +23,7 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using System.Web.Security;
+using System.Web.Http.Results;
 
 namespace ExampleWebApiProject.Controllers
 {
@@ -40,7 +41,7 @@ namespace ExampleWebApiProject.Controllers
 
         [Route("api/v1/authorizationCode")]
         [HttpGet]
-        public IAuthorizationCodeResponse RequestAuthorizationCode(string clientId, string clientSecret, string redirectUri, AuthorizationCodeResponseType responseType, string scope, string state)
+        public RedirectResult RequestAuthorizationCode(string clientId, string clientSecret, string redirectUri, AuthorizationCodeResponseType responseType, string scope, string state)
         {
             using (DatabaseContext context = new DatabaseContext())
             using (Provider = new OAuthProvider
@@ -67,7 +68,14 @@ namespace ExampleWebApiProject.Controllers
 
                     IAuthorizationCodeResponse response = Provider.RequestAuthorizationCode(request, user);
                     context.SaveChanges();
-                    return response;
+                    if (response.ShouldRedirect())
+                    {
+                        return Redirect(response.Redirect);
+                    }
+                    else
+                    {
+                        return null;
+                    }
                 }
                 else
                 {
@@ -78,7 +86,7 @@ namespace ExampleWebApiProject.Controllers
 
         [Route("api/v1/accessToken")]
         [HttpPost]
-        public IAccessTokenResponse RequestAccessToken(AuthorizationCodeGrantAccessTokenRequest request)
+        public HttpResponseMessage RequestAccessToken(AuthorizationCodeGrantAccessTokenRequest request)
         {
             using (DatabaseContext context = new DatabaseContext())
             using (Provider = new OAuthProvider
@@ -94,13 +102,13 @@ namespace ExampleWebApiProject.Controllers
             {
                 IAccessTokenResponse response = Provider.RequestAccessToken(request);
                 context.SaveChanges();
-                return response;
+                return Request.CreateResponse(response is ISuccessfulAccessTokenResponse ? HttpStatusCode.OK : HttpStatusCode.BadRequest, response);
             }
         }
 
         [Route("api/v1/refreshToken")]
         [HttpPost]
-        public IAccessTokenResponse RefreshAccessToken(TokenRefreshRequest request)
+        public HttpResponseMessage RefreshAccessToken(TokenRefreshRequest request)
         {
             using (DatabaseContext context = new DatabaseContext())
             using (Provider = new OAuthProvider
@@ -115,7 +123,7 @@ namespace ExampleWebApiProject.Controllers
             {
                 IAccessTokenResponse response = Provider.RefreshAccessToken(request);
                 context.SaveChanges();
-                return response;
+                return Request.CreateResponse(response is ISuccessfulAccessTokenResponse ? HttpStatusCode.OK : HttpStatusCode.BadRequest, response);
             }
         }
     }

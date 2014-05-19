@@ -280,7 +280,7 @@ namespace OAuthWorks
         /// <exception cref="System.ArgumentNullException">Thrown if the given request object is null.</exception>
         public IEnumerable<IScope> GetRequestedScopes(IAuthorizationCodeRequest request)
         {
-            if(request == null)
+            if (request == null)
             {
                 throw new ArgumentNullException("request");
             }
@@ -323,32 +323,32 @@ namespace OAuthWorks
                                 AuthorizationCodeRepository.Add(authCode);
 
                                 //return a successful response
-                                return AuthorizationCodeResponseFactory.Create(authCode.TokenValue, request.State);
+                                return AuthorizationCodeResponseFactory.Create(authCode.TokenValue, request.State, request.RedirectUri);
                             }
                             else
                             {
-                                return CreateAuthorizationCodeError(AuthorizationCodeRequestErrorType.InvalidScope, request.State);
+                                return CreateAuthorizationCodeError(AuthorizationCodeRequestErrorType.InvalidScope, request.State, request.RedirectUri);
                             }
                         }
                         else
                         {
                             //Invalid redirect
-                            return CreateAuthorizationCodeError(AuthorizationCodeRequestErrorType.InvalidRequest, request.State);
+                            return CreateAuthorizationCodeError(AuthorizationCodeRequestErrorType.InvalidRequest, request.State, null);
                         }
                     }
                     else
                     {
-                        return CreateAuthorizationCodeError(AuthorizationCodeRequestErrorType.UnauthorizedClient, request.State);
+                        return CreateAuthorizationCodeError(AuthorizationCodeRequestErrorType.UnauthorizedClient, request.State, request.RedirectUri);
                     }
                 }
                 catch (SystemException e)
                 {
-                    return CreateAuthorizationCodeError(AuthorizationCodeRequestErrorType.ServerError, request.State, e);
+                    return CreateAuthorizationCodeError(AuthorizationCodeRequestErrorType.ServerError, request.State, request.RedirectUri, e);
                 }
             }
             else
             {
-                return CreateAuthorizationCodeError(AuthorizationCodeRequestErrorType.InvalidRequest, null);
+                return CreateAuthorizationCodeError(AuthorizationCodeRequestErrorType.InvalidRequest, null, null);
             }
         }
 
@@ -380,7 +380,7 @@ namespace OAuthWorks
                     //Authorized!
 
                     code.Revoke(); // Prevent this same code from being used again
-                    
+
                     ICreatedToken<IAccessToken> accessToken = AccessTokenFactory.Create(client, code.User, code.Scopes);
                     ICreatedToken<IRefreshToken> refreshToken = null;
                     if (RefreshTokenFactory != null && DistributeRefreshTokens)
@@ -535,9 +535,9 @@ namespace OAuthWorks
         /// <param name="state">The state that was sent by the client in the request.</param>
         /// <param name="innerException">The exception that caused the error to occur.</param>
         /// <returns>Returns a new <see cref="IUnsuccessfulAuthorizationCodeResponse"/> object that represents a valid OAuth 2.0 Authorization Code Error resposne.</returns>
-        private IUnsuccessfulAuthorizationCodeResponse CreateAuthorizationCodeError(AuthorizationCodeRequestErrorType errorCode, string state, Exception innerException = null)
+        private IUnsuccessfulAuthorizationCodeResponse CreateAuthorizationCodeError(AuthorizationCodeRequestErrorType errorCode, string state, Uri redirect, Exception innerException = null)
         {
-            return AuthorizationCodeResponseFactory.CreateError(errorCode, AuthorizationCodeErrorDescriptionProvider(errorCode), null, state, innerException);
+            return AuthorizationCodeResponseFactory.CreateError(errorCode, AuthorizationCodeErrorDescriptionProvider(errorCode), null, state, redirect, innerException);
         }
 
         /// <summary>
@@ -662,7 +662,8 @@ namespace OAuthWorks
         {
             get;
             set;
-        } = true;
+        }
+        = true;
 
         /// <summary>
         /// Gets or sets whether to reuse refresh tokens across newly issued tokens.
@@ -671,7 +672,8 @@ namespace OAuthWorks
         {
             get;
             set;
-        } = false;
+        }
+        = false;
 
         /// <summary>
         /// Gets or sets whether newly revoked tokens (access or refresh) should be deleted from their respective repository.
@@ -685,7 +687,8 @@ namespace OAuthWorks
         {
             get;
             set;
-        } = false;
+        }
+        = false;
 
         ~OAuthProvider()
         {

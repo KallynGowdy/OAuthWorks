@@ -31,12 +31,13 @@ namespace OAuthWorks.Implementation.Factories
         /// </summary>
         /// <param name="authorizationCode">The authorization code that is granted to the client.</param>
         /// <param name="state">The state that was provided by the client to prevent Cross Site Request Forgery.</param>
+        /// <param name="redirect">The <see cref="Uri" /> provided by the client that the user should be redirected to.</param>
         /// <returns>
         /// Returns a new <see cref="OAuthWorks.ISuccessfulAuthorizationCodeResponse" /> object that contains the given values.
         /// </returns>
-        public ISuccessfulAuthorizationCodeResponse Create(string authorizationCode, string state)
+        public ISuccessfulAuthorizationCodeResponse Create(string authorizationCode, string state, Uri redirect)
         {
-            return new SuccessfulAuthorizationCodeResponse(authorizationCode, state);
+            return new SuccessfulAuthorizationCodeResponse(authorizationCode, state, redirect);
         }
 
         /// <summary>
@@ -46,13 +47,14 @@ namespace OAuthWorks.Implementation.Factories
         /// <param name="errorDescription">A human-readable string that describes what went wrong. (Optional)</param>
         /// <param name="errorUri">A URI that points to a human-readable web page that contains information about the error. (Optional)</param>
         /// <param name="state">The state that was provided by the client in the request. (Required if client provided state)</param>
+        /// <param name="redirectUri">The <see cref="Uri" /> provided by the client that the user should be redirected to.</param>
         /// <param name="innerException">The exception that caused this error to occur.</param>
         /// <returns>
         /// Returns a new <see cref="IUnsuccessfulAuthorizationCodeResponse" /> object.
         /// </returns>
-        public IUnsuccessfulAuthorizationCodeResponse CreateError(AuthorizationCodeRequestErrorType errorCode, string errorDescription, Uri errorUri, string state, Exception innerException)
+        public IUnsuccessfulAuthorizationCodeResponse CreateError(AuthorizationCodeRequestErrorType errorCode, string errorDescription, Uri errorUri, string state, Uri redirectUri, Exception innerException)
         {
-            return new UnsuccessfulAuthorizationCodeResponse(errorCode, state, errorDescription, errorUri);
+            return new UnsuccessfulAuthorizationCodeResponse(errorCode, state, redirectUri, errorDescription, errorUri);
         }
 
         public ISuccessfulAuthorizationCodeResponse Create()

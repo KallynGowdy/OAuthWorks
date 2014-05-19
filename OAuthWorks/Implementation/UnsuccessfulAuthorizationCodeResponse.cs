@@ -32,8 +32,8 @@ namespace OAuthWorks.Implementation
         /// </summary>
         /// <param name="errorCode">The error code that represents the basic problem that occurred.</param>
         /// <param name="state">The state that was sent by the client in the request.</param>
-        public UnsuccessfulAuthorizationCodeResponse(AuthorizationCodeRequestErrorType errorCode, string state)
-            : this(errorCode, state, null, null)
+        public UnsuccessfulAuthorizationCodeResponse(AuthorizationCodeRequestErrorType errorCode, string state, Uri redirectUri)
+            : this(errorCode, state, redirectUri, null, null)
         {
 
         }
@@ -44,8 +44,8 @@ namespace OAuthWorks.Implementation
         /// <param name="errorCode">The error code that represents the basic problem that occurred.</param>
         /// <param name="state">The state that was sent by the client in the request.</param>
         /// <param name="errorDescription">The human-readable description of the error.</param>
-        public UnsuccessfulAuthorizationCodeResponse(AuthorizationCodeRequestErrorType errorCode, string state, string errorDescription)
-            : this(errorCode, state, errorDescription, null)
+        public UnsuccessfulAuthorizationCodeResponse(AuthorizationCodeRequestErrorType errorCode, string state, Uri redirectUri, string errorDescription)
+            : this(errorCode, state, redirectUri, errorDescription, null)
         {
 
         }
@@ -57,12 +57,18 @@ namespace OAuthWorks.Implementation
         /// <param name="state">The state that was sent by the client in the request.</param>
         /// <param name="errorDescription">The human-readable description of the error.</param>
         /// <param name="errorUri">A URI that points to a human-readable web page that describes the error.</param>
-        public UnsuccessfulAuthorizationCodeResponse(AuthorizationCodeRequestErrorType errorCode, string state, string errorDescription, Uri errorUri)
+        public UnsuccessfulAuthorizationCodeResponse(AuthorizationCodeRequestErrorType errorCode, string state, Uri redirectUri, string errorDescription, Uri errorUri)
         {
             this.ErrorCode = errorCode;
             this.State = state;
             this.ErrorDescription = errorDescription;
             this.ErrorUri = errorUri;
+            if (redirectUri != null)
+                this.Redirect = new Uri(redirectUri, new { error = errorCode, state = state, error_description = errorDescription, error_uri = errorUri }.ToQueryString());
+            else
+            {
+                this.Redirect = null;
+            }
         }
 
         /// <summary>
@@ -109,6 +115,19 @@ namespace OAuthWorks.Implementation
                 return false;
             }
         }
+
+        /// <summary>
+        /// Gets the 
+        /// <see cref="Uri" /> that specifies where the user should be redirected to. 
+        /// This value should contain all of the values needed for a successful OAuth 2.0 authorization code redirect. (Section 4.1.2 [RFC 6749] http://tools.ietf.org/html/rfc6749#section-4.1.2)
+        /// </summary>
+        /// <returns></returns>
+        public Uri Redirect
+        {
+            get;
+            private set;
+        }
+
 
         /// <summary>
         /// Gets the state that was provided by the client in the incomming Authorization Request. REQUIRED ONLY IF the state was provided in the request.

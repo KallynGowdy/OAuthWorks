@@ -82,6 +82,7 @@
     <Compile Include="AccessTokenType.cs" />
     <Compile Include="AccessTokenTypes.cs" />
     <Compile Include="AuthorizationCodeExtensions.cs" />
+    <Compile Include="AuthorizationCodeResponseExtensions.cs" />
     <Compile Include="IAccessTokenResponse.cs" />
     <Compile Include="Implementation\AccessToken.cs" />
     <Compile Include="Implementation\AccessTokenRequest.cs" />

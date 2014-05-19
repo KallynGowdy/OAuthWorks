@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -64,6 +65,28 @@ namespace OAuthWorks
             {
                 action(a);
             }
+        }
+
+        /// <summary>
+        /// Converts the given object into a query string representation.
+        /// </summary>
+        /// <param name="obj">The object to retreive to query string for.</param>
+        /// <returns></returns>
+        public static string ToQueryString(this object obj)
+        {
+            if(obj == null)
+            {
+                throw new ArgumentNullException("obj");
+            }
+            Type t = obj.GetType();
+            List<Tuple<string, string>> values = new List<Tuple<string, string>>();
+
+            foreach(PropertyInfo p in t.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => !p.IsSpecialName && p.CanRead))
+            {
+                values.Add(new Tuple<string, string>(p.Name, (p.GetValue(obj) ?? "").ToString()));
+            }
+
+            return "?" + string.Join("&", values.Where(v => v.Item2 != null).Select(v => string.Format("{0}={1}", v.Item1, Uri.EscapeDataString(v.Item2))));
         }
     }
 }

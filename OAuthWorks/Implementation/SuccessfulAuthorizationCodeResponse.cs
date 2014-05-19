@@ -33,14 +33,19 @@ namespace OAuthWorks.Implementation
         /// <param name="code">The code that should be returned to the client.</param>
         /// <param name="state">The state that should be returned to the client.</param>
         /// <exception cref="System.ArgumentException">The given code must not be null or empty.;code</exception>
-        public SuccessfulAuthorizationCodeResponse(string code, string state)
+        public SuccessfulAuthorizationCodeResponse(string code, string state, Uri redirectUri)
         {
             if (string.IsNullOrEmpty(code))
             {
                 throw new ArgumentException("The given code must not be null or empty.", "code");
             }
+            if(redirectUri == null)
+            {
+                throw new ArgumentNullException("redirectUri");
+            }
             this.Code = code;
             this.State = state;
+            this.Redirect = new Uri(redirectUri, string.Format("?code={0}&state={1}", Uri.EscapeDataString(code), Uri.EscapeDataString(state)));
         }
 
         /// <summary>
@@ -64,6 +69,19 @@ namespace OAuthWorks.Implementation
                 return true;
             }
         }
+
+        /// <summary>
+        /// Gets the 
+        /// <see cref="Uri" /> that specifies where the user should be redirected to. 
+        /// This value should contain all of the values needed for a successful OAuth 2.0 authorization code redirect. (Section 4.1.2 [RFC 6749] http://tools.ietf.org/html/rfc6749#section-4.1.2)
+        /// </summary>
+        /// <returns></returns>
+        public Uri Redirect
+        {
+            get;
+            private set;
+        }
+
 
         /// <summary>
         /// Gets the state that was sent by the client in the Authorization Request. REQUIRED ONLY IF the state was sent in the request.
