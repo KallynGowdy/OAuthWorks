@@ -29,7 +29,7 @@ namespace OAuthWorks.Implementation
     /// as validation for refreshToken values.
     /// </summary>
     [DataContract]
-    public class HashedRefreshToken : RefreshToken, IHasId<string>
+    public sealed class HashedRefreshToken : RefreshToken, IHasId<string>
     {
         /// <summary>
         /// The default number of iterations used for hashing refreshToken values.
@@ -63,11 +63,11 @@ namespace OAuthWorks.Implementation
         /// <value>
         /// The refreshToken hash.
         /// </value>
-        [DataMember(Name="TokenHash")]
+        [DataMember(Name = "TokenHash")]
         public string TokenHash
         {
             get;
-            protected set;
+            private set;
         }
 
         /// <summary>
@@ -76,11 +76,11 @@ namespace OAuthWorks.Implementation
         /// <value>
         /// The refreshToken salt.
         /// </value>
-        [DataMember(Name="TokenSalt")]
+        [DataMember(Name = "TokenSalt")]
         public string TokenSalt
         {
             get;
-            protected set;
+            private set;
         }
 
         /// <summary>
@@ -89,33 +89,33 @@ namespace OAuthWorks.Implementation
         /// <value>
         /// The hash iterations.
         /// </value>
-        [DataMember(Name="HashIterations")]
+        [DataMember(Name = "HashIterations")]
         public int HashIterations
         {
             get;
-            protected set;
+            private set;
         }
 
         /// <summary>
         /// Gets or sets the Id of the refreshToken.
         /// </summary>
-        [DataMember(Name="Id")]
-        public virtual string Id
+        [DataMember(Name = "Id")]
+        public string Id
         {
             get;
-            protected set;
+            private set;
         }
 
         /// <summary>
-        /// Gets or sets the PBKDF2 factory.
+        /// Gets or sets the <see cref="IHashFactory"/> factory.
         /// </summary>
         /// <value>
-        /// The PBKDF2 factory.
+        /// The <see cref="IHashFactory"/> factory.
         /// </value>
-        public IPbkdf2Factory Pbkdf2Factory
+        public IHashFactory HashFactory
         {
             get;
-            protected set;
+            private set;
         }
 
         /// <summary>
@@ -142,16 +142,23 @@ namespace OAuthWorks.Implementation
         /// <param name="client">The client.</param>
         /// <param name="scopes">The scopes.</param>
         public HashedRefreshToken(string id, string token, int hashIterations, int hashLength, IUser user, IClient client, IEnumerable<IScope> scopes)
-            : base(user, client, scopes, DateTime.UtcNow.AddSeconds(DefaultLifetime))
+            : base(DateTime.UtcNow.AddSeconds(DefaultLifetime))
         {
-            Contract.Requires(!string.IsNullOrEmpty(token));
-            Contract.Requires(!string.IsNullOrEmpty(id));
-            Contract.Requires(hashIterations >= 1000);
-            Contract.Requires(hashLength >= 20);
+            if (string.IsNullOrEmpty(token)) throw new ArgumentException("The given token must not be null or empty.", "token");
+            if (string.IsNullOrEmpty(id)) throw new ArgumentException("The given ID must not be null or empty.", "id");
+            if (hashIterations < 1000) throw new ArgumentOutOfRangeException("hashIterations", "The given hash iterations must be greater than or equal to 1000.");
+            if (hashLength < 20) throw new ArgumentOutOfRangeException("hashLength", "The given hash length must be greater than or equal to 20.");
+            if (user == null) throw new ArgumentNullException("user");
+            if (client == null) throw new ArgumentNullException("client");
+            if (scopes == null) throw new ArgumentNullException("scopes");
+
+            this.Client = client;
+            this.User = user;
+            this.Scopes = scopes;
             this.Id = id;
             this.HashIterations = hashIterations;
-            this.Pbkdf2Factory = new Pbkdf2Sha1Factory();
-            using (IPbkdf2 pbkdf2 = Pbkdf2Factory.Create(Encoding.UTF8.GetBytes(token), hashLength, this.HashIterations))
+            this.HashFactory = new Pbkdf2Sha1Factory();
+            using (IHasher pbkdf2 = HashFactory.Create(Encoding.UTF8.GetBytes(token), hashLength, this.HashIterations))
             {
                 this.TokenSalt = encodeBytes(pbkdf2.Salt);
                 this.TokenHash = encodeBytes(pbkdf2.GetBytes(hashLength));
@@ -180,7 +187,7 @@ namespace OAuthWorks.Implementation
             byte[] s = decodeString(this.TokenSalt);
             byte[] h = decodeString(this.TokenHash);
 
-            using (IPbkdf2 pbkdf2 = Pbkdf2Factory.Create(Encoding.UTF8.GetBytes(token), s, HashIterations))
+            using (IHasher pbkdf2 = HashFactory.Create(Encoding.UTF8.GetBytes(token), s, HashIterations))
             {
                 return pbkdf2.GetBytes(h.Length).SequenceEqual(h);
             }

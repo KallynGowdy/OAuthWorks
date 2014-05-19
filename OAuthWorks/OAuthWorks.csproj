@@ -83,7 +83,6 @@
     <Compile Include="AccessTokenTypes.cs" />
     <Compile Include="AuthorizationCodeExtensions.cs" />
     <Compile Include="IAccessTokenResponse.cs" />
-    <Compile Include="IApiRequest.cs" />
     <Compile Include="Implementation\AccessToken.cs" />
     <Compile Include="Implementation\AccessTokenRequest.cs" />
     <Compile Include="Implementation\UnsuccessfulAccessTokenResponse.cs" />
@@ -115,8 +114,8 @@
     <Compile Include="Implementation\HashedAccessToken.cs" />
     <Compile Include="Implementation\HashedAuthorizationCode.cs" />
     <Compile Include="Implementation\HashedRefreshToken.cs" />
-    <Compile Include="Implementation\Hashing\IPbkdf2.cs" />
-    <Compile Include="Implementation\Hashing\IPbkdf2Factory.cs" />
+    <Compile Include="Implementation\Hashing\IHasher.cs" />
+    <Compile Include="Implementation\Hashing\IHashFactory.cs" />
     <Compile Include="Implementation\Hashing\Pbkdf2Sha1.cs" />
     <Compile Include="Implementation\Hashing\Pbkdf2Sha1Factory.cs" />
     <Compile Include="Implementation\PasswordCredentialsAccessTokenRequest.cs" />

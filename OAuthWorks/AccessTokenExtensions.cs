@@ -30,10 +30,16 @@ namespace OAuthWorks
         /// Determines if this token is valid. That is, not revoked or expired.
         /// </summary>
         /// <param name="token">The token to determine validity for.</param>
-        /// <returns>Returns true if the token has not expired or been revoked. Otherwise returns false.</returns>
+        /// <returns>
+        /// Returns true if the token has not expired or been revoked. Otherwise returns false.
+        /// </returns>
+        /// <exception cref="System.ArgumentNullException">Thrown if the given token is null.</exception>
         public static bool IsValid(this IAccessToken token)
         {
-            Contract.Requires(token != null);
+            if(token == null)
+            {
+                throw new ArgumentNullException("token");
+            }
             return !token.Expired && !token.Revoked;
         }
 

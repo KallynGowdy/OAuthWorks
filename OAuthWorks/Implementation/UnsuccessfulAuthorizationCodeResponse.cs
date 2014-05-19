@@ -75,19 +75,6 @@ namespace OAuthWorks.Implementation
             private set;
         }
 
-        
-        private string ErrorCodeDataRepresentation
-        {
-            get
-            {
-                return ErrorCode.ToString();
-            }
-            set
-            {
-                ErrorCode = (AuthorizationCodeRequestErrorType)Enum.Parse(typeof(AuthorizationCodeRequestErrorType), value);
-            }
-        }
-
         /// <summary>
         /// Gets the human-readable ASCII text that provides additional information that is used to assis the client developer
         /// in understanding the error that occurred.

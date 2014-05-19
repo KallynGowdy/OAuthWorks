@@ -280,11 +280,16 @@ namespace OAuthWorks
         /// <exception cref="System.ArgumentNullException">Thrown if the given request object is null.</exception>
         public IEnumerable<IScope> GetRequestedScopes(IAuthorizationCodeRequest request)
         {
-            request.ThrowIfNull("request");
+            if(request == null)
+            {
+                throw new ArgumentNullException("request");
+            }
             IEnumerable<IScope> result = ScopeParser(this, request.Scope != null ? request.Scope : string.Empty);
             return result.All(s => s != null) ? result : new IScope[0];
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")] // Suppressed to be able to return IAuthorizationCodeResponse objects according to OAuth 2.0
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")] // Already validated by IsValidRequest
         /// <summary>
         /// Initiates the Authorization Code flow based on the given request and returns a response that defines what response to send back to the user agent.
         /// Be sure to authenticate the user and request consent before calling this. THIS METHOD ASSUMES THAT USER CONSENT WAS GIVEN.
@@ -347,6 +352,8 @@ namespace OAuthWorks
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")] // Suppressed to be able to return IAccessTokenResponse objects according to OAuth 2.0
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")] // Already validated by IsValidRequest
         /// <summary>
         /// Requests an access refreshToken from the server with the request.
         /// </summary>
@@ -404,6 +411,8 @@ namespace OAuthWorks
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")] // Suppressed to be able to return IAccessTokenResponse objects according to OAuth 2.0
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")] // Already validated by IsValidRequest
         /// <summary>
         /// Requests a new access refreshToken from the authorizaiton server based on the given request.
         /// </summary>
@@ -481,7 +490,7 @@ namespace OAuthWorks
         /// </summary>
         /// <param name="request">The request the examine for faults.</param>
         /// <returns>Returns true if the request is valid and therefore relatively safe for use in database transactions.</returns>
-        private bool IsValidRequest(IAuthorizationCodeRequest request)
+        private static bool IsValidRequest(IAuthorizationCodeRequest request)
         {
             return request != null &&
                 !string.IsNullOrEmpty(request.ClientId) &&
@@ -509,7 +518,7 @@ namespace OAuthWorks
         /// </summary>
         /// <param name="request">The request the examine for faults.</param>
         /// <returns>Returns true if the request is valid and therefore relatively safe for use in database transactions.</returns>
-        private bool IsValidRequest(IAuthorizationCodeGrantAccessTokenRequest request)
+        private static bool IsValidRequest(IAuthorizationCodeGrantAccessTokenRequest request)
         {
             return request != null &&
                 request.RedirectUri != null &&
@@ -566,7 +575,7 @@ namespace OAuthWorks
         /// <param name="refreshToken"></param>
         /// <param name="request"></param>
         /// <param name="client"></param>
-        private bool IsValidRefreshToken(IRefreshToken refreshToken, ITokenRefreshRequest request, IClient client)
+        private static bool IsValidRefreshToken(IRefreshToken refreshToken, ITokenRefreshRequest request, IClient client)
         {
             return (refreshToken != null && refreshToken.Client.Equals(client) && refreshToken.IsValid() && refreshToken.MatchesValue(request.RefreshToken));
         }
@@ -577,7 +586,7 @@ namespace OAuthWorks
         /// <param name="code"></param>
         /// <param name="request"></param>
         /// <param name="client"></param>
-        private bool IsValidAuthorizationCode(IAuthorizationCode code, IAuthorizationCodeGrantAccessTokenRequest request, IClient client)
+        private static bool IsValidAuthorizationCode(IAuthorizationCode code, IAuthorizationCodeGrantAccessTokenRequest request, IClient client)
         {
             return code != null && code.Client.Equals(client) && code.IsValid() && code.MatchesValue(request.AuthorizationCode) && Uri.Compare(code.RedirectUri, request.RedirectUri, UriComponents.AbsoluteUri, UriFormat.SafeUnescaped, StringComparison.Ordinal) == 0;
         }
@@ -587,7 +596,7 @@ namespace OAuthWorks
         /// </summary>
         /// <param name="request"></param>
         /// <param name="client"></param>
-        private bool IsValidClient(IAccessTokenRequest request, IClient client)
+        private static bool IsValidClient(IAccessTokenRequest request, IClient client)
         {
             return client != null && client.MatchesSecret(request.ClientSecret);
         }
@@ -653,7 +662,7 @@ namespace OAuthWorks
         {
             get;
             set;
-        }
+        } = true;
 
         /// <summary>
         /// Gets or sets whether to reuse refresh tokens across newly issued tokens.
@@ -662,7 +671,7 @@ namespace OAuthWorks
         {
             get;
             set;
-        }
+        } = false;
 
         /// <summary>
         /// Gets or sets whether newly revoked tokens (access or refresh) should be deleted from their respective repository.
@@ -676,7 +685,7 @@ namespace OAuthWorks
         {
             get;
             set;
-        }
+        } = false;
 
         ~OAuthProvider()
         {

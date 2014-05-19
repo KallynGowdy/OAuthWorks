@@ -22,6 +22,8 @@ using System.Threading.Tasks;
 
 namespace OAuthWorks
 {
+
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1702:CompoundWordsShouldBeCasedCorrectly", MessageId = "HasId")] // Not single word
     /// <summary>
     /// Defines a generic interface for an object that is identifiable.
     /// </summary>

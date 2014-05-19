@@ -47,6 +47,10 @@ namespace OAuthWorks.Implementation
         /// </returns>
         public string GetId(string formattedToken)
         {
+            if (string.IsNullOrEmpty(formattedToken))
+            {
+                throw new ArgumentException("The formatted token can't be null or empty.", "formattedToken");
+            }
             return formattedToken.Split('-').Last();
         }
 
@@ -59,6 +63,10 @@ namespace OAuthWorks.Implementation
         /// </returns>
         public string GetToken(string formattedToken)
         {
+            if (string.IsNullOrEmpty(formattedToken))
+            {
+                throw new ArgumentException("The formatted token can't be null or empty.", "formattedToken");
+            }
             return formattedToken.Split('-').First();
         }
     }

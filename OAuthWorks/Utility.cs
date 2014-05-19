@@ -47,10 +47,19 @@ namespace OAuthWorks
         /// <typeparam name="T">The type of the objects being enumerated.</typeparam>
         /// <param name="objects">The enumerable list of objects to perform the action on.</param>
         /// <param name="action">The action that should be performed for each object in the list.</param>
+        /// <exception cref="System.ArgumentNullException">
+        /// Thrown when either <paramref name="objects"/> or <paramref name="action"/> is null.
+        /// </exception>
         public static void ForEach<T>(this IEnumerable<T> objects, Action<T> action)
         {
-            Contract.Requires(objects != null);
-            Contract.Requires(action != null);
+            if(objects == null)
+            {
+                throw new ArgumentNullException("objects");
+            }
+            if(action == null)
+            {
+                throw new ArgumentNullException("action");
+            }
             foreach (T a in objects)
             {
                 action(a);

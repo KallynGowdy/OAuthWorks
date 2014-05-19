@@ -33,15 +33,8 @@ namespace OAuthWorks.Implementation
         /// <param name="client">The client that has access to this token.</param>
         /// <param name="scopes">The scopes that this token provides access to.</param>
         /// <param name="expirationDateUtc">The date in UTC that this token should expire. Null means no expiration.</param>
-        protected RefreshToken(IUser user, IClient client, IEnumerable<IScope> scopes, DateTime? expirationDateUtc)
+        protected RefreshToken(DateTime? expirationDateUtc)
         {
-            Contract.Requires(user != null);
-            Contract.Requires(client != null);
-            Contract.Requires(scopes != null);
-            Contract.Requires(expirationDateUtc == null || expirationDateUtc > DateTime.UtcNow);
-            this.Client = client;
-            this.User = user;
-            this.Scopes = scopes;
             this.ExpirationDateUtc = expirationDateUtc;
         }
 

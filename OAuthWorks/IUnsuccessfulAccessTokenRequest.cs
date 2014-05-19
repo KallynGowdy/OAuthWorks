@@ -25,6 +25,7 @@ namespace OAuthWorks
     /// </summary>
     public interface IUnsuccessfulAccessTokenResponse : IAccessTokenResponse
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "Error")] // Named to match OAuth 2.0 spec while matching naming conventions
         /// <summary>
         /// Gets the error code that describes what was wrong with the request.
         /// </summary>

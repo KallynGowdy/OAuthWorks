@@ -23,7 +23,7 @@ namespace OAuthWorks.Implementation.Hashing
     /// <summary>
     /// Defines an interface for an object that implements PBKDF2 (RFC 2898).
     /// </summary>
-    public interface IPbkdf2 : IDisposable
+    public interface IHasher : IDisposable
     {
         /// <summary>
         /// Gets the salt that is used for hashing.

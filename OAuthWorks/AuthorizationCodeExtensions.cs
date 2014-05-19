@@ -30,10 +30,16 @@ namespace OAuthWorks
         /// Determines if the authorization code is valid for use by the client.
         /// </summary>
         /// <param name="code">The code that should be validated.</param>
-        /// <returns>Returns true if the code has not been revoked and has not expired. Otherwise false.</returns>
+        /// <returns>
+        /// Returns true if the code has not been revoked and has not expired. Otherwise false.
+        /// </returns>
+        /// <exception cref="System.ArgumentNullException">Thrown if the given code is null.</exception>
         public static bool IsValid(this IAuthorizationCode code)
         {
-            Contract.Requires(code != null);
+            if(code == null)
+            {
+                throw new ArgumentNullException("code");
+            }
             return !code.Revoked && !code.Expired;
         }
     }

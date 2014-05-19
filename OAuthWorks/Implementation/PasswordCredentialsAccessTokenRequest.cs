@@ -32,7 +32,7 @@ namespace OAuthWorks.Implementation
         /// Gets the identifier of the user who's credentials are going to be used.
         /// </summary>
         [DataMember(Name = "username")]
-        public string Username
+        public string UserName
         {
             get;
             private set;
@@ -51,24 +51,24 @@ namespace OAuthWorks.Implementation
         /// <summary>
         /// Initializes a new instance of the <see cref="PasswordCredentialsAccessTokenRequest"/> class.
         /// </summary>
-        /// <param name="username">The username.</param>
+        /// <param name="userName">The username.</param>
         /// <param name="password">The password.</param>
         /// <param name="clientId">The id of the client making the request.</param>
         /// <param name="clientSecret">The secret of the client making the request.</param>
         /// <param name="grantType">The type of grant requested by the client.</param>
         /// <param name="scope">The scope requested by the client.</param>
         /// <param name="redirectUri">The redirect URI provided by the client when requesting an authorization code.</param>
-        public PasswordCredentialsAccessTokenRequest(string username, string password, string clientId, string clientSecret, string grantType, Uri redirectUri, string scope)
+        public PasswordCredentialsAccessTokenRequest(string userName, string password, string clientId, string clientSecret, string grantType, Uri redirectUri, string scope)
             : base(clientId, clientSecret, grantType, scope, redirectUri)
         {
-            Contract.Requires(!string.IsNullOrEmpty(username));
+            Contract.Requires(!string.IsNullOrEmpty(userName));
             Contract.Requires(!string.IsNullOrEmpty(password));
             Contract.Requires(!string.IsNullOrEmpty(clientId));
             Contract.Requires(!string.IsNullOrEmpty(clientSecret));
             Contract.Requires(!string.IsNullOrEmpty(grantType));
             this.ClientId = clientId;
             this.ClientSecret = clientSecret;
-            this.Username = username;
+            this.UserName = userName;
             this.Password = password;
             this.GrantType = grantType;
             this.RedirectUri = redirectUri;

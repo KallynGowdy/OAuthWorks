@@ -45,13 +45,13 @@ namespace OAuthWorks.Implementation
         /// </summary>
         public const int DefaultHashLength = 20;
 
-        private static readonly Lazy<IPbkdf2Factory> lazyDefaultPbkdf2Factory = new Lazy<IPbkdf2Factory>(() => new Pbkdf2Sha1Factory());
+        private static readonly Lazy<IHashFactory> lazyDefaultHashFactory = new Lazy<IHashFactory>(() => new Pbkdf2Sha1Factory());
 
-        public static IPbkdf2Factory DefaultPbkdf2Factory
+        public static IHashFactory DefaultHashFactory
         {
             get
             {
-                return lazyDefaultPbkdf2Factory.Value;
+                return lazyDefaultHashFactory.Value;
             }
         }
 
@@ -66,7 +66,7 @@ namespace OAuthWorks.Implementation
         /// <param name="tokenType">Type of the refreshToken. Describes how the client should handle it.</param>
         /// <param name="expirationDateUtc">The date of expiration in Universal Coordinated Time.</param>
         public HashedAccessToken(string token, string id, IUser user, IClient client, IEnumerable<IScope> scopes, string tokenType, DateTime expirationDateUtc)
-            : this(DefaultPbkdf2Factory, token, id, user, client, scopes, tokenType, expirationDateUtc)
+            : this(DefaultHashFactory, token, id, user, client, scopes, tokenType, expirationDateUtc)
         {
         }
 
@@ -80,24 +80,24 @@ namespace OAuthWorks.Implementation
         /// <param name="scopes">The scopes that this refreshToken provides access to.</param>
         /// <param name="tokenType">Type of the refreshToken. Describes how the client should handle it.</param>
         /// <param name="expirationDateUtc">The date of expiration in Universal Coordinated Time.</param>
-        public HashedAccessToken(IPbkdf2Factory pbkdf2Factory, string token, string id, IUser user, IClient client, IEnumerable<IScope> scopes, string tokenType, DateTime expirationDateUtc)
+        public HashedAccessToken(IHashFactory hashFactory, string token, string id, IUser user, IClient client, IEnumerable<IScope> scopes, string tokenType, DateTime expirationDateUtc)
             : base(id, user, client, scopes, tokenType, expirationDateUtc)
         {
-            Contract.Requires(pbkdf2Factory != null);
+            Contract.Requires(hashFactory != null);
             this.HashIterations = DefaultHashIterations;
-            Pbkdf2Factory = pbkdf2Factory;
+            HashFactory = hashFactory;
             Tuple<string, string> hashSalt = GenerateHash(token, DefaultHashLength, this.HashIterations);
             this.TokenHash = hashSalt.Item1;
             this.TokenSalt = hashSalt.Item2;
         }
 
         /// <summary>
-        /// Gets the PBKDF2 factory.
+        /// Gets the <see cref="IHashFactory"/> used by this token.
         /// </summary>
         /// <value>
-        /// The PBKDF2 factory.
+        /// The <see cref="IHashFactory"/> factory.
         /// </value>
-        public IPbkdf2Factory Pbkdf2Factory
+        public IHashFactory HashFactory
         {
             get;
             private set;
@@ -146,7 +146,7 @@ namespace OAuthWorks.Implementation
             byte[] target = decodeString(TokenHash);
             byte[] hash;
 
-            using (IPbkdf2 pbkdf2 = Pbkdf2Factory.Create(Encoding.UTF8.GetBytes(token), salt, HashIterations))
+            using (IHasher pbkdf2 = HashFactory.Create(Encoding.UTF8.GetBytes(token), salt, HashIterations))
             {
                 hash = pbkdf2.GetBytes(target.Length);
             }
@@ -163,7 +163,7 @@ namespace OAuthWorks.Implementation
         /// <returns>Returns a new tuple where the first element represents the generated hash and the second represents the generated salt.</returns>
         protected Tuple<string, string> GenerateHash(string password, int length, int iterations)
         {
-            using (IPbkdf2 pbkdf2 = Pbkdf2Factory.Create(Encoding.UTF8.GetBytes(password), length, iterations))
+            using (IHasher pbkdf2 = HashFactory.Create(Encoding.UTF8.GetBytes(password), length, iterations))
             {
                 return new Tuple<string, string>(encodeBytes(pbkdf2.GetBytes(length)), encodeBytes(pbkdf2.Salt));
             }

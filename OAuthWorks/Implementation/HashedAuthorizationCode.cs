@@ -83,7 +83,7 @@ namespace OAuthWorks.Implementation
         /// <value>
         /// The PBKDF2 factory.
         /// </value>
-        public IPbkdf2Factory Pbkdf2Factory
+        public IHashFactory HashFactory
         {
             get;
             protected set;
@@ -95,7 +95,7 @@ namespace OAuthWorks.Implementation
         /// <value>
         /// The identifier.
         /// </value>
-        public virtual string Id
+        public string Id
         {
             get;
             protected set;
@@ -124,22 +124,22 @@ namespace OAuthWorks.Implementation
         /// <param name="refreshToken">The refreshToken.</param>
         /// <param name="hashLength">Length of the hash.</param>
         /// <param name="hashIterations">The hash iterations.</param>
-        /// <param name="pbkdf2Factory">The PBKDF2 factory.</param>
+        /// <param name="hashFactory">The PBKDF2 factory.</param>
         /// <param name="user">The user.</param>
         /// <param name="client">The client.</param>
         /// <param name="scopes">The scopes.</param>
         /// <param name="redirectUri">The redirect URI.</param>
         /// <param name="expirationDateUtc">The expiration date UTC.</param>
-        public HashedAuthorizationCode(string id, string token, int hashLength, int hashIterations, IPbkdf2Factory pbkdf2Factory, IUser user, IClient client, IEnumerable<IScope> scopes, Uri redirectUri, DateTime expirationDateUtc)
+        public HashedAuthorizationCode(string id, string token, int hashLength, int hashIterations, IHashFactory hashFactory, IUser user, IClient client, IEnumerable<IScope> scopes, Uri redirectUri, DateTime expirationDateUtc)
             : base(user, client, scopes, redirectUri, expirationDateUtc)
         {
             Contract.Requires(!string.IsNullOrEmpty(id));
             Contract.Requires(!string.IsNullOrEmpty(token));
             Contract.Requires(hashLength > 0);
             Contract.Requires(hashIterations > 0);
-            Contract.Requires(pbkdf2Factory != null);
+            Contract.Requires(hashFactory != null);
             this.Id = id;
-            Pbkdf2Factory = pbkdf2Factory;
+            HashFactory = hashFactory;
             this.HashIterations = hashIterations;
             byte[] salt = new byte[hashLength];
             using (RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider())
@@ -147,7 +147,7 @@ namespace OAuthWorks.Implementation
                 rng.GetBytes(salt);
             }
 
-            using (IPbkdf2 pbkdf2 = Pbkdf2Factory.Create(Encoding.UTF8.GetBytes(token), salt, hashIterations))
+            using (IHasher pbkdf2 = HashFactory.Create(Encoding.UTF8.GetBytes(token), salt, hashIterations))
             {
                 CodeHash = encodeBytes(pbkdf2.GetBytes(hashLength));
                 CodeSalt = encodeBytes(pbkdf2.Salt);
@@ -175,7 +175,7 @@ namespace OAuthWorks.Implementation
         {
             byte[] salt = decodeString(CodeSalt);
             byte[] hash = decodeString(CodeHash);
-            using (IPbkdf2 pbkdf2 = Pbkdf2Factory.Create(Encoding.UTF8.GetBytes(token), salt, HashIterations))
+            using (IHasher pbkdf2 = HashFactory.Create(Encoding.UTF8.GetBytes(token), salt, HashIterations))
             {
                 return pbkdf2.GetBytes(hash.Length).SequenceEqual(hash);
             }

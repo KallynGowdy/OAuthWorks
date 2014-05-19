@@ -22,10 +22,12 @@ using System.Threading.Tasks;
 
 namespace OAuthWorks.Implementation.Hashing
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Pbkdf")] // 'Pbkdf' is an abbreveation
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Sha")] // 'Sha' is an abbreveation.
     /// <summary>
     /// Defines a class that provides an implementation of PBKDF2 for SHA-1.
     /// </summary>
-    public class Pbkdf2Sha1 : IPbkdf2
+    public class Pbkdf2Sha1 : IHasher
     {
         Rfc2898DeriveBytes pbkdf2;
 
@@ -66,9 +68,19 @@ namespace OAuthWorks.Implementation.Hashing
             return pbkdf2.GetBytes(length);
         }
 
+
         public void Dispose()
         {
-            pbkdf2.Dispose();
+            this.Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                pbkdf2.Dispose();
+            }            
         }
     }
 }

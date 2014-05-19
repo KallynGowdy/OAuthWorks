@@ -27,7 +27,7 @@ namespace OAuthWorks
         /// <summary>
         /// Gets the identifier of the user who's credentials are going to be used.
         /// </summary>
-        string Username
+        string UserName
         {
             get;
         }

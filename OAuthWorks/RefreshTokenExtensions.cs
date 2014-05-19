@@ -33,7 +33,10 @@ namespace OAuthWorks
         /// <returns>Returns true if the token has not been revoked and if it has not expired. Otherwise false.</returns>
         public static bool IsValid(this IRefreshToken token)
         {
-            Contract.Requires(token != null);
+            if(token == null)
+            {
+                throw new ArgumentNullException("token");
+            }
             return !token.Revoked && !token.Expired;
         }
     }
