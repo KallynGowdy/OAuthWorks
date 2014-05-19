@@ -40,5 +40,9 @@ namespace OAuthWorks.Tests
             return Entities.Where(t => t.Client.Equals(client) && t.User.Equals(user));
         }
 
+        public void Add(ICreatedToken<IAuthorizationCode> authorizationCode)
+        {
+            base.Add(authorizationCode.Token);
+        }
     }
 }

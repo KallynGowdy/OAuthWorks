@@ -15,6 +15,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -23,6 +24,7 @@ namespace OAuthWorks.Implementation
     /// <summary>
     /// Defines a class which provides a basic implementation of <see cref="IUnsuccessfulAuthorizationCodeResponse"/>.
     /// </summary>
+    [DataContract]
     public class UnsuccessfulAuthorizationCodeResponse : IUnsuccessfulAuthorizationCodeResponse
     {
         /// <summary>
@@ -66,16 +68,31 @@ namespace OAuthWorks.Implementation
         /// <summary>
         /// Gets the type of the error that provides information on the basic problem that occured.
         /// </summary>
+        [DataMember(Name = "error_code")]
         public AuthorizationCodeRequestErrorType ErrorCode
         {
             get;
             private set;
         }
 
+        
+        private string ErrorCodeDataRepresentation
+        {
+            get
+            {
+                return ErrorCode.ToString();
+            }
+            set
+            {
+                ErrorCode = (AuthorizationCodeRequestErrorType)Enum.Parse(typeof(AuthorizationCodeRequestErrorType), value);
+            }
+        }
+
         /// <summary>
         /// Gets the human-readable ASCII text that provides additional information that is used to assis the client developer
         /// in understanding the error that occurred.
         /// </summary>
+        [DataMember(Name = "error_description")]
         public string ErrorDescription
         {
             get;
@@ -86,6 +103,7 @@ namespace OAuthWorks.Implementation
         /// Gets a URI that identifies a human-readable web page with information about the error, used to provide the client developer with additional information about
         /// the error.
         /// </summary>
+        [DataMember(Name = "error_uri")]
         public Uri ErrorUri
         {
             get;
@@ -108,6 +126,7 @@ namespace OAuthWorks.Implementation
         /// <summary>
         /// Gets the state that was provided by the client in the incomming Authorization Request. REQUIRED ONLY IF the state was provided in the request.
         /// </summary>
+        [DataMember(Name = "state")]
         public string State
         {
             get;

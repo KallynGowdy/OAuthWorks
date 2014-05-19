@@ -56,6 +56,20 @@ namespace OAuthWorks.Implementation
         [DataMember(Name = "error_code")]
         private readonly AccessTokenRequestError errorCode;
 
+        /// <summary>
+        /// Gets the string representation of <see cref="UnsuccessfulAccessTokenResponse.errorCode"/>.
+        /// This provides a hack for <see cref="DataContractAttribute"/> serializers by causing them to produce the string representation of the error code.
+        /// </summary>
+        /// <returns></returns>
+        
+        private string ErrorCodeDataRepresentation
+        {
+            get
+            {
+                return errorCode.ToString();
+            }
+        }
+
         [DataMember(Name ="error_description")]
         private readonly string errorDescription;
 

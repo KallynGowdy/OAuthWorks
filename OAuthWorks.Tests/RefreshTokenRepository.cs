@@ -49,5 +49,10 @@ namespace OAuthWorks.Tests
         {
             return base.GetEnumerator();
         }
+
+        public void Add(ICreatedToken<IRefreshToken> refreshToken)
+        {
+            base.Add(refreshToken.Token);
+        }
     }
 }

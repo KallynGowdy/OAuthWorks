@@ -38,6 +38,21 @@ namespace ExampleWebApiProject.Models
             this.Revoked = token.Revoked;
         }
 
+        public RefreshToken(ICreatedToken<IRefreshToken> refreshToken)
+        {
+            this.Client = (Client)refreshToken.Token.Client;
+            this.User = (User)refreshToken.Token.User;
+            this.TokenValue = new HashedValue(refreshToken.TokenValue);
+            this.Scopes = refreshToken.Token.Scopes.Cast<Scope>().ToList();
+            this.ExpirationDateUtc = refreshToken.Token.ExpirationDateUtc;
+            this.Revoked = refreshToken.Token.Revoked;
+            if((IHasId<string> id = refreshToken as IHasId<string>) != null)
+            {
+                this.Id = id.Id;
+            }
+        }
+
+
         /// <summary>
         /// Gets or sets the id of this token.
         /// </summary>

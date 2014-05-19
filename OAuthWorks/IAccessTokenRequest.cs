@@ -28,7 +28,7 @@ namespace OAuthWorks
     public interface IAccessTokenRequest
     {
         /// <summary>
-        /// Gets the grant type as requested by the client.
+        /// Gets the type of the grant that was given to the client.
         /// </summary>
         string GrantType
         {

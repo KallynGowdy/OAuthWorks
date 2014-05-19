@@ -17,7 +17,7 @@ using System.Diagnostics.Contracts;
 namespace OAuthWorks
 {
     /// <summary>
-    /// Defines an interface for objects that contain a refreshToken(AuthorizationCode, AccessToken, RefreshToken, ect.) with a generated string representing the refreshToken value.
+    /// Defines an interface for objects that contain a token(AuthorizationCode, AccessToken, RefreshToken, ect.) with a generated string representing the token value.
     /// </summary>
     /// <typeparam name="TToken">The type of the tokens that are contained in this object.</typeparam>
     [ContractClass(typeof(ICreatedTokenContract<>))]
@@ -25,7 +25,7 @@ namespace OAuthWorks
      where TToken : IToken
     {
         /// <summary>
-        /// Gets the refreshToken that was created.
+        /// Gets the token that was created.
         /// </summary>
         TToken Token { get; }
 

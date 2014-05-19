@@ -48,5 +48,10 @@ namespace OAuthWorks.Tests
         {
             return base.GetEnumerator();
         }
+
+        public void Add(ICreatedToken<IAccessToken> token)
+        {
+            base.Add(token.Token);
+        }
     }
 }

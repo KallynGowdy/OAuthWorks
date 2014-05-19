@@ -24,17 +24,16 @@ namespace OAuthWorks.DataAccess.Repositories
     /// <summary>
     /// Defines an interface for a repository that contains <see cref="OAuthWorks.IAccessToken"/> objects.
     /// </summary>
-    public interface IAccessTokenRepository<T> : IRepository<T> where T : IAccessToken
+    public interface IAccessTokenRepository<T> : IDisposable where T : IAccessToken
     {
         /// <summary>
-        /// Gets a list of Access Tokens that belong to the given user.
+        /// Adds the given token to the repository.
         /// </summary>
-        /// <param name="user">The User that owns the access tokens.</param>
-        /// <returns>Returns a new enumerable list of <see cref="OAuthWorks.IAccessToken"/> objects that belong to the given user.</returns>
-        //IEnumerable<T> GetByUser(IUser user);
+        /// <param name="token">The token to add to the repository.</param>
+        void Add(ICreatedToken<T> token);
 
         /// <summary>
-        /// Removes the given refreshToken from this repository.
+        /// Removes the given refresh token from this repository.
         /// </summary>
         /// <param name="refreshToken">The refreshToken to remove.</param>
         void Remove(T token);

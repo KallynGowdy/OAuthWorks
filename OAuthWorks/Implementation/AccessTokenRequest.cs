@@ -29,7 +29,7 @@ namespace OAuthWorks.Implementation
     public abstract class AccessTokenRequest : IAccessTokenRequest
     {
         /// <summary>
-        /// Gets the grant type as requested by the client.
+        /// Gets the type of the grant that was given to the client.
         /// </summary>
         [DataMember(Name = "grant_type")]
         public string GrantType

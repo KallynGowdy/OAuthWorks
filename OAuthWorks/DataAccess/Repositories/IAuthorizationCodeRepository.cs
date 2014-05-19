@@ -24,8 +24,14 @@ namespace OAuthWorks.DataAccess.Repositories
     /// <summary>
     /// Defines an interface for storing <see cref="OAuthWorks.IAuthorizationCode"/> objects.
     /// </summary>
-    public interface IAuthorizationCodeRepository<T> : IRepository< T> where T : IAuthorizationCode
+    public interface IAuthorizationCodeRepository<T> : IDisposable where T : IAuthorizationCode
     {
+        /// <summary>
+        /// Adds the given authorization code to this repository.
+        /// </summary>
+        /// <param name="authorizationCode">The authorization code to add.</param>
+        void Add(ICreatedToken<T> authorizationCode);
+
         /// <summary>
         /// Gets the authorization code by it's actual internal value.
         /// </summary>

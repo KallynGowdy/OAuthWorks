@@ -61,30 +61,9 @@ namespace ExampleWebApiProject.Repositories
             context.Dispose();
         }
 
-        public void Add(IRefreshToken obj)
+        public void Add(ICreatedToken<IRefreshToken> refreshToken)
         {
-            context.RefreshTokens.Add(new ExampleWebApiProject.Models.RefreshToken((HashedRefreshToken)obj));
-        }
-
-        public void Update(IRefreshToken obj)
-        {
-            context.RefreshTokens.Attach(new ExampleWebApiProject.Models.RefreshToken((HashedRefreshToken)obj));
-            context.Entry(obj).State = System.Data.Entity.EntityState.Modified;
-        }
-
-        public void RemoveById(string id)
-        {
-            context.RefreshTokens.Remove(context.RefreshTokens.Find(id));
-        }
-
-        public IEnumerator<IRefreshToken> GetEnumerator()
-        {
-            return context.RefreshTokens.AsEnumerable().GetEnumerator();
-        }
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
+            context.RefreshTokens.Add(new Models.RefreshToken(refreshToken));
         }
     }
 }

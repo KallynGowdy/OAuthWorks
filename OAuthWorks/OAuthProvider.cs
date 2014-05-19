@@ -309,10 +309,13 @@ namespace OAuthWorks
 
                             if (scopes != null && scopes.Any())
                             {
+                                //Revoke all of the current authorization codes.
+                                AuthorizationCodeRepository.GetByUserAndClient(user, client).ForEach(c => c.Revoke());
+
                                 ICreatedToken<IAuthorizationCode> authCode = AuthorizationCodeFactory.Create(request.RedirectUri, user, client, scopes);
 
                                 //put the authorization code in the repository
-                                AuthorizationCodeRepository.Add(authCode.Token);
+                                AuthorizationCodeRepository.Add(authCode);
 
                                 //return a successful response
                                 return AuthorizationCodeResponseFactory.Create(authCode.TokenValue, request.State);
@@ -368,15 +371,19 @@ namespace OAuthWorks
                     }
 
                     //Authorized!
+
+                    code.Revoke(); // Prevent this same code from being used again
+                    
                     ICreatedToken<IAccessToken> accessToken = AccessTokenFactory.Create(client, code.User, code.Scopes);
                     ICreatedToken<IRefreshToken> refreshToken = null;
                     if (RefreshTokenFactory != null && DistributeRefreshTokens)
                     {
                         refreshToken = RefreshTokenFactory.Create(client, code.User, code.Scopes);
-                        RefreshTokenRepository.Add(refreshToken.Token);
+                        RefreshTokenRepository.Add(refreshToken);
                     }
+
                     //store refresh and access tokens
-                    AccessTokenRepository.Add(accessToken.Token);
+                    AccessTokenRepository.Add(accessToken);
 
                     return AccessTokenResponseFactory.Create(
                         accessToken.TokenValue,
@@ -440,6 +447,10 @@ namespace OAuthWorks
 
                     string refreshValue = request.RefreshToken;
 
+                    ICreatedToken<IAccessToken> newToken = AccessTokenFactory.Create(client, refreshToken.User, refreshToken.Scopes);
+
+                    AccessTokenRepository.Add(newToken);
+
                     if (!ReuseRefreshTokens)
                     {
                         ICreatedToken<IRefreshToken> newRefresh = RefreshTokenFactory.Create(client, refreshToken.User, refreshToken.Scopes);
@@ -448,13 +459,9 @@ namespace OAuthWorks
                         {
                             RefreshTokenRepository.Remove(refreshToken);
                         }
-                        RefreshTokenRepository.Add(newRefresh.Token);
+                        RefreshTokenRepository.Add(newRefresh);
                         refreshValue = newRefresh.TokenValue;
                     }
-
-                    ICreatedToken<IAccessToken> newToken = AccessTokenFactory.Create(client, refreshToken.User, refreshToken.Scopes);
-
-                    AccessTokenRepository.Add(newToken.Token);
 
                     return AccessTokenResponseFactory.Create(newToken.TokenValue, refreshValue, newToken.Token.TokenType, ScopeFormatter(newToken.Token.Scopes), newToken.Token.ExpirationDateUtc);
                 }
@@ -493,8 +500,8 @@ namespace OAuthWorks
             return request != null &&
                 !string.IsNullOrEmpty(request.ClientId) &&
                 !string.IsNullOrEmpty(request.ClientSecret) &&
-                !string.IsNullOrEmpty(request.Scope) &&
-                !string.IsNullOrEmpty(request.RefreshToken);
+                !string.IsNullOrEmpty(request.RefreshToken) &&
+                "refresh_token".Equals(request.GrantType, StringComparison.Ordinal);
         }
 
         /// <summary>
@@ -509,7 +516,7 @@ namespace OAuthWorks
                 !string.IsNullOrEmpty(request.ClientId) &&
                 !string.IsNullOrEmpty(request.ClientSecret) &&
                 !string.IsNullOrEmpty(request.AuthorizationCode) &&
-                "access_token" == request.GrantType;
+                "authorization_code".Equals(request.GrantType, StringComparison.Ordinal);
         }
 
         /// <summary>

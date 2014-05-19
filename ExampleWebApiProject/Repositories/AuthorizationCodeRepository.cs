@@ -1,4 +1,18 @@
-﻿using System;
+﻿// Copyright 2014 Kallyn Gowdy
+// 
+//    Licensed under the Apache License, Version 2.0 (the "License");
+//    you may not use this file except in compliance with the License.
+//    You may obtain a copy of the License at
+// 
+//        http://www.apache.org/licenses/LICENSE-2.0
+// 
+//    Unless required by applicable law or agreed to in writing, software
+//    distributed under the License is distributed on an "AS IS" BASIS,
+//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//    See the License for the specific language governing permissions and
+//    limitations under the License.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -32,37 +46,6 @@ namespace ExampleWebApiProject.Repositories
             return context.AuthorizationCodes.Find(id);
         }
 
-        public void Add(IAuthorizationCode obj)
-        {
-            AuthorizationCode code = (AuthorizationCode)obj;
-            context.Users.Attach(code.User);
-            context.AuthorizationCodes.Add(code);
-            context.SaveChanges();
-        }
-
-        public void Update(IAuthorizationCode obj)
-        {
-            context.AuthorizationCodes.Attach((AuthorizationCode)obj);
-            context.Entry(obj).State = System.Data.Entity.EntityState.Modified;
-            context.SaveChanges();
-        }
-
-        public void RemoveById(string id)
-        {
-            var code = context.AuthorizationCodes.Find(id);
-            context.AuthorizationCodes.Remove(code);
-            context.SaveChanges();
-        }
-
-        public IEnumerator<IAuthorizationCode> GetEnumerator()
-        {
-            return context.AuthorizationCodes.AsEnumerable().GetEnumerator();
-        }
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-        {
-            return this.GetEnumerator();
-        }
 
         ~AuthorizationCodeRepository()
         {
@@ -91,7 +74,12 @@ namespace ExampleWebApiProject.Repositories
 
         public IEnumerable<IAuthorizationCode> GetByUserAndClient(IUser user, IClient client)
         {
-            return context.AuthorizationCodes.Where(c => c.User.Id.Equals(user.Id) && c.Client.Equals(client));
+            return context.AuthorizationCodes.Where(c => c.User.Id.Equals(user.Id) && c.Client.Name.Equals(client.Name));
+        }
+
+        public void Add(ICreatedToken<IAuthorizationCode> authorizationCode)
+        {
+            context.AuthorizationCodes.Add(new AuthorizationCode(authorizationCode));
         }
     }
 }

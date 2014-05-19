@@ -16,6 +16,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 
 namespace OAuthWorks
@@ -23,43 +24,51 @@ namespace OAuthWorks
     /// <summary>
     /// Defines an enum that contains a list of error codes as defined in RFC 6749, Section 4.1.2.1, http://tools.ietf.org/html/rfc6749#section-4.1.2.1.
     /// </summary>
+    [DataContract]
     public enum AuthorizationCodeRequestErrorType
     {
         /// <summary>
         /// Defines that the request is missing a required parameter, includes an invalid parameter value, includes a parameter more than once,
         /// or is otherwise malformed.
         /// </summary>
+        [EnumMember(Value = "invalid_request")]
         InvalidRequest,
 
         /// <summary>
         /// Defines that the client is not authorized to request an authorization
         /// code using this method.
         /// </summary>
+        [EnumMember(Value = "unauthorized_client")]
         UnauthorizedClient,
 
         /// <summary>
         /// Defines that the resource owner or authorization server denied the request.
         /// </summary>
+        [EnumMember(Value = "access_denied")]
         AccessDenied,
 
         /// <summary>
         /// Defines that the authorization server does not support obtaining an authorization code using this method.
         /// </summary>
+        [EnumMember(Value = "unsupporeted_response_type")]
         UnsupportedResponseType,
 
         /// <summary>
         /// Defines that the requested scope is invalid, unknown, or malformed.
         /// </summary>
+        [EnumMember(Value = "invalid_scope")]
         InvalidScope,
 
         /// <summary>
         /// The authorization server encountered an unexpected condition that prevented it from fufilling the request.
         /// </summary>
+        [EnumMember(Value = "server_error")]
         ServerError,
 
         /// <summary>
         /// Defines that the authorization server is currently unable to handle the request due to a temporary overloading or maintenance of the server.
         /// </summary>
+        [EnumMember(Value = "temorarily_unavailable")]
         TemporarilyUnavailable
     }
 }

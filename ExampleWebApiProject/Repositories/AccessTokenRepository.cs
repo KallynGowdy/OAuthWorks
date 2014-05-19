@@ -61,30 +61,9 @@ namespace ExampleWebApiProject.Repositories
             context.Dispose();
         }
 
-        public void Add(IAccessToken obj)
+        public void Add(ICreatedToken<IAccessToken> token)
         {
-            context.AccessTokens.Add(new ExampleWebApiProject.Models.AccessToken((HashedAccessToken)obj));
-        }
-
-        public void Update(IAccessToken obj)
-        {
-            context.AccessTokens.Attach(new ExampleWebApiProject.Models.AccessToken((HashedAccessToken)obj));
-            context.Entry(obj).State = System.Data.Entity.EntityState.Modified;
-        }
-
-        public void RemoveById(string id)
-        {
-            context.AccessTokens.Remove(context.AccessTokens.Find(id));
-        }
-
-        public IEnumerator<IAccessToken> GetEnumerator()
-        {
-            return context.AccessTokens.AsEnumerable().GetEnumerator();
-        }
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-        {
-            return this.GetEnumerator();
+            context.AccessTokens.Add(new Models.AccessToken(token));
         }
     }
 }

@@ -25,6 +25,7 @@ namespace ExampleWebApiProject.Models
     [DataContract(Name = "AccessToken")]
     public class AccessToken : IAccessToken
     {
+
         public AccessToken()
         {
         }
@@ -33,15 +34,18 @@ namespace ExampleWebApiProject.Models
         /// Initializes a new instance of the <see cref="AccessToken"/> class using the given <see cref="OAuthWorks.Implementation.HashedAccessToken"/> as a reference.
         /// </summary>
         /// <param name="token">The token that should be copied into a new token.</param>
-        public AccessToken(HashedAccessToken token)
+        public AccessToken(ICreatedToken<IAccessToken> token)
         {
-            TokenValue = new HashedValue(token.TokenHash, token.TokenSalt, token.HashIterations);
-            Client = (Client)token.Client;
-            User = (User)token.User;
-            Scopes = token.Scopes.Cast<Scope>().ToList();
-            ExpirationDateUtc = token.ExpirationDateUtc;
-            Revoked = token.Revoked;
-            Id = token.Id;
+            TokenValue = new HashedValue(token.TokenValue);
+            Client = (Client)token.Token.Client;
+            User = (User)token.Token.User;
+            Scopes = token.Token.Scopes.Cast<Scope>().ToList();
+            ExpirationDateUtc = token.Token.ExpirationDateUtc;
+            Revoked = token.Token.Revoked;
+            if((IHasId<string> id = token.Token as IHasId<string>) != null)
+            {
+                this.Id = id.Id;
+            }
         }
 
         /// <summary>

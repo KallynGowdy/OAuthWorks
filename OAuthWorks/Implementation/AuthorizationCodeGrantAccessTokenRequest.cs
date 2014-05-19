@@ -29,6 +29,11 @@ namespace OAuthWorks.Implementation
     public class AuthorizationCodeGrantAccessTokenRequest : AccessTokenRequest, IAuthorizationCodeGrantAccessTokenRequest
     {
         /// <summary>
+        /// The type of grant that was given to the client.
+        /// </summary>
+        public const string AuthorizationCodeGrantType = "authorization_code";
+
+        /// <summary>
         /// Gets the authorization that was given to the client.
         /// </summary>
         [DataMember(Name = "code")]
@@ -47,7 +52,7 @@ namespace OAuthWorks.Implementation
         /// <param name="scope">The scope requested by the client.</param>
         /// <param name="redirectUri">The redirect URI provided by the client when requesting an authorization code.</param>
         public AuthorizationCodeGrantAccessTokenRequest(string authorizationCode, string clientId, string clientSecret, Uri redirectUri)
-            : base(clientId, clientSecret, "access_token", null, redirectUri)
+            : base(clientId, clientSecret, AuthorizationCodeGrantType, null, redirectUri)
         {
             Contract.Requires(!string.IsNullOrEmpty(authorizationCode));
             this.AuthorizationCode = authorizationCode;

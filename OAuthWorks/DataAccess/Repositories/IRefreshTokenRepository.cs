@@ -23,8 +23,15 @@ namespace OAuthWorks.DataAccess.Repositories
     /// <summary>
     /// Defines an interface for a repository that stores OAuthWorks.IRefreshToken objects.
     /// </summary>
-    public interface IRefreshTokenRepository<TRefreshToken> : IRepository<TRefreshToken>
+    public interface IRefreshTokenRepository<TRefreshToken> : IDisposable
+        where TRefreshToken : IRefreshToken
     {
+        /// <summary>
+        /// Adds the given refresh token to the repository.
+        /// </summary>
+        /// <param name="refreshToken"></param>
+        void Add(ICreatedToken<TRefreshToken> refreshToken);
+
         /// <summary>
         /// Removes(deletes) the given refreshToken from this repository.
         /// </summary>

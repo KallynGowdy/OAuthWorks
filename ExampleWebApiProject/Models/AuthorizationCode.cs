@@ -24,6 +24,21 @@ namespace ExampleWebApiProject.Models
 {
     public class AuthorizationCode : IAuthorizationCode
     {
+        public AuthorizationCode()
+        {
+
+        }
+
+        public AuthorizationCode(ICreatedToken<IAuthorizationCode> authorizationCode)
+        {
+            this.Code = authorizationCode.TokenValue;
+            this.Client = (Client)authorizationCode.Token.Client;
+            this.ExpirationDateUtc = authorizationCode.Token.ExpirationDateUtc;
+            this.Revoked = authorizationCode.Token.Revoked;
+            this.RedirectUri = authorizationCode.Token.RedirectUri.ToString();
+            this.User = (User)authorizationCode.Token.User;
+        }
+
         /// <summary>
         /// Gets whether this authorization code has expired.
         /// </summary>
