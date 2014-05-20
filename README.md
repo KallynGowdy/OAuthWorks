@@ -1,5 +1,4 @@
 #OAuthWorks
-===============================================================================================================
 
 A simple and extensible OAuth Provider for C#
 
@@ -83,10 +82,22 @@ public class AuthorizationCodeFactory : OAuthWorks.IAuthorizationCodeFactory<MyA
         return null; // Or whatever is default for your implementation. Not used as of yet.
     }
 }
+
+// ...Then, when you create your provider, just give the factory to it.
+using(OAuthProvider provider = new OAuthProvider
+    {
+        AuthorizationCodeFactory = new AuthorizationCodeFactory(),
+        // etc.
+    })
+{
+    // Handle request
+}
 ```
 
-- Fourth and finally, we prepare the response and return it to the client.
+- Fourth and finally, we prepare the response and return it to the client. For certian requests, like an authorzation code request, more information needs to be added to the response. For instance, when replying to an authorization code request, the response is a redirect containing the return values, the response should also contain a couple headers that tell the user-agent to not cache the response. Those things need to be handled on your side of the library, since they are all very implementation specific. Check out some of the examples for more information.
 
+
+You can find more information and implementation advice on the [Wiki](https://github.com/OAuthWorks/OAuthWorks/wiki).
 
 [oauth]: (http://tools.ietf.org/html/rfc6749)
 [unit-of-work]:(http://msdn.microsoft.com/en-us/library/ff649690.aspx?ppud=4)
