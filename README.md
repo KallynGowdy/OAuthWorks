@@ -23,26 +23,26 @@ Each of these ways ways result in one specific thing: **An [Access Token](http:/
 How that is achieved is specific to the flow. *OAuthWorks* handles all of these in one class, *OAuthProvider*. Tokens are issued through the `RequestAccessToken` methods which take a request, validate the client and issue a coresponding access token. *OAuthProvider* instances should be created on a per request basis as should repositories. This allows for the simple management of transactions as a [unit-of-work][unit-of-work]. Contrary to many designs, repositories in *OAuthWorks* live inside a [unit-of-work][unit-of-work], removing any need for `SaveChanges` type of methods. As such, every repository must be disposable to ensure proper handling of any sort of database transactions. Therefore, handling an access token request in *OAuthWorks* using Web API v2 and Entity Framework would look like this:
 
 ```csharp
-    [Route("api/oauth2/accessToken")] // The route that this method will be accessed at
-    [HttpPost]
-    public HttpResponseMessage RequestAccessToken(AuthorizationCodeGrantAccessTokenRequest request)
+[Route("api/oauth2/accessToken")] // The route that this method will be accessed at
+[HttpPost]
+public HttpResponseMessage RequestAccessToken(AuthorizationCodeGrantAccessTokenRequest request)
+{
+    using(DatabaseContext context = new DatabaseContext) // Your EF DataContext (Unit of work/transaction)
+    using(OAuthProvider provider = new OAuthProvider
+            {
+                // Custom-built repositories for EF
+                AccessTokenRepostory = new AccessTokenRepository(context), 
+                AuthorizationCodeRepository = new AuthorizationCodeRepository(context),
+                ClientRepository = new ClientRepository(context),
+                ScopeRepository = new ScopeRepository(context)
+            })
     {
-        using(DatabaseContext context = new DatabaseContext) // Your EF DataContext (Unit of work/transaction)
-        using(OAuthProvider provider = new OAuthProvider
-                {
-                    // Custom-built repositories for EF
-                    AccessTokenRepostory = new AccessTokenRepository(context), 
-                    AuthorizationCodeRepository = new AuthorizationCodeRepository(context),
-                    ClientRepository = new ClientRepository(context),
-                    ScopeRepository = new ScopeRepository(context)
-                })
-        {
-            IAccessTokenResponse response = provider.RequestAccessToken(request); // Send request to provider for handling
-            context.SaveChanges(); // Save any data that has been added/manipulated
-            return Request.CreateResponse(response.StatusCode(), response); // Return a message with the proper HttpStatusCode
-        } // All data is saved to the database as a unit and 
-          // unneeded information is disposed.
-    }
+        IAccessTokenResponse response = provider.RequestAccessToken(request); // Send request to provider for handling
+        context.SaveChanges(); // Save any data that has been added/manipulated
+        return Request.CreateResponse(response.StatusCode(), response); // Return a message with the proper HttpStatusCode
+    } // All data is saved to the database as a unit and 
+      // unneeded information is disposed.
+}
 ```
     
 That method handles all HTTP POST request to the url: `http://yourwebsite.com/api/oauth2/accessToken` and returns valid responses that adhere to the [OAuth 2.0 spec][oauth].
@@ -60,30 +60,29 @@ Now, let's examine what's going on here:
 - Third, process the request and get the response. We send any object that implements `IAuthorizationCodeGrantAccessTokenRequest` to the provider and it will build a valid response to that request. This is done by using a combination of the repositories and factories. The repositories are used to retrieve and store information. The factories are used to generate new information, like new access tokens or authorization codes. *OAuthWorks* provides sensible defaults for factories for you, while still letting you determine how the information should be stored. You can provide your own versions by implementing the `IYYYFactory` interfaces. For example, if you wanted to provide your own Authorization Code generation mechanizm, you would implement `IAuthorizationCodeFactory` and provide an instance to the `OAuthProvider`.
 
 ```csharp
-        public class AuthorizationCodeFactory : OAuthWorks.IAuthorizationCodeFactory<MyAuthorizationCodeImplementation>
-        {
-            public ICreatedToken<MyAuthorizationCodeImplementation> Create(Uri redirectUri, 
-                                                                           IUser user, 
-                                                                           IClient client,
-                                                                           IEnumerable<IScope> scopes)
-            {
-                //Generate the code according to your own rules.
-                string code = new Random().Next(0, int.MaxValue).ToString(); // Non-secure, but proves the point.
-
-                // Create the token according to your own buisness rules, all the users, clients and scopes
-                // are only provided from your own repositories, so casting is fine.
-                return new CreatedToken(code, new MyAuthorizationCodeImplementation(code: code, 
-                                                                                    user: user,
-                                                                                    client: client,
-                                                                                    redirectUri: redirectUri,
-                                                                                    scopes: scopes));
-            }
-            
-            public ICreatedToken<MyAuthorizationCodeImplementation> Create()
-            {
-                return null; // Or whatever is default for your implementation. Not used as of yet.
-            }
-        }
+public class AuthorizationCodeFactory : OAuthWorks.IAuthorizationCodeFactory<MyAuthorizationCodeImplementation>
+{
+    public ICreatedToken<MyAuthorizationCodeImplementation> Create(Uri redirectUri, 
+                                                                   IUser user, 
+                                                                   IClient client,
+                                                                   IEnumerable<IScope> scopes)
+    {
+        //Generate the code according to your own rules.
+        string code = new Random().Next(0, int.MaxValue).ToString(); // Non-secure, but proves the point.
+        // Create the token according to your own buisness rules, all the users, clients and scopes
+        // are only provided from your own repositories, so casting is fine.
+        return new CreatedToken(code, new MyAuthorizationCodeImplementation(code: code, 
+                                                                            user: user,
+                                                                            client: client,
+                                                                            redirectUri: redirectUri,
+                                                                            scopes: scopes));
+    }
+    
+    public ICreatedToken<MyAuthorizationCodeImplementation> Create()
+    {
+        return null; // Or whatever is default for your implementation. Not used as of yet.
+    }
+}
 ```
 
 - Fourth and finally, we prepare the response and return it to the client.
