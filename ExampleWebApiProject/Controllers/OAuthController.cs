@@ -41,15 +41,15 @@ namespace ExampleWebApiProject.Controllers
 
         [Route("api/v1/authorizationCode")]
         [HttpGet]
-        public RedirectResult RequestAuthorizationCode(string clientId, string clientSecret, string redirectUri, AuthorizationCodeResponseType responseType, string scope, string state)
+        public IHttpActionResult RequestAuthorizationCode(string clientId, string clientSecret, string redirectUri, AuthorizationCodeResponseType responseType, string scope, string state)
         {
             using (DatabaseContext context = new DatabaseContext())
-            using (Provider = new OAuthProvider
+            using (Provider = new OAuthProvider(p =>
             {
-                AuthorizationCodeRepository = new AuthorizationCodeRepository(context),
-                ScopeRepository = new ScopeRepository(context),
-                ClientRepository = new ClientRepository(context)
-            })
+                p.AuthorizationCodeRepository = new AuthorizationCodeRepository(context);
+                p.ScopeRepository = new ScopeRepository(context);
+                p.ClientRepository = new ClientRepository(context);
+            }))
             {
 
                 AuthorizationCodeRequest request = new AuthorizationCodeRequest
@@ -79,7 +79,7 @@ namespace ExampleWebApiProject.Controllers
                 }
                 else
                 {
-                    return null;
+                    return RedirectToRoute("/users/login", new { @return = Request.RequestUri.AbsoluteUri });
                 }
             }
         }
@@ -102,7 +102,10 @@ namespace ExampleWebApiProject.Controllers
             {
                 IAccessTokenResponse response = Provider.RequestAccessToken(request);
                 context.SaveChanges();
-                return Request.CreateResponse(response is ISuccessfulAccessTokenResponse ? HttpStatusCode.OK : HttpStatusCode.BadRequest, response);
+                var r = Request.CreateResponse(response.StatusCode(), response);
+                r.Headers.Add("Cache-Control", "no-store");
+                r.Headers.Add("Pragma", "no-cache");
+                return r;
             }
         }
 
@@ -123,7 +126,7 @@ namespace ExampleWebApiProject.Controllers
             {
                 IAccessTokenResponse response = Provider.RefreshAccessToken(request);
                 context.SaveChanges();
-                return Request.CreateResponse(response is ISuccessfulAccessTokenResponse ? HttpStatusCode.OK : HttpStatusCode.BadRequest, response);
+                return Request.CreateResponse(response.StatusCode(), response);
             }
         }
     }

@@ -71,6 +71,7 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -79,10 +80,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AccessTokenExtensions.cs" />
+    <Compile Include="AccessTokenResponseExtensions.cs" />
     <Compile Include="AccessTokenType.cs" />
     <Compile Include="AccessTokenTypes.cs" />
     <Compile Include="AuthorizationCodeExtensions.cs" />
     <Compile Include="AuthorizationCodeResponseExtensions.cs" />
+    <Compile Include="Factories\ITokenFactory.cs" />
     <Compile Include="IAccessTokenResponse.cs" />
     <Compile Include="Implementation\AccessToken.cs" />
     <Compile Include="Implementation\AccessTokenRequest.cs" />

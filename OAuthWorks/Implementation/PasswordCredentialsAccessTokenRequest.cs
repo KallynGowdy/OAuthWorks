@@ -26,26 +26,15 @@ namespace OAuthWorks.Implementation
     /// Defines a class that provides a basic implementation of <see cref="IPasswordCredentialsAccessTokenRequest"/>.
     /// </summary>
     [DataContract]
-    public class PasswordCredentialsAccessTokenRequest : AccessTokenRequest, IPasswordCredentialsAccessTokenRequest
+    public abstract class PasswordCredentialsAccessTokenRequest : AccessTokenRequest, IPasswordCredentialsAccessTokenRequest
     {
         /// <summary>
-        /// Gets the identifier of the user who's credentials are going to be used.
+        /// Gets the user that account access is being requested for. The given username and password must match the given user for proper validation.
         /// </summary>
-        [DataMember(Name = "username")]
-        public string UserName
+        /// <returns>Returns the authenticated user that access is being requested for.</returns>
+        public abstract IUser User
         {
             get;
-            private set;
-        }
-
-        /// <summary>
-        /// Gets or sets the password provided in the request.
-        /// </summary>
-        [DataMember(Name = "password")]
-        public string Password
-        {
-            get;
-            private set;
         }
 
         /// <summary>
@@ -58,18 +47,14 @@ namespace OAuthWorks.Implementation
         /// <param name="grantType">The type of grant requested by the client.</param>
         /// <param name="scope">The scope requested by the client.</param>
         /// <param name="redirectUri">The redirect URI provided by the client when requesting an authorization code.</param>
-        public PasswordCredentialsAccessTokenRequest(string userName, string password, string clientId, string clientSecret, string grantType, Uri redirectUri, string scope)
+        protected PasswordCredentialsAccessTokenRequest(string clientId, string clientSecret, string grantType, Uri redirectUri, string scope)
             : base(clientId, clientSecret, grantType, scope, redirectUri)
         {
-            Contract.Requires(!string.IsNullOrEmpty(userName));
-            Contract.Requires(!string.IsNullOrEmpty(password));
             Contract.Requires(!string.IsNullOrEmpty(clientId));
             Contract.Requires(!string.IsNullOrEmpty(clientSecret));
             Contract.Requires(!string.IsNullOrEmpty(grantType));
             this.ClientId = clientId;
             this.ClientSecret = clientSecret;
-            this.UserName = userName;
-            this.Password = password;
             this.GrantType = grantType;
             this.RedirectUri = redirectUri;
             this.Scope = scope;

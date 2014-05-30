@@ -88,9 +88,6 @@ namespace OAuthWorks.Implementation
         /// <param name="redirectUri">The redirect URI provided by the client when requesting an authorization code.</param>
         protected AccessTokenRequest(string clientId, string clientSecret, string grantType, string scope, Uri redirectUri)
         {
-            Contract.Requires(!string.IsNullOrEmpty(clientId));
-            Contract.Requires(!string.IsNullOrEmpty(clientSecret));
-            Contract.Requires(!string.IsNullOrEmpty(grantType));
             this.ClientId = clientId;
             this.ClientSecret = clientSecret;
             this.GrantType = grantType;

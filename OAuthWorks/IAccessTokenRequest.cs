@@ -24,7 +24,6 @@ namespace OAuthWorks
     /// <summary>
     /// Defines an interface for a request for an access refreshToken by a client.
     /// </summary>
-    [ContractClass(typeof(IAccessTokenRequestContract))]
     public interface IAccessTokenRequest
     {
         /// <summary>
@@ -65,54 +64,6 @@ namespace OAuthWorks
         string Scope
         {
             get;
-        }
-    }
-
-    [ContractClassFor(typeof(IAccessTokenRequest))]
-    internal abstract class IAccessTokenRequestContract : IAccessTokenRequest
-    {
-
-        string IAccessTokenRequest.GrantType
-        {
-            get
-            {
-                Contract.Ensures(Contract.Result<string>() != null);
-                return default(string);
-            }
-        }
-
-        string IAccessTokenRequest.ClientId
-        {
-            get
-            {
-                Contract.Ensures(Contract.Result<string>() != null);
-                return default(string);
-            }
-        }
-
-        Uri IAccessTokenRequest.RedirectUri
-        {
-            get
-            {
-                return default(Uri);
-            }
-        }
-
-        string IAccessTokenRequest.ClientSecret
-        {
-            get
-            {
-                Contract.Ensures(Contract.Result<string>() != null);
-                return default(string);
-            }
-        }
-
-        string IAccessTokenRequest.Scope
-        {
-            get
-            {
-                return default(string);
-            }
         }
     }
 }

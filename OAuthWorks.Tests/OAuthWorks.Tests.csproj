@@ -80,6 +80,7 @@
     <Compile Include="Scope.cs" />
     <Compile Include="ScopeRepository.cs" />
     <Compile Include="User.cs" />
+    <Compile Include="ValueIdFormatterTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OAuthWorks\OAuthWorks.csproj">

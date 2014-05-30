@@ -19,6 +19,7 @@ using System.Web;
 using OAuthWorks;
 using ExampleWebApiProject.Models;
 using OAuthWorks.DataAccess.Repositories;
+using OAuthWorks.Implementation.Factories;
 
 namespace ExampleWebApiProject.Repositories
 {

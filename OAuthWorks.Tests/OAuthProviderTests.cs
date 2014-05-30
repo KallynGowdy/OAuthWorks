@@ -198,7 +198,7 @@ namespace OAuthWorks.Tests
                 state: state
             );
 
-            var scopes = provider.GetRequestedScopes(request);
+            var scopes = provider.GetRequestedScopes(request.Scope);
 
             if (scopes != null && scopes.Count() > 0)
             {
@@ -274,7 +274,7 @@ namespace OAuthWorks.Tests
 
                 Assert.True(client.IsValidRedirectUri(new Uri(redirectUri)), "The client did not have a valid redirect Uri even though it was able to retrieve a code.");
                 Assert.True(client.MatchesSecret(secret), "The client's secret was invalid even though it got through.");
-                Assert.NotNull(provider.GetRequestedScopes(codeRequest), "The requested scope was invalid even though it got through.");
+                Assert.NotNull(provider.GetRequestedScopes(codeRequest.Scope), "The requested scope was invalid even though it got through.");
             }
             else
             {
@@ -285,7 +285,7 @@ namespace OAuthWorks.Tests
                         Assert.False(client.MatchesSecret(secret));
                         break;
                     case AuthorizationCodeRequestErrorType.InvalidScope:
-                        Assert.IsEmpty(provider.GetRequestedScopes(codeRequest));
+                        Assert.IsEmpty(provider.GetRequestedScopes(codeRequest.Scope));
                         break;
                     case AuthorizationCodeRequestErrorType.InvalidRequest:
                         Assert.False(client.IsValidRedirectUri(codeRequest.RedirectUri));

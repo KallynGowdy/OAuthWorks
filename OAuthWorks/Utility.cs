@@ -14,6 +14,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Reflection;
@@ -68,6 +69,31 @@ namespace OAuthWorks
         }
 
         /// <summary>
+        /// Executes the given action on every one of the objects in this enumerable list.
+        /// </summary>
+        /// <typeparam name="T">The type of the objects being enumerated.</typeparam>
+        /// <param name="objects">The enumerable list of objects to perform the action on.</param>
+        /// <param name="action">The action that should be performed for each object in the list.</param>
+        /// <exception cref="System.ArgumentNullException">
+        /// Thrown when either <paramref name="objects"/> or <paramref name="action"/> is null.
+        /// </exception>
+        public static IEnumerable<TReturn> ForEach<T, TReturn>(this IEnumerable<T> objects, Func<T, TReturn> action)
+        {
+            if (objects == null)
+            {
+                throw new ArgumentNullException("objects");
+            }
+            if (action == null)
+            {
+                throw new ArgumentNullException("action");
+            }
+            foreach (T a in objects)
+            {
+                yield return action(a);
+            }
+        }
+
+        /// <summary>
         /// Converts the given object into a query string representation.
         /// </summary>
         /// <param name="obj">The object to retreive to query string for.</param>
@@ -79,14 +105,14 @@ namespace OAuthWorks
                 throw new ArgumentNullException("obj");
             }
             Type t = obj.GetType();
-            List<Tuple<string, string>> values = new List<Tuple<string, string>>();
+            NameValueCollection values = System.Web.HttpUtility.ParseQueryString(string.Empty);
 
             foreach(PropertyInfo p in t.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => !p.IsSpecialName && p.CanRead))
             {
-                values.Add(new Tuple<string, string>(p.Name, (p.GetValue(obj) ?? "").ToString()));
+                values.Add(p.Name, (p.GetValue(obj) ?? "").ToString());
             }
 
-            return "?" + string.Join("&", values.Where(v => v.Item2 != null).Select(v => string.Format("{0}={1}", v.Item1, Uri.EscapeDataString(v.Item2))));
+            return "?" + values.ToString();
         }
     }
 }

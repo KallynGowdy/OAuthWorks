@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace OAuthWorks.Implementation
@@ -25,6 +26,30 @@ namespace OAuthWorks.Implementation
     /// </summary>
     public class ValueIdFormatter : IValueIdFormatter
     {
+        private static readonly Lazy<IValueIdFormatter> defaultFormatter = new Lazy<IValueIdFormatter>(() => new ValueIdFormatter());
+
+        /// <summary>
+        /// Gets the default <see cref="IValueIdFormatter"/> object used to format IDs and values into one string.
+        /// </summary>
+        /// <returns></returns>
+        public static IValueIdFormatter DefaultFormatter
+        {
+            get
+            {
+                return defaultFormatter.Value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the divider that this formatter uses to join the ID and Value strings.
+        /// </summary>
+        /// <returns></returns>
+        public char Divider
+        {
+            get;
+            private set;
+        } = '-';
+
         /// <summary>
         /// Formats the given Id and refreshToken into one value that is returned.
         /// </summary>
@@ -35,7 +60,7 @@ namespace OAuthWorks.Implementation
         /// </returns>
         public string FormatValue(string id, string token)
         {
-            return token + '-' + id;
+            return Escape(token, Divider, Divider)  + Divider + Escape(id, Divider, Divider);
         }
 
         /// <summary>
@@ -51,7 +76,8 @@ namespace OAuthWorks.Implementation
             {
                 throw new ArgumentException("The formatted token can't be null or empty.", "formattedToken");
             }
-            return formattedToken.Split('-').Last();
+            Regex r = new Regex(string.Format(@"(?<!{0}){0}(?!{0})", Divider));
+            return Unescape(r.Split(formattedToken).Last(), Divider, Divider);
         }
 
         /// <summary>
@@ -67,7 +93,55 @@ namespace OAuthWorks.Implementation
             {
                 throw new ArgumentException("The formatted token can't be null or empty.", "formattedToken");
             }
-            return formattedToken.Split('-').First();
+            Regex r = new Regex(string.Format(@"(?<!{0}){0}(?!{0})", Divider));
+            return Unescape(r.Split(formattedToken).First(), Divider, Divider);
+        }
+
+        /// <summary>
+        /// Escapes the specified characters in the given string by preceding them with the specified escape character.
+        /// </summary>
+        /// <param name="str">The string to escape.</param>
+        /// <param name="chars">The characters to escape.</param>
+        /// <param name="escapeChar">The character to use as the identifier of an escape sequence.</param>
+        /// <returns>Returns the original string with the specified characters escaped.</returns>
+        private static string Escape(string str, char escapeChar, params char[] chars)
+        {
+            chars = chars.Concat(new char[] { escapeChar }).ToArray();
+            StringBuilder newString = new StringBuilder(str);
+
+            for (int i = 0; i < newString.Length; i++)
+            {
+                char c = newString[i];
+                if (chars.Contains(c))
+                {
+                    newString.Insert(i, c);
+                    i++;
+                }
+            }
+            return newString.ToString();
+        }
+
+        /// <summary>
+        /// Unescapes the specified characters in the given string by removing proceeding the proceeding given escape character.
+        /// </summary>
+        /// <param name="str">The string to unescape</param>
+        /// <param name="escapeChar">The character that was used to escape everything.</param>
+        /// <param name="chars">The characters to unescape.</param>
+        /// <returns>Returns the given string with the specified characters unescaped.</returns>
+        private static string Unescape(string str, char escapeChar, params char[] chars)
+        {
+            chars = chars.Concat(new char[] { escapeChar }).ToArray();
+            StringBuilder newString = new StringBuilder(str);
+            for (int i = 0; i < newString.Length - 1; i++)
+            {
+                char c = newString[i];
+                char next = newString[i + 1];
+                if(c == escapeChar && chars.Contains(next))
+                {
+                    newString.Remove(i, 1);
+                }
+            }
+            return newString.ToString();
         }
     }
 }

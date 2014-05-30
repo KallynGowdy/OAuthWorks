@@ -54,7 +54,6 @@ namespace OAuthWorks.Implementation
         public AuthorizationCodeGrantAccessTokenRequest(string authorizationCode, string clientId, string clientSecret, Uri redirectUri)
             : base(clientId, clientSecret, AuthorizationCodeGrantType, null, redirectUri)
         {
-            Contract.Requires(!string.IsNullOrEmpty(authorizationCode));
             this.AuthorizationCode = authorizationCode;
             this.ClientId = clientId;
             this.ClientSecret = clientSecret;

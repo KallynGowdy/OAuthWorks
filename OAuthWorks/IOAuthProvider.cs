@@ -129,11 +129,11 @@ namespace OAuthWorks
         }
 
         /// <summary>
-        /// Gets the scopes that are requested by the client based on the given request.
+        /// Gets the scopes that are requested by the client based on the scopes from the given request.
         /// </summary>
-        /// <param name="request">The <see cref="OAuthWorks.AuthorizationCode"/> object that represents the request from the client.</param>
+        /// <param name="scopes">The string of scopes that the client requested.</param>
         /// <returns>Returns a list of <see cref="OAuthWorks.IScope"/> objects.</returns>
-        IEnumerable<IScope> GetRequestedScopes(IAuthorizationCodeRequest request);
+        IEnumerable<IScope> GetRequestedScopes(string scopes);
 
         /// <summary>
         /// Initiates the Authorization Code flow based on the given request and returns a response that defines what response to send back to the user agent.
@@ -220,12 +220,6 @@ namespace OAuthWorks
             get { return default(bool); }
         }
 
-        IEnumerable<IScope> IOAuthProvider.GetRequestedScopes(IAuthorizationCodeRequest request)
-        {
-            Contract.Ensures(Contract.Result<IEnumerable<IScope>>() != null);
-            return default(IEnumerable<IScope>);
-        }
-
         IAuthorizationCodeResponse IOAuthProvider.RequestAuthorizationCode(IAuthorizationCodeRequest request, IUser user)
         {
             Contract.Requires(user != null);
@@ -277,6 +271,12 @@ namespace OAuthWorks
         IAccessTokenResponse IOAuthProvider.RequestAccessToken(IPasswordCredentialsAccessTokenRequest request)
         {
             return default(IAccessTokenResponse);
+        }
+
+        IEnumerable<IScope> IOAuthProvider.GetRequestedScopes(string scopes)
+        {
+            Contract.Ensures(Contract.Result<IEnumerable<IScope>>() != null);
+            return default(IEnumerable<IScope>);
         }
     }
 }

@@ -16,19 +16,20 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
-namespace OAuthWorks
+namespace OAuthWorks.Factories
 {
     /// <summary>
-    /// Defines an interface for objects which contain values concerning a request for an Access Token using the Resource Owner Password Credentials Grant.
+    /// Defines an interface for objects that create <see cref="IToken"/> objects
     /// </summary>
-    public interface IPasswordCredentialsAccessTokenRequest : IAccessTokenRequest
+    public interface ITokenFactory : IFactory<IToken>
     {
         /// <summary>
-        /// Gets the user that account access is being requested for. The given username and password must match the given user for proper validation.
+        /// Gets the <see cref="IValueIdFormatter"/> object that this factory uses to combine generated IDs and Values.
         /// </summary>
-        /// <returns>Returns the authenticated user that access is being requested for.</returns>
-        IUser User
+        /// <returns></returns>
+        IValueIdFormatter ValueIdFormatter
         {
             get;
         }

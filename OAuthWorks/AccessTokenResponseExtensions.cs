@@ -15,22 +15,25 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace OAuthWorks
 {
     /// <summary>
-    /// Defines an interface for objects which contain values concerning a request for an Access Token using the Resource Owner Password Credentials Grant.
+    /// Defines a static class that provides extension methods for <see cref="IAccessTokenResponse"/> objects.
     /// </summary>
-    public interface IPasswordCredentialsAccessTokenRequest : IAccessTokenRequest
+    public static class AccessTokenResponseExtensions
     {
         /// <summary>
-        /// Gets the user that account access is being requested for. The given username and password must match the given user for proper validation.
+        /// Gets the <see cref="HttpStatusCode"/> that represents whether the request was a success or failure.
         /// </summary>
-        /// <returns>Returns the authenticated user that access is being requested for.</returns>
-        IUser User
+        /// <param name="response"></param>
+        /// <returns></returns>
+        public static HttpStatusCode StatusCode(this IAccessTokenResponse response)
         {
-            get;
+            return response is ISuccessfulAccessTokenResponse ? HttpStatusCode.OK : HttpStatusCode.BadRequest;
         }
     }
 }

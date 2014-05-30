@@ -20,12 +20,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using OAuthWorks.Implementation.Factories;
 
 namespace ExampleWebApiProject.Repositories
 {
     public class AccessTokenRepository : IAccessTokenRepository<IAccessToken>
     {
         private DatabaseContext context;
+
+        private IValueIdFormatter idFormatter = AccessTokenFactory.DefaultIdFormatter;
 
         public AccessTokenRepository(DatabaseContext context)
         {
@@ -43,7 +46,7 @@ namespace ExampleWebApiProject.Repositories
 
         public IAccessToken GetByToken(string token)
         {
-            return context.AccessTokens.Find(token.Split('-').Last());
+            return context.AccessTokens.Find(idFormatter.GetId(token));
         }
 
         public IEnumerable<IAccessToken> GetByUserAndClient(IUser user, IClient client)

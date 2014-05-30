@@ -22,6 +22,7 @@ namespace ExampleWebApiProject
         protected void Application_Start()
         {
             GlobalConfiguration.Configure(WebApiConfig.Register);
+            MvcConfig.Register(RouteTable.Routes);
             SerializeSettings(GlobalConfiguration.Configuration);
         }
 
