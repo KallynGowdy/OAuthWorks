@@ -33,18 +33,8 @@ namespace OAuthWorks.Implementation
     /// The default number of iterations is 1000. While this is outdated compared to the minimum recommended iterations, the fact that tokens are short lived mitigates this fear.
     /// </remarks>
     [DataContract]
-    public class HashedAccessToken : AccessToken
+    public class HashedAccessToken : AccessToken, IEquatable<HashedAccessToken>
     {
-        /// <summary>
-        /// The number of hash iterations used if not specified.
-        /// </summary>
-        public const int DefaultHashIterations = 1000;
-
-        /// <summary>
-        /// The number of bytes that should be generated for the hash and salt.
-        /// </summary>
-        public const int DefaultHashLength = 20;
-
         private static readonly Lazy<IHashFactory> lazyDefaultHashFactory = new Lazy<IHashFactory>(() => new Pbkdf2Sha1Factory());
 
         public static IHashFactory DefaultHashFactory
@@ -84,50 +74,12 @@ namespace OAuthWorks.Implementation
             : base(id, user, client, scopes, tokenType, expirationDateUtc)
         {
             Contract.Requires(hashFactory != null);
-            this.HashIterations = DefaultHashIterations;
-            HashFactory = hashFactory;
-            Tuple<string, string> hashSalt = GenerateHash(token, DefaultHashLength, this.HashIterations);
-            this.TokenHash = hashSalt.Item1;
-            this.TokenSalt = hashSalt.Item2;
+            this.TokenHash = new HashedValue(hashFactory, token);
         }
 
-        /// <summary>
-        /// Gets the <see cref="IHashFactory"/> used by this token.
-        /// </summary>
-        /// <value>
-        /// The <see cref="IHashFactory"/> factory.
-        /// </value>
-        public IHashFactory HashFactory
-        {
-            get;
-            private set;
-        }
 
-        /// <summary>
-        /// Gets the hash that represents the refreshToken.
-        /// </summary>
-        [DataMember(Name="TokenHash")]
-        public string TokenHash
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
-        /// Gets the salt that was used in creating the hash.
-        /// </summary>
-        [DataMember(Name = "TokenSalt")]
-        public string TokenSalt
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
-        /// Gets the number of iterations used to hash the refreshToken.
-        /// </summary>
-        [DataMember(Name = "HashIterations")]
-        public int HashIterations
+        [DataMember(Name = "TokenHash")]
+        public HashedValue TokenHash
         {
             get;
             private set;
@@ -142,41 +94,18 @@ namespace OAuthWorks.Implementation
         /// </returns>
         public override bool MatchesValue(string token)
         {
-            byte[] salt = decodeString(TokenSalt);
-            byte[] target = decodeString(TokenHash);
-            byte[] hash;
-
-            using (IHasher pbkdf2 = HashFactory.Create(Encoding.UTF8.GetBytes(token), salt, HashIterations))
-            {
-                hash = pbkdf2.GetBytes(target.Length);
-            }
-
-            return target.SequenceEqual(hash);
+            return TokenHash.MatchesHash(token);
         }
 
-        /// <summary>
-        /// Generates a new hash using the given password, output length and iterations.
-        /// </summary>
-        /// <param name="password">The password that should be hashed.</param>
-        /// <param name="length">The length (in bytes) of the hash to output.</param>
-        /// <param name="iterations">The number of iterations that should be applied to the password to generate the hash.</param>
-        /// <returns>Returns a new tuple where the first element represents the generated hash and the second represents the generated salt.</returns>
-        protected Tuple<string, string> GenerateHash(string password, int length, int iterations)
+        public override bool Equals(object obj)
         {
-            using (IHasher pbkdf2 = HashFactory.Create(Encoding.UTF8.GetBytes(password), length, iterations))
-            {
-                return new Tuple<string, string>(encodeBytes(pbkdf2.GetBytes(length)), encodeBytes(pbkdf2.Salt));
-            }
+            return Equals(obj as HashedAccessToken);
         }
 
-        private static string encodeBytes(byte[] b)
+        public bool Equals(HashedAccessToken other)
         {
-            return Convert.ToBase64String(b);
-        }
-
-        private static byte[] decodeString(string s)
-        {
-            return Convert.FromBase64String(s);
+            return other != null &&
+                this.TokenHash.Equals(other.TokenHash);
         }
     }
 }

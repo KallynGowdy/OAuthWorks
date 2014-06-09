@@ -31,12 +31,16 @@ namespace ExampleWebApiProject.Models
 
         public AuthorizationCode(ICreatedToken<IAuthorizationCode> authorizationCode)
         {
-            this.Code = authorizationCode.TokenValue;
+            this.Code = new HashedValue(authorizationCode.TokenValue);
             this.Client = (Client)authorizationCode.Token.Client;
             this.ExpirationDateUtc = authorizationCode.Token.ExpirationDateUtc;
             this.Revoked = authorizationCode.Token.Revoked;
             this.RedirectUri = authorizationCode.Token.RedirectUri.ToString();
             this.User = (User)authorizationCode.Token.User;
+            if((IHasId<string> id = authorizationCode.Token as IHasId<string>) != null)
+            {
+                this.Id = id.Id;
+            }
         }
 
         /// <summary>
@@ -117,8 +121,13 @@ namespace ExampleWebApiProject.Models
         }
 
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        public string Code
+        public string Id
+        {
+            get;
+            set;
+        }
+
+        public virtual HashedValue Code
         {
             get;
             set;
@@ -133,7 +142,7 @@ namespace ExampleWebApiProject.Models
         /// </returns>
         public bool MatchesValue(string token)
         {
-            return this.Code.Equals(token, StringComparison.Ordinal);
+            return this.Code.MatchesHash(token);
         }
 
         /// <summary>
@@ -154,12 +163,21 @@ namespace ExampleWebApiProject.Models
         }
 
 
+        /// <summary>
+        /// Gets a value indicating whether this <see cref="AuthorizationCode" /> is revoked.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if revoked; otherwise, <c>false</c>.
+        /// </value>
         public bool Revoked
         {
             get;
             private set;
         }
 
+        /// <summary>
+        /// Revokes this instance.
+        /// </summary>
         public void Revoke()
         {
             Revoked = true;

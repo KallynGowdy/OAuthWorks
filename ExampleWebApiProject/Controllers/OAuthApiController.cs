@@ -24,10 +24,12 @@ using System.Net.Http;
 using System.Web.Http;
 using System.Web.Security;
 using System.Web.Http.Results;
+using System.Runtime.Serialization;
+using System.Threading.Tasks;
 
 namespace ExampleWebApiProject.Controllers
 {
-    public class OAuthController : ApiController
+    public class OAuthApiController : ApiController
     {
         public OAuthProvider Provider
         {
@@ -35,7 +37,7 @@ namespace ExampleWebApiProject.Controllers
             private set;
         }
 
-        public OAuthController()
+        public OAuthApiController()
         {
         }
 
@@ -103,9 +105,106 @@ namespace ExampleWebApiProject.Controllers
                 IAccessTokenResponse response = Provider.RequestAccessToken(request);
                 context.SaveChanges();
                 var r = Request.CreateResponse(response.StatusCode(), response);
-                r.Headers.Add("Cache-Control", "no-store");
-                r.Headers.Add("Pragma", "no-cache");
-                return r;
+                return AddHeadersToTokenResponse(r);
+            }
+        }
+
+        private static HttpResponseMessage AddHeadersToTokenResponse(HttpResponseMessage r)
+        {
+            r.Headers.Add("Cache-Control", "no-store");
+            r.Headers.Add("Pragma", "no-cache");
+            return r;
+        }
+
+        [DataContract]
+        public class CredentialsTokenRequest
+        {
+            [DataMember(Name = "username")]
+            public string Username
+            {
+                get;
+                set;
+            }
+
+            [DataMember(Name = "password")]
+            public string Password
+            {
+                get;
+                set;
+            }
+
+            [DataMember(Name = "client_id")]
+            public string ClientId
+            {
+                get;
+                set;
+            }
+
+            [DataMember(Name = "client_secret")]
+            public string ClientSecret
+            {
+                get;
+                set;
+            }
+
+            [DataMember(Name = "scope")]
+            public string Scope
+            {
+                get;
+                set;
+            }
+
+            [DataMember(Name = "redirect_uri")]
+            public Uri RedirectUri
+            {
+                get;
+                set;
+            }
+
+            [DataMember(Name = "grant_type")]
+            public string GrantType
+            {
+                get;
+                set;
+            }
+        }
+
+        [Route("api/v1/accessToken")]
+        [HttpPost]
+        public async Task<HttpResponseMessage> RequestAccessToken(CredentialsTokenRequest request)
+        {
+            using (DatabaseContext context = new DatabaseContext()) // Create the unit-of-work
+            using (Provider = new OAuthProvider // Create the provider for the request
+            {
+                AccessTokenRepository = new AccessTokenRepository(context), // Pass in our repositories and arguments
+                AuthorizationCodeRepository = new AuthorizationCodeRepository(context),
+                RefreshTokenRepository = new RefreshTokenRepository(context),
+                ClientRepository = new ClientRepository(context),
+                ScopeRepository = new ScopeRepository(context),
+                DistributeRefreshTokens = true,
+                DeleteRevokedTokens = true
+            })
+            {
+                User user = context.Users.FirstOrDefault(u => u.Id.Equals(request.Username)); // Get the user based on the username given in the request
+                if (user == null || !user.IsValidPassword(request.Password)) // Validate the given credentials
+                {
+                    user = null; // Set the user to null if the credentials are bad so the provider can handle creating the correct response
+                }
+                IAccessTokenResponse response = Provider.RequestAccessToken
+                (
+                    new PasswordCredentialsAccessTokenRequest // Send the request to the provider
+                    (
+                        user,
+                        request.ClientId, 
+                        request.ClientSecret, 
+                        request.GrantType, 
+                        request.RedirectUri, 
+                        request.Scope
+                    )
+                );
+                await context.SaveChangesAsync(); // Save any changes that the provider made to the database
+                HttpResponseMessage r = Request.CreateResponse(response.StatusCode(), response); // Create a new response
+                return AddHeadersToTokenResponse(r); // Add the headers and return the response
             }
         }
 

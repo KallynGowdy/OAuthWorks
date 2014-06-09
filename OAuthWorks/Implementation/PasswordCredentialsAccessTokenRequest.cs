@@ -26,33 +26,35 @@ namespace OAuthWorks.Implementation
     /// Defines a class that provides a basic implementation of <see cref="IPasswordCredentialsAccessTokenRequest"/>.
     /// </summary>
     [DataContract]
-    public abstract class PasswordCredentialsAccessTokenRequest : AccessTokenRequest, IPasswordCredentialsAccessTokenRequest
+    public class PasswordCredentialsAccessTokenRequest : AccessTokenRequest, IPasswordCredentialsAccessTokenRequest
     {
         /// <summary>
         /// Gets the user that account access is being requested for. The given username and password must match the given user for proper validation.
         /// </summary>
         /// <returns>Returns the authenticated user that access is being requested for.</returns>
-        public abstract IUser User
+        public IUser User
         {
             get;
+            private set;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PasswordCredentialsAccessTokenRequest"/> class.
         /// </summary>
-        /// <param name="userName">The username.</param>
-        /// <param name="password">The password.</param>
+        /// <param name="user">The user.</param>
         /// <param name="clientId">The id of the client making the request.</param>
         /// <param name="clientSecret">The secret of the client making the request.</param>
         /// <param name="grantType">The type of grant requested by the client.</param>
         /// <param name="scope">The scope requested by the client.</param>
         /// <param name="redirectUri">The redirect URI provided by the client when requesting an authorization code.</param>
-        protected PasswordCredentialsAccessTokenRequest(string clientId, string clientSecret, string grantType, Uri redirectUri, string scope)
+        public PasswordCredentialsAccessTokenRequest(IUser user, string clientId, string clientSecret, string grantType, Uri redirectUri, string scope)
             : base(clientId, clientSecret, grantType, scope, redirectUri)
         {
             Contract.Requires(!string.IsNullOrEmpty(clientId));
             Contract.Requires(!string.IsNullOrEmpty(clientSecret));
             Contract.Requires(!string.IsNullOrEmpty(grantType));
+            Contract.Requires(user != null);
+            this.User = user;
             this.ClientId = clientId;
             this.ClientSecret = clientSecret;
             this.GrantType = grantType;

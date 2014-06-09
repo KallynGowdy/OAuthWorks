@@ -47,50 +47,15 @@ namespace OAuthWorks.Implementation
         /// <summary>
         /// Gets the hash of the code.
         /// </summary>
-        /// <value>
-        /// The code hash.
-        /// </value>
-        public string CodeHash
+        /// <returns>The code hash.</returns>
+        public HashedValue CodeHash
         {
             get;
             protected set;
         }
 
         /// <summary>
-        /// Gets the salt used to create the hash.
-        /// </summary>
-        /// <value>
-        /// The code salt.
-        /// </value>
-        public string CodeSalt
-        {
-            get;
-            protected set;
-        }
-
-        /// <summary>
-        /// Gets the number of iterations used to create the hash.
-        /// </summary>
-        public int HashIterations
-        {
-            get;
-            protected set;
-        }
-
-        /// <summary>
-        /// Gets or sets the PBKDF2 factory.
-        /// </summary>
-        /// <value>
-        /// The PBKDF2 factory.
-        /// </value>
-        public IHashFactory HashFactory
-        {
-            get;
-            protected set;
-        }
-
-        /// <summary>
-        /// Gets or sets the identifier.
+        /// Gets the identifier of this code.
         /// </summary>
         /// <value>
         /// The identifier.
@@ -112,46 +77,13 @@ namespace OAuthWorks.Implementation
         /// <param name="redirectUri">The redirect URI.</param>
         /// <param name="expirationDateUtc">The expiration date UTC.</param>
         public HashedAuthorizationCode(string id, string token, IUser user, IClient client, IEnumerable<IScope> scopes, Uri redirectUri, DateTime expirationDateUtc)
-            : this(id, token, DefaultHashLength, DefaultHashIterations, new Pbkdf2Sha1Factory(), user, client, scopes, redirectUri, expirationDateUtc)
-        {
-
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="HashedAuthorizationCode"/> class.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <param name="refreshToken">The refreshToken.</param>
-        /// <param name="hashLength">Length of the hash.</param>
-        /// <param name="hashIterations">The hash iterations.</param>
-        /// <param name="hashFactory">The PBKDF2 factory.</param>
-        /// <param name="user">The user.</param>
-        /// <param name="client">The client.</param>
-        /// <param name="scopes">The scopes.</param>
-        /// <param name="redirectUri">The redirect URI.</param>
-        /// <param name="expirationDateUtc">The expiration date UTC.</param>
-        public HashedAuthorizationCode(string id, string token, int hashLength, int hashIterations, IHashFactory hashFactory, IUser user, IClient client, IEnumerable<IScope> scopes, Uri redirectUri, DateTime expirationDateUtc)
             : base(user, client, scopes, redirectUri, expirationDateUtc)
         {
             Contract.Requires(!string.IsNullOrEmpty(id));
             Contract.Requires(!string.IsNullOrEmpty(token));
-            Contract.Requires(hashLength > 0);
-            Contract.Requires(hashIterations > 0);
-            Contract.Requires(hashFactory != null);
             this.Id = id;
-            HashFactory = hashFactory;
-            this.HashIterations = hashIterations;
-            byte[] salt = new byte[hashLength];
-            using (RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider())
-            {
-                rng.GetBytes(salt);
-            }
 
-            using (IHasher pbkdf2 = HashFactory.Create(Encoding.UTF8.GetBytes(token), salt, hashIterations))
-            {
-                CodeHash = encodeBytes(pbkdf2.GetBytes(hashLength));
-                CodeSalt = encodeBytes(pbkdf2.Salt);
-            }
+            this.CodeHash = new HashedValue(token);
         }
 
         private static string encodeBytes(byte[] b)
@@ -173,12 +105,7 @@ namespace OAuthWorks.Implementation
         /// </returns>
         public override bool MatchesValue(string token)
         {
-            byte[] salt = decodeString(CodeSalt);
-            byte[] hash = decodeString(CodeHash);
-            using (IHasher pbkdf2 = HashFactory.Create(Encoding.UTF8.GetBytes(token), salt, HashIterations))
-            {
-                return pbkdf2.GetBytes(hash.Length).SequenceEqual(hash);
-            }
+            return CodeHash.MatchesHash(token);
         }
     }
 }

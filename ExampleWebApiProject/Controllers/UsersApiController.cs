@@ -20,14 +20,15 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using System.Web.Security;
+using System.Web;
+using System.IO;
 
 namespace ExampleWebApiProject.Controllers
 {
     /// <summary>
     /// Defines a controller for a user that can log in.
     /// </summary>
-    [RoutePrefix("api/v1/users")]
-    public class UsersController : ApiController
+    public class UsersApiController : ApiController
     {
         public class Account
         {
@@ -44,7 +45,7 @@ namespace ExampleWebApiProject.Controllers
             }
         }
 
-        [Route("logIn")]
+        [Route("api/v1/users/logIn")]
         [HttpPost]
         public bool LogIn(Account given)
         {
@@ -61,7 +62,7 @@ namespace ExampleWebApiProject.Controllers
             return false;
         }
 
-        [Route("")]
+        [Route("api/v1/users")]
         [HttpPost]
         public void CreateAccount(Account newUser)
         {
