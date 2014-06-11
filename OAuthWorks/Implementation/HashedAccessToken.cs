@@ -33,7 +33,7 @@ namespace OAuthWorks.Implementation
     /// The default number of iterations is 1000. While this is outdated compared to the minimum recommended iterations, the fact that tokens are short lived mitigates this fear.
     /// </remarks>
     [DataContract]
-    public class HashedAccessToken : AccessToken, IEquatable<HashedAccessToken>
+    public class HashedAccessToken<TId> : AccessToken<TId>, IEquatable<HashedAccessToken<TId>>
     {
         private static readonly Lazy<IHashFactory> lazyDefaultHashFactory = new Lazy<IHashFactory>(() => new Pbkdf2Sha1Factory());
 
@@ -55,7 +55,7 @@ namespace OAuthWorks.Implementation
         /// <param name="scopes">The scopes that this refreshToken provides access to.</param>
         /// <param name="tokenType">Type of the refreshToken. Describes how the client should handle it.</param>
         /// <param name="expirationDateUtc">The date of expiration in Universal Coordinated Time.</param>
-        public HashedAccessToken(string token, string id, IUser user, IClient client, IEnumerable<IScope> scopes, string tokenType, DateTime expirationDateUtc)
+        public HashedAccessToken(string token, TId id, IUser user, IClient client, IEnumerable<IScope> scopes, string tokenType, DateTime expirationDateUtc)
             : this(DefaultHashFactory, token, id, user, client, scopes, tokenType, expirationDateUtc)
         {
         }
@@ -70,7 +70,7 @@ namespace OAuthWorks.Implementation
         /// <param name="scopes">The scopes that this refreshToken provides access to.</param>
         /// <param name="tokenType">Type of the refreshToken. Describes how the client should handle it.</param>
         /// <param name="expirationDateUtc">The date of expiration in Universal Coordinated Time.</param>
-        public HashedAccessToken(IHashFactory hashFactory, string token, string id, IUser user, IClient client, IEnumerable<IScope> scopes, string tokenType, DateTime expirationDateUtc)
+        public HashedAccessToken(IHashFactory hashFactory, string token, TId id, IUser user, IClient client, IEnumerable<IScope> scopes, string tokenType, DateTime expirationDateUtc)
             : base(id, user, client, scopes, tokenType, expirationDateUtc)
         {
             Contract.Requires(hashFactory != null);
@@ -97,12 +97,30 @@ namespace OAuthWorks.Implementation
             return TokenHash.MatchesHash(token);
         }
 
-        public override bool Equals(object obj)
+
+        public override int GetHashCode()
         {
-            return Equals(obj as HashedAccessToken);
+            return TokenHash.GetHashCode();
         }
 
-        public bool Equals(HashedAccessToken other)
+        /// <summary>
+        /// Determines whether the specified <see cref="System.Object" />, is equal to this instance.
+        /// </summary>
+        /// <param name="obj">The <see cref="System.Object" /> to compare with this instance.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified <see cref="System.Object" /> is equal to this instance; otherwise, <c>false</c>.
+        /// </returns>
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as HashedAccessToken<TId>);
+        }
+
+        /// <summary>
+        /// Equalses the specified other.
+        /// </summary>
+        /// <param name="other">The other.</param>
+        /// <returns></returns>
+        public bool Equals(HashedAccessToken<TId> other)
         {
             return other != null &&
                 this.TokenHash.Equals(other.TokenHash);

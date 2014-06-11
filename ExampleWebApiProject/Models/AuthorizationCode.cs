@@ -29,6 +29,10 @@ namespace ExampleWebApiProject.Models
 
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AuthorizationCode" /> class.
+        /// </summary>
+        /// <param name="authorizationCode">The authorization code that this code should be generated from.</param>
         public AuthorizationCode(ICreatedToken<IAuthorizationCode> authorizationCode)
         {
             this.Code = new HashedValue(authorizationCode.TokenValue);
@@ -37,7 +41,7 @@ namespace ExampleWebApiProject.Models
             this.Revoked = authorizationCode.Token.Revoked;
             this.RedirectUri = authorizationCode.Token.RedirectUri.ToString();
             this.User = (User)authorizationCode.Token.User;
-            if((IHasId<string> id = authorizationCode.Token as IHasId<string>) != null)
+            if ((IHasId<string> id = authorizationCode.Token as IHasId<string>) != null)
             {
                 this.Id = id.Id;
             }
@@ -120,6 +124,12 @@ namespace ExampleWebApiProject.Models
             }
         }
 
+        /// <summary>
+        /// Gets or sets the identifier of the authorization code.
+        /// </summary>
+        /// <value>
+        /// The identifier.
+        /// </value>
         [Key]
         public string Id
         {
@@ -127,6 +137,12 @@ namespace ExampleWebApiProject.Models
             set;
         }
 
+        /// <summary>
+        /// Gets or sets the hashed code.
+        /// </summary>
+        /// <value>
+        /// The code.
+        /// </value>
         public virtual HashedValue Code
         {
             get;
@@ -142,7 +158,7 @@ namespace ExampleWebApiProject.Models
         /// </returns>
         public bool MatchesValue(string token)
         {
-            return this.Code.MatchesHash(token);
+            return Code.MatchesHash(token);
         }
 
         /// <summary>

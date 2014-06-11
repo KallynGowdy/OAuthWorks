@@ -28,7 +28,7 @@ namespace OAuthWorks.Tests.Implementation
         [TestCase("someValue")]
         public void TestProperHashing(string value)
         {
-            HashedAccessToken token = new HashedAccessToken(value, value, new User(), new Client("secret"), new IScope[0], "bearer", DateTime.UtcNow.AddSeconds(3600));
+            HashedAccessToken<string> token = new HashedAccessToken<string>(value, value, new User(), new Client("secret"), new IScope[0], "bearer", DateTime.UtcNow.AddSeconds(3600));
 
             Assert.True(token.MatchesValue(value));
         }

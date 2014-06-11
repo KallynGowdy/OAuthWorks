@@ -27,12 +27,12 @@ namespace ExampleWebApiProject.Models
     {
         public RefreshToken() { }
 
-        public RefreshToken(HashedRefreshToken token)
+        public RefreshToken(HashedRefreshToken<string> token)
         {
             this.Id = token.Id;
             this.Client = (Client)token.Client;
             this.User = (User)token.User;
-            this.TokenValue = new HashedValue(token.TokenHash, token.TokenSalt, token.HashIterations);
+            this.TokenValue = new HashedValue(token.TokenHash.Hash, token.TokenHash.Salt, token.TokenHash.HashIterations);
             this.Scopes = token.Scopes.Cast<Scope>().ToList();
             this.ExpirationDateUtc = token.ExpirationDateUtc;
             this.Revoked = token.Revoked;

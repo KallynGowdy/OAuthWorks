@@ -30,8 +30,8 @@ namespace OAuthWorks
     /// impossible to do efficiently. Therefore the simple solution is to embed the Id in the refreshToken/code that we give the client.
     /// The fact that the refreshToken/code values are hashed means that no security holes are intruduced by implementing this improvement.
     /// </remarks>
-    [ContractClass(typeof(IValueIdFormatterContract))]
-    public interface IValueIdFormatter
+    [ContractClass(typeof(IValueIdFormatterContract<>))]
+    public interface IValueIdFormatter<TId>
     {
         /// <summary>
         /// Formats the given Id and refreshToken into one value that is returned.
@@ -39,14 +39,14 @@ namespace OAuthWorks
         /// <param name="id">The Id that should be integrated into the given refreshToken.</param>
         /// <param name="refreshToken">The refreshToken that the Id should be integrated into.</param>
         /// <returns>Returns a new string that, contains both the given refreshToken and Id in a way that they're both easily retrievable.</returns>
-        string FormatValue(string id, string token);
+        string FormatValue(TId id, string token);
 
         /// <summary>
         /// Gets the Id value that is stored in the given formatted value.
         /// </summary>
         /// <param name="formattedToken">A value that was generated using <see cref="OAuthWorks.IValueIdFormatter.FormatValue(System.String, System.String)"/>.</param>
         /// <returns>Returns the Id value that was stored in the given formatted value.</returns>
-        string GetId(string formattedToken);
+        TId GetId(string formattedToken);
 
         /// <summary>
         /// Gets the refreshToken value that is stored in the given formatted value.
@@ -56,10 +56,10 @@ namespace OAuthWorks
         string GetToken(string formattedToken);
     }
 
-    [ContractClassFor(typeof(IValueIdFormatter))]
-    internal abstract class IValueIdFormatterContract : IValueIdFormatter
+    [ContractClassFor(typeof(IValueIdFormatter<>))]
+    internal abstract class IValueIdFormatterContract<TId> : IValueIdFormatter<TId>
     {
-        string IValueIdFormatter.FormatValue(string id, string token)
+        string IValueIdFormatter<TId>.FormatValue(TId id, string token)
         {
             Contract.Requires(id != null);
             Contract.Requires(token != null);
@@ -67,14 +67,14 @@ namespace OAuthWorks
             return default(string);
         }
 
-        string IValueIdFormatter.GetId(string formattedToken)
+        TId IValueIdFormatter<TId>.GetId(string formattedToken)
         {
             Contract.Requires(formattedToken != null);
-            Contract.Ensures(Contract.Result<string>() != null);
-            return default(string);
+            Contract.Ensures(Contract.Result<TId>() != null);
+            return default(TId);
         }
 
-        string IValueIdFormatter.GetToken(string formattedToken)
+        string IValueIdFormatter<TId>.GetToken(string formattedToken)
         {
             Contract.Requires(formattedToken != null);
             Contract.Ensures(Contract.Result<string>() != null);

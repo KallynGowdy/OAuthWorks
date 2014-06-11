@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -24,7 +25,8 @@ namespace OAuthWorks.Implementation
     /// <summary>
     /// Defines an abstract class that provides a basic implementation of <see cref="OAuthWorks.IRefreshToken"/>.
     /// </summary>
-    public abstract class RefreshToken : IRefreshToken
+    [DataContract]
+    public abstract class RefreshToken<TId> : IRefreshToken, IHasId<TId>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="RefreshToken"/> class.
@@ -33,15 +35,25 @@ namespace OAuthWorks.Implementation
         /// <param name="client">The client that has access to this token.</param>
         /// <param name="scopes">The scopes that this token provides access to.</param>
         /// <param name="expirationDateUtc">The date in UTC that this token should expire. Null means no expiration.</param>
-        protected RefreshToken(DateTime? expirationDateUtc)
+        protected RefreshToken(TId id, IUser user, IClient client, IEnumerable<IScope> scopes, DateTime? expirationDateUtc)
         {
+            if (id == null)     throw new ArgumentNullException("id");
+            if (user == null)   throw new ArgumentNullException("user");
+            if (client == null) throw new ArgumentNullException("client");
+            if (scopes == null) throw new ArgumentNullException("scopes");
+
+            this.Id = id;
+            this.User = user;
+            this.Client = client;
+            this.Scopes = scopes;
             this.ExpirationDateUtc = expirationDateUtc;
         }
 
         /// <summary>
         /// Gets the client that this refreshToken belongs to.
         /// </summary>
-        public virtual IClient Client
+        [DataMember(Name = "Client")]
+        public IClient Client
         {
             get;
             protected set;
@@ -50,7 +62,21 @@ namespace OAuthWorks.Implementation
         /// <summary>
         /// Gets whether this refreshToken has been revoked by the user.
         /// </summary>
-        public virtual bool Revoked
+        [DataMember(Name = "Revoked")]
+        public bool Revoked
+        {
+            get;
+            protected set;
+        }
+
+        /// <summary>
+        /// Gets the identifier.
+        /// </summary>
+        /// <value>
+        /// The identifier.
+        /// </value>
+        [DataMember(Name = "Id")]
+        public TId Id
         {
             get;
             protected set;
@@ -65,11 +91,11 @@ namespace OAuthWorks.Implementation
         /// </returns>
         public abstract bool MatchesValue(string token);
 
-
         /// <summary>
         /// Gets the user that the refresh refreshToken belongs to.
         /// </summary>
-        public virtual IUser User
+        [DataMember(Name = "User")]
+        public IUser User
         {
             get;
             protected set;
@@ -78,7 +104,8 @@ namespace OAuthWorks.Implementation
         /// <summary>
         /// Gets the list of scopes that this refresh refreshToken provides access to.
         /// </summary>
-        public virtual IEnumerable<IScope> Scopes
+        [DataMember(Name = "Scopes")]
+        public IEnumerable<IScope> Scopes
         {
             get;
             set;
@@ -106,6 +133,7 @@ namespace OAuthWorks.Implementation
         /// <summary>
         /// Gets the date in universal coordinated time that this refresh token expires. Null defines that it does not expire.
         /// </summary>
+        [DataMember(Name = "ExpirationDateUtc")]
         public DateTime? ExpirationDateUtc
         {
             get;

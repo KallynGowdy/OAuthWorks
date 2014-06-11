@@ -23,7 +23,7 @@ using System.Web;
 
 namespace ExampleWebApiProject.Repositories
 {
-    public class RefreshTokenRepository : IRefreshTokenRepository<IRefreshToken>
+    public class RefreshTokenRepository : IRefreshTokenRepository
     {
         DatabaseContext context;
 

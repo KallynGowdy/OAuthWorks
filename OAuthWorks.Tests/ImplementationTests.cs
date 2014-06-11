@@ -29,9 +29,9 @@ namespace OAuthWorks.Tests
     public class ImplementationTests
     {
 
-        IRefreshTokenRepository<IRefreshToken> refreshTokens;
-        IAccessTokenRepository<IAccessToken> accessTokens;
-        IAuthorizationCodeRepository<IAuthorizationCode> authorizationCodes;
+        IRefreshTokenRepository refreshTokens;
+        IAccessTokenRepository accessTokens;
+        IAuthorizationCodeRepository authorizationCodes;
         IScopeRepository<IScope> scopes;
         IUser user;
 

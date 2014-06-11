@@ -24,13 +24,13 @@ namespace OAuthWorks.DataAccess.Repositories
     /// <summary>
     /// Defines an interface for storing <see cref="OAuthWorks.IAuthorizationCode"/> objects.
     /// </summary>
-    public interface IAuthorizationCodeRepository<T> : IDisposable where T : IAuthorizationCode
+    public interface IAuthorizationCodeRepository : IDisposable
     {
         /// <summary>
         /// Adds the given authorization code to this repository.
         /// </summary>
         /// <param name="authorizationCode">The authorization code to add.</param>
-        void Add(ICreatedToken<T> authorizationCode);
+        void Add(ICreatedToken<IAuthorizationCode> authorizationCode);
 
         /// <summary>
         /// Gets the authorization code by it's actual internal value.
@@ -42,7 +42,7 @@ namespace OAuthWorks.DataAccess.Repositories
         /// Authorization code factories can return authorization codes that contain Ids in them for easy retrieval.
         /// It is also possible to use different possiblities.
         /// </remarks>
-        T GetByValue(string authorizationCode);
+        IAuthorizationCode GetByValue(string authorizationCode);
 
         /// <summary>
         /// Gets a list of Authorization codes that were granted to the given client by the given user.
@@ -50,6 +50,6 @@ namespace OAuthWorks.DataAccess.Repositories
         /// <param name="client">The client that the codes were granted to.</param>
         /// <param name="user">The user that granted the client access to the codes.</param>
         /// <returns>Returns a list of <see cref="OAuthWorks.IAuthorizationCode"/> objects that belong to the user and were granted to the client.</returns>        
-        IEnumerable<T> GetByUserAndClient(IUser user, IClient client);
+        IEnumerable<IAuthorizationCode> GetByUserAndClient(IUser user, IClient client);
     }
 }

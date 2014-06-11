@@ -26,7 +26,7 @@ namespace OAuthWorks.Implementation
     /// <summary>
     /// Defines a class that provides an implementation of <see cref="OAuthWorks.AuthorizationCode"/>.
     /// </summary>
-    public class HashedAuthorizationCode : AuthorizationCode, IHasId<string>
+    public class HashedAuthorizationCode<TId> : AuthorizationCode<TId>
     {
         /// <summary>
         /// The default number of hash iterations for authorization codes.
@@ -55,18 +55,6 @@ namespace OAuthWorks.Implementation
         }
 
         /// <summary>
-        /// Gets the identifier of this code.
-        /// </summary>
-        /// <value>
-        /// The identifier.
-        /// </value>
-        public string Id
-        {
-            get;
-            protected set;
-        }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="HashedAuthorizationCode"/> class.
         /// </summary>
         /// <param name="id">The identifier.</param>
@@ -76,13 +64,10 @@ namespace OAuthWorks.Implementation
         /// <param name="scopes">The scopes.</param>
         /// <param name="redirectUri">The redirect URI.</param>
         /// <param name="expirationDateUtc">The expiration date UTC.</param>
-        public HashedAuthorizationCode(string id, string token, IUser user, IClient client, IEnumerable<IScope> scopes, Uri redirectUri, DateTime expirationDateUtc)
-            : base(user, client, scopes, redirectUri, expirationDateUtc)
+        public HashedAuthorizationCode(TId id, string token, IUser user, IClient client, IEnumerable<IScope> scopes, Uri redirectUri, DateTime expirationDateUtc)
+            : base(id, user, client, scopes, redirectUri, expirationDateUtc)
         {
-            Contract.Requires(!string.IsNullOrEmpty(id));
             Contract.Requires(!string.IsNullOrEmpty(token));
-            this.Id = id;
-
             this.CodeHash = new HashedValue(token);
         }
 

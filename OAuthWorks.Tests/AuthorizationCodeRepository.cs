@@ -21,7 +21,7 @@ using System.Threading.Tasks;
 
 namespace OAuthWorks.Tests
 {
-    class AuthorizationCodeRepository : DictionaryRepository<IAuthorizationCode>, IAuthorizationCodeRepository<IAuthorizationCode>
+    class AuthorizationCodeRepository : DictionaryRepository<IAuthorizationCode>, IAuthorizationCodeRepository
     {
         public AuthorizationCodeRepository()
         {

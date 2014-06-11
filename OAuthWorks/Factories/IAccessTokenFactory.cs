@@ -29,7 +29,7 @@ namespace OAuthWorks.Factories
     public interface IAccessTokenFactory<out TAccessToken> : IFactory<TAccessToken> where TAccessToken : IAccessToken
     {
         /// <summary>
-        /// Gets a new <see cref="OAuthWorks.IAccessToken"/> object given the <see cref="OAuthWorks.IClient"/>, <see cref="OAuthWorks.IUser"/> and the list of scopes that the client has access to.
+        /// Gets a new <see cref="ICreatedToken{IAccessToken}"/> object given the <see cref="OAuthWorks.IClient"/>, <see cref="OAuthWorks.IUser"/> and the list of scopes that the client has access to.
         /// </summary>
         /// <param name="client">The client that should have access to the new refreshToken.</param>
         /// <param name="user">The user that is giving access to the client.</param>

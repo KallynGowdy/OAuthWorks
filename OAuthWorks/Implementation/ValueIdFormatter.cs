@@ -22,79 +22,165 @@ using System.Threading.Tasks;
 namespace OAuthWorks.Implementation
 {
     /// <summary>
-    /// Defines a class that provides a basic implementation of <see cref="OAuthWorks.IValueIdFormatter"/>.
+    /// Defines a static class that acts as a container class for implementations of <see cref="IValueIdFormatter{TId}"/>.
     /// </summary>
-    public class ValueIdFormatter : IValueIdFormatter
+    public static class ValueIdFormatter
     {
-        private static readonly Lazy<IValueIdFormatter> defaultFormatter = new Lazy<IValueIdFormatter>(() => new ValueIdFormatter());
 
         /// <summary>
-        /// Gets the default <see cref="IValueIdFormatter"/> object used to format IDs and values into one string.
+        /// Defines a class that provides a basic implementation of <see cref="OAuthWorks.IValueIdFormatter{string}"/>.
         /// </summary>
-        /// <returns></returns>
-        public static IValueIdFormatter DefaultFormatter
+        public class Int : IValueIdFormatter<int>
         {
-            get
+            private static readonly Lazy<IValueIdFormatter<int>> defaultFormatter = new Lazy<IValueIdFormatter<int>>(() => new Int());
+
+            /// <summary>
+            /// Gets the singleton <see cref="IValueIdFormatter{int}"/> object used to format IDs and values into one string.
+            /// </summary>
+            /// <returns></returns>
+            public static IValueIdFormatter<int> DefaultFormatter
             {
-                return defaultFormatter.Value;
+                get
+                {
+                    return defaultFormatter.Value;
+                }
+            }
+
+            /// <summary>
+            /// Gets the divider that this formatter uses to join the ID and Value strings.
+            /// </summary>
+            /// <returns></returns>
+            public char Divider
+            {
+                get;
+                private set;
+            } = '-';
+
+            /// <summary>
+            /// Formats the given Id and refreshToken into one value that is returned.
+            /// </summary>
+            /// <param name="id">The Id that should be integrated into the given refreshToken.</param>
+            /// <param name="refreshToken">The refreshToken that the Id should be integrated into.</param>
+            /// <returns>
+            /// Returns a new string that, contains both the given refreshToken and Id in a way that they're both easily retrievable.
+            /// </returns>
+            public string FormatValue(int id, string token)
+            {
+
+                return Escape(token, Divider, Divider) + Divider + Escape(id.ToString(), Divider, Divider);
+            }
+
+            /// <summary>
+            /// Gets the Id value that is stored in the given formatted value.
+            /// </summary>
+            /// <param name="formattedToken">A value that was generated using <see cref="OAuthWorks.IValueIdFormatter.FormatValue(System.String, System.String)" />.</param>
+            /// <returns>
+            /// Returns the Id value that was stored in the given formatted value.
+            /// </returns>
+            public int GetId(string formattedToken)
+            {
+                if (string.IsNullOrEmpty(formattedToken))
+                {
+                    throw new ArgumentException("The formatted token can't be null or empty.", "formattedToken");
+                }
+                Regex r = new Regex(string.Format(@"(?<!{0}){0}(?!{0})", Divider));
+                return int.Parse(Unescape(r.Split(formattedToken).Last(), Divider, Divider));
+            }
+
+            /// <summary>
+            /// Gets the refreshToken value that is stored in the given formatted value.
+            /// </summary>
+            /// <param name="formattedToken">A value that was generated using <see cref="OAuthWorks.IValueIdFormatter.FormatValue(System.String, System.String)" />.</param>
+            /// <returns>
+            /// Returns the token value that was stored in the given formatted value.
+            /// </returns>
+            public string GetToken(string formattedToken)
+            {
+                if (string.IsNullOrEmpty(formattedToken))
+                {
+                    throw new ArgumentException("The formatted token can't be null or empty.", "formattedToken");
+                }
+                Regex r = new Regex(string.Format(@"(?<!{0}){0}(?!{0})", Divider));
+                return Unescape(r.Split(formattedToken).First(), Divider, Divider);
             }
         }
 
         /// <summary>
-        /// Gets the divider that this formatter uses to join the ID and Value strings.
+        /// Defines a class that provides a basic implementation of <see cref="OAuthWorks.IValueIdFormatter{string}"/>.
         /// </summary>
-        /// <returns></returns>
-        public char Divider
+        public class String : IValueIdFormatter<string>
         {
-            get;
-            private set;
-        } = '-';
+            private static readonly Lazy<IValueIdFormatter<string>> defaultFormatter = new Lazy<IValueIdFormatter<string>>(() => new String());
 
-        /// <summary>
-        /// Formats the given Id and refreshToken into one value that is returned.
-        /// </summary>
-        /// <param name="id">The Id that should be integrated into the given refreshToken.</param>
-        /// <param name="refreshToken">The refreshToken that the Id should be integrated into.</param>
-        /// <returns>
-        /// Returns a new string that, contains both the given refreshToken and Id in a way that they're both easily retrievable.
-        /// </returns>
-        public string FormatValue(string id, string token)
-        {
-            return Escape(token, Divider, Divider)  + Divider + Escape(id, Divider, Divider);
-        }
-
-        /// <summary>
-        /// Gets the Id value that is stored in the given formatted value.
-        /// </summary>
-        /// <param name="formattedToken">A value that was generated using <see cref="OAuthWorks.IValueIdFormatter.FormatValue(System.String, System.String)" />.</param>
-        /// <returns>
-        /// Returns the Id value that was stored in the given formatted value.
-        /// </returns>
-        public string GetId(string formattedToken)
-        {
-            if (string.IsNullOrEmpty(formattedToken))
+            /// <summary>
+            /// Gets the singleton <see cref="IValueIdFormatter{string}"/> object used to format IDs and values into one string.
+            /// </summary>
+            /// <returns></returns>
+            public static IValueIdFormatter<string> DefaultFormatter
             {
-                throw new ArgumentException("The formatted token can't be null or empty.", "formattedToken");
+                get
+                {
+                    return defaultFormatter.Value;
+                }
             }
-            Regex r = new Regex(string.Format(@"(?<!{0}){0}(?!{0})", Divider));
-            return Unescape(r.Split(formattedToken).Last(), Divider, Divider);
-        }
 
-        /// <summary>
-        /// Gets the refreshToken value that is stored in the given formatted value.
-        /// </summary>
-        /// <param name="formattedToken">A value that was generated using <see cref="OAuthWorks.IValueIdFormatter.FormatValue(System.String, System.String)" />.</param>
-        /// <returns>
-        /// Returns the refreshToken value that was stored in the given formatted value.
-        /// </returns>
-        public string GetToken(string formattedToken)
-        {
-            if (string.IsNullOrEmpty(formattedToken))
+            /// <summary>
+            /// Gets the divider that this formatter uses to join the ID and Value strings.
+            /// </summary>
+            /// <returns></returns>
+            public char Divider
             {
-                throw new ArgumentException("The formatted token can't be null or empty.", "formattedToken");
+                get;
+                private set;
             }
-            Regex r = new Regex(string.Format(@"(?<!{0}){0}(?!{0})", Divider));
-            return Unescape(r.Split(formattedToken).First(), Divider, Divider);
+            = '-';
+
+            /// <summary>
+            /// Formats the given Id and token into one value that is returned.
+            /// </summary>
+            /// <param name="id">The Id that should be integrated into the given refreshToken.</param>
+            /// <param name="refreshToken">The token that the Id should be integrated into.</param>
+            /// <returns>
+            /// Returns a new string that, contains both the given token and Id in a way that they're both easily retrievable.
+            /// </returns>
+            public string FormatValue(string id, string token)
+            {
+                return Escape(token, Divider, Divider) + Divider + Escape(id, Divider, Divider);
+            }
+
+            /// <summary>
+            /// Gets the Id value that is stored in the given formatted value.
+            /// </summary>
+            /// <param name="formattedToken">A value that was generated using <see cref="OAuthWorks.IValueIdFormatter.FormatValue(System.String, System.String)" />.</param>
+            /// <returns>
+            /// Returns the Id value that was stored in the given formatted value.
+            /// </returns>
+            public string GetId(string formattedToken)
+            {
+                if (string.IsNullOrEmpty(formattedToken))
+                {
+                    throw new ArgumentException("The formatted token can't be null or empty.", "formattedToken");
+                }
+                Regex r = new Regex(string.Format(@"(?<!{0}){0}(?!{0})", Divider));
+                return Unescape(r.Split(formattedToken).Last(), Divider, Divider);
+            }
+
+            /// <summary>
+            /// Gets the token value that is stored in the given formatted value.
+            /// </summary>
+            /// <param name="formattedToken">A value that was generated using <see cref="OAuthWorks.IValueIdFormatter.FormatValue(System.String, System.String)" />.</param>
+            /// <returns>
+            /// Returns the token value that was stored in the given formatted value.
+            /// </returns>
+            public string GetToken(string formattedToken)
+            {
+                if (string.IsNullOrEmpty(formattedToken))
+                {
+                    throw new ArgumentException("The formatted token can't be null or empty.", "formattedToken");
+                }
+                Regex r = new Regex(string.Format(@"(?<!{0}){0}(?!{0})", Divider));
+                return Unescape(r.Split(formattedToken).First(), Divider, Divider);
+            }
         }
 
         /// <summary>
@@ -136,7 +222,7 @@ namespace OAuthWorks.Implementation
             {
                 char c = newString[i];
                 char next = newString[i + 1];
-                if(c == escapeChar && chars.Contains(next))
+                if (c == escapeChar && chars.Contains(next))
                 {
                     newString.Remove(i, 1);
                 }

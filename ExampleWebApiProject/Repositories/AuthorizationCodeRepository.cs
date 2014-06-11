@@ -26,7 +26,7 @@ namespace ExampleWebApiProject.Repositories
     /// <summary>
     /// Defines a class that provides an example implementation of <see cref="IAuthorizationCodeRepository{IAuthorizationCode}"/>.
     /// </summary>
-    public class AuthorizationCodeRepository : IAuthorizationCodeRepository<IAuthorizationCode>
+    public class AuthorizationCodeRepository : IAuthorizationCodeRepository
     {
         DatabaseContext context;
 

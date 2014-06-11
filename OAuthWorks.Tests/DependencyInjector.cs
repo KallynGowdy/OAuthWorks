@@ -32,25 +32,25 @@ namespace OAuthWorks.Tests
         static DependencyInjector()
         {
             Kernel.Bind<IScopeRepository<IScope>>().To<ScopeRepository>();
-            Kernel.Bind<IAccessTokenRepository<IAccessToken>>().To<AccessTokenRepository>();
-            Kernel.Bind<IAuthorizationCodeRepository<IAuthorizationCode>>().To<AuthorizationCodeRepository>();
-            Kernel.Bind<IAuthorizationCodeFactory<IAuthorizationCode>>().To<AuthorizationCodeFactory>();
+            Kernel.Bind<IAccessTokenRepository>().To<AccessTokenRepository>();
+            Kernel.Bind<IAuthorizationCodeRepository>().To<AuthorizationCodeRepository>();
+            Kernel.Bind<IAuthorizationCodeFactory<IAuthorizationCode>>().ToMethod(c => AuthorizationCodeFactory.String.DefaultFactory);
             Kernel.Bind<IAuthorizationCodeResponseFactory>().To<AuthorizationCodeResponseFactory>();
 
             Kernel.Bind(typeof(IAccessTokenResponseFactory)).To<AccessTokenResponseFactory>();
 
             //kernel.Bind<>().ToConstructor(a => new AccessTokenResponseFactory());
 
-            Kernel.Bind<IAccessTokenFactory<IAccessToken>>().To<AccessTokenFactory>();
+            Kernel.Bind<IAccessTokenFactory<IAccessToken>>().ToMethod(c => AccessTokenFactory.String.DefaultFactory);
             Kernel.Bind<IReadStore<string, IClient>>().To<ClientRepository>();
             Kernel.Bind<IOAuthProvider>().ToConstructor(k => new OAuthProvider(
-                 k.Inject<IAccessTokenRepository<IAccessToken>>(),
-                 k.Inject<IAuthorizationCodeRepository<IAuthorizationCode>>(),
+                 k.Inject<IAccessTokenRepository>(),
+                 k.Inject<IAuthorizationCodeRepository>(),
                  k.Inject<IScopeRepository<IScope>>(),
                  k.Inject<IReadStore<string, IClient>>(),
-                 k.Inject<IRefreshTokenRepository<IRefreshToken>>()
+                 k.Inject<IRefreshTokenRepository>()
                 ));
-            Kernel.Bind<IRefreshTokenRepository<IRefreshToken>>().To<RefreshTokenRepository>();
+            Kernel.Bind<IRefreshTokenRepository>().To<RefreshTokenRepository>();
         }
 
         public T GetInstance<T>()

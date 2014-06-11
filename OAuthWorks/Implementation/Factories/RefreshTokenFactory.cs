@@ -22,11 +22,9 @@ using System.Threading.Tasks;
 
 namespace OAuthWorks.Implementation.Factories
 {
-    /// <summary>
-    /// Defines a class that provides a basic implementation of <see cref="OAuthWorks.IRefreshTokenFactory"/>.
-    /// </summary>
-    public class RefreshTokenFactory : IRefreshTokenFactory<HashedRefreshToken>
+    public static class RefreshTokenFactory
     {
+
         /// <summary>
         /// The default length (in bytes) of tokens that are generated.
         /// </summary>
@@ -34,16 +32,58 @@ namespace OAuthWorks.Implementation.Factories
         public const int DefaultTokenLength = 20;
 
         /// <summary>
-        /// The default length (in bytes) of identifiers that are generated.
-        /// </summary>
-        public const int DefaultIdLength = 8;
-
-        /// <summary>
         /// The default pseudorandom value generator.
         /// </summary>
         public static readonly Func<int, string> DefaultValueGenerator = AccessTokenFactory.GenerateToken;
 
-        private static readonly Lazy<IValueIdFormatter> lazyDefaultIdFormatter = new Lazy<IValueIdFormatter>(() => new ValueIdFormatter());
+        public static class String
+        {
+            /// <summary>
+            /// The default length (in bytes) of identifiers that are generated.
+            /// </summary>
+            public const int DefaultIdLength = 8;
+
+            /// <summary>
+            /// The default pseudorandom id generator.
+            /// </summary>
+            public static readonly Func<string> DefaultIdValueGenerator = () => AccessTokenFactory.GenerateToken(DefaultIdLength);
+
+            private static readonly Lazy<IValueIdFormatter<string>> lazyDefaultIdFormatter = new Lazy<IValueIdFormatter<string>>(() => ValueIdFormatter.String.DefaultFormatter);
+
+            /// <summary>
+            /// Gets the default formatter for Ids and tokens.
+            /// </summary>
+            public static IValueIdFormatter<string> DefaultIdFormatter
+            {
+                get
+                {
+                    return lazyDefaultIdFormatter.Value;
+                }
+            }
+
+            /// <summary>
+            /// Gets the default refresh token factory that produces .
+            /// </summary>
+            /// <value>
+            /// The default factory.
+            /// </value>
+            public static RefreshTokenFactory<string> DefaultFactory
+            {
+                get
+                {
+                    return new RefreshTokenFactory<string>(DefaultIdFormatter, DefaultIdValueGenerator);
+                }
+            }
+        }
+
+    }
+
+    /// <summary>
+    /// Defines a class that provides a basic implementation of <see cref="OAuthWorks.IRefreshTokenFactory"/>.
+    /// </summary>
+    public class RefreshTokenFactory<TId> : IRefreshTokenFactory<HashedRefreshToken<TId>>
+    {
+        
 
         /// <summary>
         /// Gets the function that, given an integer generates a string that represents that many pseudorandom bytes.
@@ -55,14 +95,15 @@ namespace OAuthWorks.Implementation.Factories
         }
 
         /// <summary>
-        /// Gets the default formatter for Ids and tokens.
+        /// Gets the identifier generator.
         /// </summary>
-        public static IValueIdFormatter DefaultIdFormatter
+        /// <value>
+        /// The identifier generator.
+        /// </value>
+        public Func<TId> IdGenerator
         {
-            get
-            {
-                return lazyDefaultIdFormatter.Value;
-            }
+            get;
+            private set;
         }
 
         /// <summary>
@@ -75,38 +116,16 @@ namespace OAuthWorks.Implementation.Factories
         }
 
         /// <summary>
-        /// Gets the length (in bytes) of the identifiers that are generated with this factory.
-        /// </summary>
-        public int IdLength
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
         /// Gets the formatter that combines the Id and refreshToken together.
         /// </summary>
-        public IValueIdFormatter IdFormatter
+        public IValueIdFormatter<TId> IdFormatter
         {
             get;
             private set;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AccessTokenFactory"/> class.
-        /// </summary>
-        public RefreshTokenFactory()
-            : this(DefaultTokenLength, DefaultIdLength)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AccessTokenFactory"/> class.
-        /// </summary>
-        /// <param name="tokenLength">The Length of the tokens (in bytes) that are generated from this factory.</param>
-        /// <param name="idLength">The length (in bytes) of identifiers that are generated from this factory.</param>
-        public RefreshTokenFactory(int tokenLength, int idLength)
-            : this(tokenLength, idLength, DefaultIdFormatter, DefaultValueGenerator)
+        public RefreshTokenFactory(IValueIdFormatter<TId> idFormatter, Func<TId> idGenerator)
+            : this(RefreshTokenFactory.DefaultTokenLength, idFormatter, idGenerator, RefreshTokenFactory.DefaultValueGenerator)
         {
 
         }
@@ -117,16 +136,17 @@ namespace OAuthWorks.Implementation.Factories
         /// <param name="tokenLength">The Length of the tokens (in bytes) that are generated from this factory.</param>
         /// <param name="idLength">The length (in bytes) of identifiers that are generated from this factory.</param>
         /// <param name="idFormatter">The formatter that combines the generated ids and tokens.</param>
+        /// <param name="idGenerator">A function that generates a new psudorandom unique identifier for the new token.</param>
         /// <param name="valueGenerator">A function that, given an integer returns a string that represents that many pseudorandom bytes.</param>
-        public RefreshTokenFactory(int tokenLength, int idLength, IValueIdFormatter idFormatter, Func<int ,string> valueGenerator)
+        public RefreshTokenFactory(int tokenLength, IValueIdFormatter<TId> idFormatter, Func<TId> idGenerator, Func<int, string> valueGenerator)
         {
-            Contract.Requires(tokenLength >= 10);
-            Contract.Requires(idLength >= 4);
+            if (tokenLength <= 0) throw new ArgumentOutOfRangeException("tokenLength must be greater than 0.", "tokenLength");
+
             Contract.Requires(idFormatter != null);
-            Contract.Requires(valueGenerator != null);
-            this.IdLength = idLength;
+            Contract.Requires(idGenerator != null);
             this.TokenLength = tokenLength;
             this.IdFormatter = idFormatter;
+            this.IdGenerator = idGenerator;
             this.ValueGenerator = valueGenerator;
         }
 
@@ -140,15 +160,15 @@ namespace OAuthWorks.Implementation.Factories
         /// <param name="scopes">The enumerable list of <see cref="OAuthWorks.IScope"/> objects that define what access the client has to the
         /// user's account and data.</param>
         /// <returns>Returns a new Refresh Token that can be used to request new Access Tokens.</returns>
-        public ICreatedToken<HashedRefreshToken> Create(IClient client, IUser user, IEnumerable<IScope> scopes)
+        public ICreatedToken<HashedRefreshToken<TId>> Create(IClient client, IUser user, IEnumerable<IScope> scopes)
         {
             string token = ValueGenerator(TokenLength);
-            string id = ValueGenerator(IdLength);
+            TId id = IdGenerator();
             string formatted = IdFormatter.FormatValue(id, token);
-            return new CreatedToken<HashedRefreshToken>(new HashedRefreshToken(id, formatted, user, client, scopes), formatted);
+            return new CreatedToken<HashedRefreshToken<TId>>(new HashedRefreshToken<TId>(formatted, id, user, client, scopes), formatted);
         }
 
-        public HashedRefreshToken Create()
+        public HashedRefreshToken<TId> Create()
         {
             return null;
         }

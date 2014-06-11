@@ -23,13 +23,13 @@ namespace OAuthWorks.Factories
     /// <summary>
     /// Defines an interface for objects that create <see cref="IToken"/> objects
     /// </summary>
-    public interface ITokenFactory : IFactory<IToken>
+    public interface ITokenFactory<TId> : IFactory<IToken>
     {
         /// <summary>
         /// Gets the <see cref="IValueIdFormatter"/> object that this factory uses to combine generated IDs and Values.
         /// </summary>
         /// <returns></returns>
-        IValueIdFormatter ValueIdFormatter
+        IValueIdFormatter<TId> ValueIdFormatter
         {
             get;
         }

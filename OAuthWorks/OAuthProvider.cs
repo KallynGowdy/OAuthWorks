@@ -32,12 +32,12 @@ namespace OAuthWorks
         /// <summary>
         /// The default <see cref="IAccessTokenFactory{TAccessToken}"/> constructor.
         /// </summary>
-        public static readonly Func<IAccessTokenFactory<IAccessToken>> DefaultAccessTokenFactoryConstructor = () => new AccessTokenFactory();
+        public static readonly Func<IAccessTokenFactory<IAccessToken>> DefaultAccessTokenFactoryConstructor = () => Implementation.Factories.AccessTokenFactory.String.DefaultFactory;
 
         /// <summary>
         /// The default <see cref="IAuthorizationCodeFactory{TAuthorizationCode}"/> constructor.
         /// </summary>
-        public static readonly Func<IAuthorizationCodeFactory<IAuthorizationCode>> DefaultAuthorizationCodeFactoryConstructor = () => new AuthorizationCodeFactory();
+        public static readonly Func<IAuthorizationCodeFactory<IAuthorizationCode>> DefaultAuthorizationCodeFactoryConstructor = () => Implementation.Factories.AuthorizationCodeFactory.String.DefaultFactory;
 
         /// <summary>
         /// The default <see cref="IAccessTokenResponseFactory"/> constructor.
@@ -52,7 +52,7 @@ namespace OAuthWorks
         /// <summary>
         /// The default <see cref="IRefreshTokenFactory{TRefreshToken}"/> constructor.
         /// </summary>
-        public static readonly Func<IRefreshTokenFactory<IRefreshToken>> DefaultRefreshTokenFactoryConstructor = () => new RefreshTokenFactory();
+        public static readonly Func<IRefreshTokenFactory<IRefreshToken>> DefaultRefreshTokenFactoryConstructor = () => Implementation.Factories.RefreshTokenFactory.String.DefaultFactory;
 
         /// <summary>
         /// Creates a new <see cref="OAuthProvider"/> using a default factories.
@@ -95,19 +95,19 @@ namespace OAuthWorks
             Contract.Requires(authorizationCodeFactory != null);
             Contract.Requires(authorizationCodeResponseFactory != null);
             Contract.Requires(refreshTokenFactory != null);
-            this.AccessTokenFactory = accessTokenFactory;
-            this.AuthorizationCodeFactory = authorizationCodeFactory;
-            this.AccessTokenResponseFactory = accessTokenResponseFactory;
-            this.AuthorizationCodeResponseFactory = authorizationCodeResponseFactory;
-            this.RefreshTokenFactory = refreshTokenFactory;
+            AccessTokenFactory = accessTokenFactory;
+            AuthorizationCodeFactory = authorizationCodeFactory;
+            AccessTokenResponseFactory = accessTokenResponseFactory;
+            AuthorizationCodeResponseFactory = authorizationCodeResponseFactory;
+            RefreshTokenFactory = refreshTokenFactory;
         }
 
         public OAuthProvider(
-            IAccessTokenRepository<IAccessToken> accessTokenRepository,
-            IAuthorizationCodeRepository<IAuthorizationCode> authorizationCodeRepository,
+            IAccessTokenRepository accessTokenRepository,
+            IAuthorizationCodeRepository authorizationCodeRepository,
             IScopeRepository<IScope> scopeRepository,
             IReadStore<string, IClient> clientRepository,
-            IRefreshTokenRepository<IRefreshToken> refreshTokenRepository
+            IRefreshTokenRepository refreshTokenRepository
             )
             : this()
         {
@@ -115,11 +115,11 @@ namespace OAuthWorks
             Contract.Requires(authorizationCodeRepository != null);
             Contract.Requires(scopeRepository != null);
             Contract.Requires(clientRepository != null);
-            this.AccessTokenRepository = accessTokenRepository;
-            this.AuthorizationCodeRepository = authorizationCodeRepository;
-            this.ScopeRepository = scopeRepository;
-            this.ClientRepository = clientRepository;
-            this.RefreshTokenRepository = refreshTokenRepository;
+            AccessTokenRepository = accessTokenRepository;
+            AuthorizationCodeRepository = authorizationCodeRepository;
+            ScopeRepository = scopeRepository;
+            ClientRepository = clientRepository;
+            RefreshTokenRepository = refreshTokenRepository;
         }
 
         /// <summary>
@@ -156,7 +156,7 @@ namespace OAuthWorks
         /// <summary>
         /// Gets or sets the repository of Authorization Code objects that this provider has access to.
         /// </summary>
-        public IAuthorizationCodeRepository<IAuthorizationCode> AuthorizationCodeRepository
+        public IAuthorizationCodeRepository AuthorizationCodeRepository
         {
             get;
             set;
@@ -176,7 +176,7 @@ namespace OAuthWorks
         /// <summary>
         /// Gets or sets the repository of Access Token objects that this provider has access to.
         /// </summary>
-        public IAccessTokenRepository<IAccessToken> AccessTokenRepository
+        public IAccessTokenRepository AccessTokenRepository
         {
             get;
             set;
@@ -212,7 +212,7 @@ namespace OAuthWorks
         /// <summary>
         /// Gets or sets the repository that is used to store OAuthWorks.IRefreshToken objects.
         /// </summary>
-        public IRefreshTokenRepository<IRefreshToken> RefreshTokenRepository
+        public IRefreshTokenRepository RefreshTokenRepository
         {
             get;
             set;
@@ -817,34 +817,34 @@ namespace OAuthWorks
             {
                 if (disposing)
                 {
-                    if (this.ClientRepository != null)
+                    if (ClientRepository != null)
                     {
                         ClientRepository.Dispose();
                         ClientRepository = null;
                     }
-                    if (this.AccessTokenRepository != null)
+                    if (AccessTokenRepository != null)
                     {
                         AccessTokenRepository.Dispose();
                         AccessTokenRepository = null;
                     }
-                    if (this.ScopeRepository != null)
+                    if (ScopeRepository != null)
                     {
                         ScopeRepository.Dispose();
                         ScopeRepository = null;
                     }
-                    if (this.AuthorizationCodeRepository != null)
+                    if (AuthorizationCodeRepository != null)
                     {
-                        this.AuthorizationCodeRepository.Dispose();
+                        AuthorizationCodeRepository.Dispose();
                         AuthorizationCodeRepository = null;
                     }
-                    if (this.RefreshTokenRepository != null)
+                    if (RefreshTokenRepository != null)
                     {
-                        this.RefreshTokenRepository.Dispose();
+                        RefreshTokenRepository.Dispose();
                         RefreshTokenRepository = null;
                     }
                 }
             }
-            this.disposed = true;
+            disposed = true;
         }
     }
 }

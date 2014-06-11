@@ -19,7 +19,7 @@ namespace OAuthWorks.Tests
         [TestCase("valueWith-EscapedCharacters", "idWith--DoubleEscapedCharacters")]
         public void TestFormatAndGetValuesBack(string value, string id)
         {
-            ValueIdFormatter formatter = new ValueIdFormatter();
+            IValueIdFormatter<string> formatter = ValueIdFormatter.String.DefaultFormatter;
 
             string formatted = formatter.FormatValue(id, value);
 

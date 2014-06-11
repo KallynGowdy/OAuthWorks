@@ -24,19 +24,19 @@ namespace OAuthWorks.DataAccess.Repositories
     /// <summary>
     /// Defines an interface for a repository that contains <see cref="OAuthWorks.IAccessToken"/> objects.
     /// </summary>
-    public interface IAccessTokenRepository<T> : IDisposable where T : IAccessToken
+    public interface IAccessTokenRepository : IDisposable
     {
         /// <summary>
         /// Adds the given token to the repository.
         /// </summary>
         /// <param name="token">The token to add to the repository.</param>
-        void Add(ICreatedToken<T> token);
+        void Add(ICreatedToken<IAccessToken> token);
 
         /// <summary>
         /// Removes the given refresh token from this repository.
         /// </summary>
         /// <param name="refreshToken">The refreshToken to remove.</param>
-        void Remove(T token);
+        void Remove(IAccessToken token);
 
         /// <summary>
         /// Gets an access refreshToken that matches the given refreshToken value.
@@ -57,7 +57,7 @@ namespace OAuthWorks.DataAccess.Repositories
         /// </remarks>
         /// <param name="refreshToken">The refreshToken value as it would be given in a request from a client.</param>
         /// <returns></returns>
-        T GetByToken(string token);
+        IAccessToken GetByToken(string token);
 
         /// <summary>
         /// Gets the list of access tokens that have been issued to the given client that provide access to the given user's account.
@@ -69,6 +69,6 @@ namespace OAuthWorks.DataAccess.Repositories
         /// <param name="user">The user that owns access to the refreshToken.</param>
         /// <param name="client">The client that has been granted access to the client.</param>
         /// <returns>Returns the list of access tokens that were granted to the client used to access the user's account.</returns>
-        IEnumerable<T> GetByUserAndClient(IUser user, IClient client);
+        IEnumerable<IAccessToken> GetByUserAndClient(IUser user, IClient client);
     }
 }

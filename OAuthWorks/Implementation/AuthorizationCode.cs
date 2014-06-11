@@ -24,18 +24,20 @@ namespace OAuthWorks.Implementation
     /// <summary>
     /// Defines an abstract class that provides a basic implementation of <see cref="OAuthWorks.IAuthorizationCode"/>.
     /// </summary>
-    public abstract class AuthorizationCode : IAuthorizationCode
+    public abstract class AuthorizationCode<TId> : IAuthorizationCode, IHasId<TId>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthorizationCode"/> class.
         /// </summary>
+        /// <param name="id">The Id of the authorization code.</param>
         /// <param name="user">The user.</param>
         /// <param name="client">The client.</param>
         /// <param name="scopes">The scopes.</param>
         /// <param name="redirectUri">The redirect URI.</param>
         /// <param name="expirationDateUtc">The expiration date UTC.</param>
-        protected AuthorizationCode(IUser user, IClient client, IEnumerable<IScope> scopes, Uri redirectUri, DateTime expirationDateUtc)
+        protected AuthorizationCode(TId id, IUser user, IClient client, IEnumerable<IScope> scopes, Uri redirectUri, DateTime expirationDateUtc)
         {
+            Contract.Requires(id != null);
             Contract.Requires(user != null);
             Contract.Requires(client != null);
             Contract.Requires(scopes != null);
@@ -45,6 +47,17 @@ namespace OAuthWorks.Implementation
             this.Scopes = scopes;
             this.RedirectUri = redirectUri;
             this.ExpirationDateUtc = expirationDateUtc;
+            this.Id = id;
+        }
+
+        /// <summary>
+        /// Gets the Id of this authorization code.
+        /// </summary>
+        /// <returns></returns>
+        public TId Id
+        {
+            get;
+            protected set;
         }
 
         /// <summary>

@@ -21,22 +21,21 @@ using System.Threading.Tasks;
 namespace OAuthWorks.DataAccess.Repositories
 {
     /// <summary>
-    /// Defines an interface for a repository that stores OAuthWorks.IRefreshToken objects.
+    /// Defines an interface for a repository that stores <see cref="IRefreshToken"/> objects.
     /// </summary>
-    public interface IRefreshTokenRepository<TRefreshToken> : IDisposable
-        where TRefreshToken : IRefreshToken
+    public interface IRefreshTokenRepository : IDisposable
     {
         /// <summary>
         /// Adds the given refresh token to the repository.
         /// </summary>
-        /// <param name="refreshToken"></param>
-        void Add(ICreatedToken<TRefreshToken> refreshToken);
+        /// <param name="refreshToken">The refresh token that should be added to the repository.</param>
+        void Add(ICreatedToken<IRefreshToken> refreshToken);
 
         /// <summary>
         /// Removes(deletes) the given refreshToken from this repository.
         /// </summary>
-        /// <param name="refreshToken">The refreshToken to remove.</param>
-        void Remove(TRefreshToken token);
+        /// <param name="refreshToken">The refresh token to remove from the repository.</param>
+        void Remove(IRefreshToken token);
 
         /// <summary>
         /// Gets the refresh refreshToken that can be used by the given client to retrive access tokens for the given user's account.
@@ -48,13 +47,13 @@ namespace OAuthWorks.DataAccess.Repositories
         /// <param name="user">The user that owns the accout that the refreshToken gives access to.</param>
         /// <param name="client">The client that maintains possesion of the refresh refreshToken.</param>
         /// <returns>Returns the refresh tokens that can be used by the given client for the given user's account if one exists. Otherwise returns null.</returns>
-        IEnumerable<TRefreshToken> GetByUserAndClient(IUser user, IClient client);
+        IEnumerable<IRefreshToken> GetByUserAndClient(IUser user, IClient client);
 
         /// <summary>
         /// Gets a refresh refreshToken by the value that was given to the client.
         /// </summary>
-        /// <param name="refreshToken">The refresh refreshToken that was issued to the client.</param>
-        /// <returns>Returns the refreshToken that belongs to the given value.</returns>
-        TRefreshToken GetByValue(string token);
+        /// <param name="refreshToken">The refresh token that was issued to the client.</param>
+        /// <returns>Returns the refresh token that belongs to the given value.</returns>
+        IRefreshToken GetByValue(string token);
     }
 }

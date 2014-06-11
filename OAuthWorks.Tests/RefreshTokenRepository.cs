@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 
 namespace OAuthWorks.Tests
 {
-    class RefreshTokenRepository : DictionaryRepository<IRefreshToken>, IRefreshTokenRepository<IRefreshToken>
+    class RefreshTokenRepository : DictionaryRepository<IRefreshToken>, IRefreshTokenRepository
     {
         public RefreshTokenRepository()
         {

@@ -26,28 +26,46 @@ namespace OAuthWorks.Implementation
     /// Defines a base class that provides a basic implemenatation of <see cref="OAuthWorks.AccessToken"/>.
     /// </summary>
     /// <remarks>
-    /// For an implemenatation, see <see cref="OAuthWorks.Implementation.HashedAccessToken"/>.
+    /// For a secure implemenatation, see <see cref="OAuthWorks.Implementation.HashedAccessToken"/>.
     /// </remarks>
     [DataContract]
-    public abstract class AccessToken : IAccessToken, IHasId<string>
+    public abstract class AccessToken<TId> : IAccessToken, IHasId<TId>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="AccessToken"/> class.
         /// </summary>
-        /// <param name="id">The id of the refreshToken.</param>
-        /// <param name="user">The user that this refreshToken belongs to.</param>
+        /// <param name="id">The id of the access token.</param>
+        /// <param name="user">The user that this access token belongs to.</param>
         /// <param name="client">The client that has access to this refreshToken.</param>
-        /// <param name="scopes">The scopes that this refreshToken provides access to.</param>
-        /// <param name="tokenType">Type of the refreshToken. Describes how the client should handle it.</param>
+        /// <param name="scopes">The scopes that this access token provides access to.</param>
+        /// <param name="tokenType">Type of the access token. Describes how the client should handle it.</param>
         /// <param name="expirationDateUtc">The date of expiration in Universal Coordinated Time.</param>
-        protected AccessToken(string id, IUser user, IClient client, IEnumerable<IScope> scopes, string tokenType, DateTime expirationDateUtc)
+        protected AccessToken(TId id, IUser user, IClient client, IEnumerable<IScope> scopes, string tokenType, DateTime expirationDateUtc)
         {
-            Contract.Requires(!string.IsNullOrEmpty(id));
-            Contract.Requires(user != null);
-            Contract.Requires(client != null);
-            Contract.Requires(scopes != null);
-            Contract.Requires(!string.IsNullOrEmpty(tokenType));
-            Contract.Requires(expirationDateUtc > DateTime.UtcNow);
+            if(id == null)
+            {
+                throw new ArgumentNullException("id");
+            }
+            if(user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+            if(client == null)
+            {
+                throw new ArgumentNullException("client");
+            }
+            if(scopes == null)
+            {
+                throw new ArgumentNullException("scopes");
+            }
+            if (string.IsNullOrEmpty(tokenType))
+            {
+                throw new ArgumentException("The given tokenType must not be null or empty.", "tokenType");
+            }
+            if(expirationDateUtc < DateTime.UtcNow)
+            {
+                throw new ArgumentOutOfRangeException("The given expirationDateUtc must be greater than DateTime.UtcNow.", "expirationDateUtc");
+            }
             this.Id = id;
             this.Client = client;
             this.User = user;
@@ -57,17 +75,17 @@ namespace OAuthWorks.Implementation
         }
 
         /// <summary>
-        /// Gets or sets the id of this refreshToken.
+        /// Gets or sets the id of this access token.
         /// </summary>
         [DataMember(Name="Id")]
-        public string Id
+        public TId Id
         {
             get;
             protected set;
         }
 
         /// <summary>
-        /// Gets the client that has access to this refresh token.
+        /// Gets the client that has access to this access token.
         /// </summary>
         [DataMember(Name="Client")]
         public IClient Client
@@ -77,7 +95,7 @@ namespace OAuthWorks.Implementation
         }
 
         /// <summary>
-        /// Gets the client that has access to this refresh token.
+        /// Gets the client that has access to this access token.
         /// </summary>
         IClient IAccessToken.Client
         {
@@ -88,7 +106,7 @@ namespace OAuthWorks.Implementation
         }
 
         /// <summary>
-        /// Gets the scopes that this refreshToken grants access to.
+        /// Gets the scopes that this access token grants access to.
         /// </summary>
         [DataMember(Name="Scopes")]
         public IEnumerable<IScope> Scopes
@@ -98,7 +116,7 @@ namespace OAuthWorks.Implementation
         }
 
         /// <summary>
-        /// Gets the scopes that this refreshToken grants access to.
+        /// Gets the scopes that this access token grants access to.
         /// </summary>
         IEnumerable<IScope> IAccessToken.Scopes
         {
@@ -109,7 +127,7 @@ namespace OAuthWorks.Implementation
         }
 
         /// <summary>
-        /// Gets the user that the refreshToken belongs to.
+        /// Gets the user that the access token belongs to.
         /// </summary>
         [DataMember(Name="User")]
         public IUser User
@@ -119,7 +137,7 @@ namespace OAuthWorks.Implementation
         }
 
         /// <summary>
-        /// Gets the user that the refreshToken belongs to.
+        /// Gets the user that the access token belongs to.
         /// </summary>
         IUser IAccessToken.User
         {
@@ -130,10 +148,10 @@ namespace OAuthWorks.Implementation
         }
 
         /// <summary>
-        /// Gets the type of the refreshToken which describes how the client should handle it.
+        /// Gets the type of the token which describes how the client should handle it.
         /// </summary>
         /// <remarks>
-        /// The refreshToken type is used to define how the client should handle the refreshToken itself.
+        /// The refreshToken type is used to define how the client should handle the access token itself.
         /// Common types are "bearer" and "mac".
         /// </remarks>
         [DataMember(Name="TokenType")]
@@ -144,7 +162,7 @@ namespace OAuthWorks.Implementation
         }
 
         /// <summary>
-        /// Gets the expiration date of this refreshToken in Universal Coordinated Time.
+        /// Gets the expiration date of this access token in Universal Coordinated Time.
         /// </summary>
         [DataMember(Name="ExpirationDateUtc")]
         public DateTime ExpirationDateUtc
@@ -154,7 +172,7 @@ namespace OAuthWorks.Implementation
         }
 
         /// <summary>
-        /// Gets whether this refreshToken has expired.
+        /// Gets whether this access token has expired.
         /// </summary>
         public bool Expired
         {
@@ -165,7 +183,7 @@ namespace OAuthWorks.Implementation
         }
 
         /// <summary>
-        /// Gets whether the refreshToken has been revoked by the user.
+        /// Gets whether the access token has been revoked by the user.
         /// </summary>
         [DataMember(Name="Revoked")]
         public bool Revoked
@@ -175,7 +193,7 @@ namespace OAuthWorks.Implementation
         }
 
         /// <summary>
-        /// Causes this refreshToken to become invalidated and no longer usable by a client.
+        /// Causes this access token to become invalidated and no longer usable by a client.
         /// </summary>
         public void Revoke()
         {
@@ -183,9 +201,9 @@ namespace OAuthWorks.Implementation
         }
 
         /// <summary>
-        /// Determines if the given refreshToken value matches the one stored internally.
+        /// Determines if the given token value matches the one stored internally.
         /// </summary>
-        /// <param name="refreshToken">The refreshToken to compare to the internal one.</param>
+        /// <param name="token">The token to compare to the internal one.</param>
         /// <returns>
         /// Returns true if the two tokens match, otherwise false.
         /// </returns>

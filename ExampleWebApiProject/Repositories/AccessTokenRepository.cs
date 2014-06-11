@@ -27,14 +27,14 @@ namespace ExampleWebApiProject.Repositories
     /// <summary>
     /// Defines an example access token repository that provides the excange mecanizm between our <see cref="DatabaseContext"/> and an <see cref="OAuthProvider"/>.
     /// </summary>
-    public class AccessTokenRepository : IAccessTokenRepository<IAccessToken>
+    public class AccessTokenRepository : IAccessTokenRepository
     {
         private DatabaseContext context;
 
         /// <summary>
         /// The <see cref="IValueIdFormatter"/> used to parse given access tokens into their respective parts.
         /// </summary>
-        private IValueIdFormatter idFormatter = AccessTokenFactory.DefaultIdFormatter;
+        private IValueIdFormatter<string> idFormatter = AccessTokenFactory.String.DefaultIdFormatter;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AccessTokenRepository"/> class.
@@ -56,7 +56,7 @@ namespace ExampleWebApiProject.Repositories
         /// <param name="context">The context.</param>
         /// <param name="idFormatter">The identifier formatter.</param>
         /// <exception cref="System.ArgumentNullException">idFormatter</exception>
-        public AccessTokenRepository(DatabaseContext context, IValueIdFormatter idFormatter) : this(context)
+        public AccessTokenRepository(DatabaseContext context, IValueIdFormatter<string> idFormatter) : this(context)
         {
             if(idFormatter == null)
             {
@@ -98,7 +98,6 @@ namespace ExampleWebApiProject.Repositories
         {
             return context.AccessTokens.Where(t => t.User.Id.Equals(user.Id) && t.Client.Name.Equals(client.Name));
         }
-
 
         public IAccessToken GetById(string id)
         {

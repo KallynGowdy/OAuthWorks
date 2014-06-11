@@ -21,7 +21,7 @@ using System.Threading.Tasks;
 
 namespace OAuthWorks.Tests
 {
-    class AccessTokenRepository : DictionaryRepository<IAccessToken>, IAccessTokenRepository<IAccessToken>
+    class AccessTokenRepository : DictionaryRepository<IAccessToken>, IAccessTokenRepository
     {
         public AccessTokenRepository()
         {
