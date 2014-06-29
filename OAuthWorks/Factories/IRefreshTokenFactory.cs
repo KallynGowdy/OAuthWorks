@@ -36,7 +36,7 @@ namespace OAuthWorks.Factories
         /// <param name="scopes">The enumerable list of <see cref="OAuthWorks.IScope"/> objects that define what access the client has to the
         /// user's account and data.</param>
         /// <returns>Returns a new Refresh Token that can be used to request new Access Tokens.</returns>
-        ICreatedToken<TRefreshToken> Create(IClient client, IUser user, IEnumerable<IScope> scopes);
+        ICreatedToken<TRefreshToken> Create(IUser user, IClient client, IEnumerable<IScope> scopes);
 
     }
 }

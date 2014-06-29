@@ -83,8 +83,6 @@ namespace OAuthWorks.Implementation.Factories
     /// </summary>
     public class RefreshTokenFactory<TId> : IRefreshTokenFactory<HashedRefreshToken<TId>>
     {
-        
-
         /// <summary>
         /// Gets the function that, given an integer generates a string that represents that many pseudorandom bytes.
         /// </summary>
@@ -160,7 +158,7 @@ namespace OAuthWorks.Implementation.Factories
         /// <param name="scopes">The enumerable list of <see cref="OAuthWorks.IScope"/> objects that define what access the client has to the
         /// user's account and data.</param>
         /// <returns>Returns a new Refresh Token that can be used to request new Access Tokens.</returns>
-        public ICreatedToken<HashedRefreshToken<TId>> Create(IClient client, IUser user, IEnumerable<IScope> scopes)
+        public ICreatedToken<HashedRefreshToken<TId>> Create(IUser user, IClient client, IEnumerable<IScope> scopes)
         {
             string token = ValueGenerator(TokenLength);
             TId id = IdGenerator();

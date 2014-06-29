@@ -23,12 +23,393 @@ using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using NUnit.Framework;
+using Moq;
+using OAuthWorks.Implementation;
 
 namespace OAuthWorks
 {
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Auth")]
     public class OAuthProvider : IOAuthProvider
     {
+        /// <summary>
+        /// Defines a class that contains tests for <see cref="OAuthProvider"/>.
+        /// </summary>
+        [TestFixture]
+        public class Tests
+        {
+            OAuthProvider provider;
+
+            IScope exampleScope;
+
+            IScope otherScope;
+
+            IClient client;
+
+            IClient badClient;
+
+            IUser user;
+
+            [TestFixtureSetUp]
+            public void SetUp()
+            {
+                var mockedScope = new Mock<IScope>();
+                mockedScope.Setup(s => s.Id).Returns("exampleScope");
+
+                exampleScope = mockedScope.Object;
+
+                mockedScope = new Mock<IScope>();
+                mockedScope.Setup(s => s.Id).Returns("otherScope");
+
+                otherScope = mockedScope.Object;
+
+                var scopeRepository = new Mock<IScopeRepository<IScope>>();
+                scopeRepository.Setup(r => r.GetById("exampleScope")).Returns(exampleScope);
+                scopeRepository.Setup(r => r.GetById("otherScope")).Returns(otherScope);
+
+                var mockedClient = new Mock<IClient>();
+                mockedClient.Setup(c => c.Name).Returns("bob");
+                mockedClient.Setup(c => c.RedirectUris).Returns(new Uri[]
+                {
+                    new Uri("http://example.com/oauth/response/token")
+                });
+                mockedClient.Setup(c => c.IsValidRedirectUri(It.IsAny<Uri>())).Returns<Uri>(u => mockedClient.Object.RedirectUris.Contains(u));
+
+                client = mockedClient.Object;
+
+                var mockedBadClient = new Mock<IClient>();
+                mockedClient.Setup(c => c.Name).Returns("Evil");
+                mockedClient.Setup(c => c.RedirectUris).Returns(new Uri[]
+                {
+                    new Uri("http://example.com/oauth/response/token")
+                });
+                mockedClient.Setup(c => c.IsValidRedirectUri(It.IsAny<Uri>())).Returns<Uri>(u => mockedClient.Object.RedirectUris.Contains(u));
+                mockedClient.Setup(c => c.MatchesSecret(It.IsAny<string>())).Returns(true);
+
+                badClient = mockedBadClient.Object;
+
+                var clientRepository = new Mock<IReadStore<string, IClient>>();
+                Dictionary<string, IClient> cDict = new Dictionary<string, IClient>()
+                {
+                    { "bob", client },
+                    { "Evil", badClient }
+                };
+                clientRepository.Setup(r => r.GetById(It.IsAny<string>())).Returns<string>(s => cDict[s]);
+
+                Mock<IUser> mockedUser = new Mock<IUser>();
+                mockedUser.Setup(u => u.Id).Returns("User");
+                user = mockedUser.Object;
+
+                Dictionary<string, IAccessToken> dict = new Dictionary<string, IAccessToken>();
+                Mock<IAccessTokenRepository> accessTokenRepository = new Mock<IAccessTokenRepository>();
+                accessTokenRepository.Setup(r => r.Add(It.IsAny<ICreatedToken<IAccessToken>>())).Callback<ICreatedToken<IAccessToken>>(t => dict.Add(((IHasId<string>)t.Token).Id, t.Token));
+                accessTokenRepository.Setup(r => r.GetByToken(It.IsAny<string>())).Returns<string>(s => dict[s]);
+
+                provider = new OAuthProvider
+                {
+                    ClientRepository = clientRepository.Object,
+                    ScopeRepository = scopeRepository.Object,
+                    AccessTokenRepository = accessTokenRepository.Object
+                };
+                provider.ScopeParser = (p, s) => s.Split(' ', '-').Select(a => p.ScopeRepository.GetById(a));
+                provider.ScopeFormatter = (s) => string.Join(" ", s.Select(sc => sc.Id));
+                provider.DistributeRefreshTokens = true;
+                provider.DeleteRevokedTokens = true;
+            }
+
+            private class InvalidAccessTokenRequest : IAuthorizationCodeGrantAccessTokenRequest
+            {
+                public string AuthorizationCode
+                {
+                    get;
+                    set;
+                }
+
+                public string ClientId
+                {
+                    get;
+                    set;
+                }
+
+                public string ClientSecret
+                {
+                    get;
+                    set;
+                }
+
+                public string GrantType
+                {
+                    get;
+                    set;
+                }
+
+                public Uri RedirectUri
+                {
+                    get;
+                    set;
+                }
+
+                public string Scope
+                {
+                    get;
+                    set;
+                }
+            }
+
+            [Test]
+            [TestCase(null, "secret", "code", "access_token", "http://example.com/oauth/response/token", AccessTokenRequestError.InvalidRequest)]
+            [TestCase("", "secret", "code", "access_token", "http://example.com/oauth/response/token", AccessTokenRequestError.InvalidRequest)]
+            [TestCase("bob", null, "code", "access_token", "http://example.com/oauth/response/token", AccessTokenRequestError.InvalidRequest)]
+            [TestCase("bob", "", "code", "access_token", "http://example.com/oauth/response/token", AccessTokenRequestError.InvalidRequest)]
+            [TestCase("bob", "secret", null, "access_token", "http://example.com/oauth/response/token", AccessTokenRequestError.InvalidRequest)]
+            [TestCase("bob", "secret", "", "access_token", "http://example.com/oauth/response/token", AccessTokenRequestError.InvalidRequest)]
+            [TestCase("bob", "secret", "code", "access_token", null, AccessTokenRequestError.InvalidRequest)]
+            [TestCase("bob", "secret", "code", null, "http://example.com/oauth/response/token", AccessTokenRequestError.InvalidRequest)]
+            [TestCase("bob", "secret", "code", "", "http://example.com/oauth/response/token", AccessTokenRequestError.InvalidRequest)]
+            [TestCase("bob", "secret", "code", "not_access_token", "http://example.com/oauth/response/token", AccessTokenRequestError.InvalidRequest)]
+            public void TestInvalidAccessTokenRequest(string clientId, string clientSecret, string authorizationCode, string grantType, string redirectUri, AccessTokenRequestError expectedError)
+            {
+                var request = new InvalidAccessTokenRequest { ClientId = clientId, ClientSecret = clientSecret, AuthorizationCode = authorizationCode, GrantType = grantType, RedirectUri = (redirectUri != null ? new Uri(redirectUri) : null) };
+
+                IUnsuccessfulAccessTokenResponse response = provider.RequestAccessToken(request) as IUnsuccessfulAccessTokenResponse;
+
+                Assert.NotNull(response);
+                Assert.AreEqual(expectedError, response.Error);
+            }
+
+            [Test]
+            public void TestRefreshAccessToken()
+            {
+
+                ICreatedToken<IAccessToken> oldToken = provider.AccessTokenFactory.Create(user, client, new[] { exampleScope });
+                provider.AccessTokenRepository.Add(oldToken);
+
+                ICreatedToken<IRefreshToken> refresh = provider.RefreshTokenFactory.Create(user, client, new[] { exampleScope });
+                provider.RefreshTokenRepository.Add(refresh);
+
+                ITokenRefreshRequest refreshRequest = new TokenRefreshRequest
+                (
+                    refresh.TokenValue,
+                    "bob",
+                    "secret",
+                    "refresh_token",
+                    "exampleScope"
+                );
+
+                ISuccessfulAccessTokenResponse response = provider.RefreshAccessToken(refreshRequest) as ISuccessfulAccessTokenResponse;
+
+                Assert.That(response, Is.Not.Null);
+                Assert.That(response.AccessToken, Is.Not.Null);
+                Assert.That(response.RefreshToken, Is.Not.Null);
+                Assert.That(response.Scope, Is.EqualTo("exampleScope"));
+                Assert.That(response.TokenType, Is.EqualTo("Bearer"));
+                Assert.That(oldToken.Token.IsValid(), Is.False);
+                Assert.That(refresh.Token.IsValid(), Is.False);
+            }
+
+            [Test]
+            [TestCase("exampleScope", "state", "secret", "http://example.com/oauth/response/token")]
+            [TestCase("nonExistantScope", "state", "secret", "http://example.com/oauth/response/token")]
+            [TestCase("otherScope, exampleScope", "state", "secret", "http://example.com/oauth/response/token")]
+            [TestCase("", "state", "secret", "http://example.com/oauth/response/token")]
+            public void TestGetRequestedScopes(string scope, string state, string secret, string redirectUri)
+            {
+                AuthorizationCodeRequest request = new AuthorizationCodeRequest
+                (
+                    clientId: client.Name,
+                    clientSecret: secret,
+                    redirectUri: new Uri(redirectUri),
+                    responseType: AuthorizationCodeResponseType.Code,
+                    scope: scope,
+                    state: state
+                );
+
+                var scopes = provider.GetRequestedScopes(request.Scope);
+
+                if (scopes != null && scopes.Count() > 0)
+                {
+                    Assert.True(scopes.All(s => s != null), "The scopes contained a null entry when it shouldn't have");
+                }
+                else
+                {
+                    Assert.True(provider.ScopeParser(provider, scope).Any(s => s == null));
+                }
+            }
+
+            [Test]
+            [TestCase("exampleScope", "state", "secret", "otherSecret", "http://example.com/oauth/response/token")]
+            public void TestInvalidClientTokenRetrieval(string scope, string state, string secret, string badSecret, string redirectUri)
+            {
+                AuthorizationCodeRequest request = new AuthorizationCodeRequest
+                (
+                    clientId: client.Name,
+                    clientSecret: secret,
+                    redirectUri: new Uri(redirectUri),
+                    responseType: AuthorizationCodeResponseType.Code,
+                    scope: scope,
+                    state: state
+                );
+
+                ISuccessfulAuthorizationCodeResponse response = provider.RequestAuthorizationCode(request, user) as ISuccessfulAuthorizationCodeResponse;
+
+                AuthorizationCodeGrantAccessTokenRequest tokenRequest = new AuthorizationCodeGrantAccessTokenRequest
+                (
+                    authorizationCode: response.Code,
+                    clientId: badClient.Name,
+                    clientSecret: badSecret,
+                    redirectUri: new Uri(redirectUri)
+                );
+
+                Assert.That(provider.RequestAccessToken(tokenRequest) is IUnsuccessfulAccessTokenResponse);
+            }
+
+            [Test]
+            [TestCase("exampleScope", "state", "secret", "http://example.com/oauth/response/token")]
+            [TestCase("nonExistantScope", "state", "secret", "http://example.com/oauth/response/token")]
+            [TestCase("exampleScope", "state", "badSecret", "http://example.com/oauth/response/token")]
+            [TestCase("exampleScope", "state", "secret", "http://example.com/oauth/v1/response/token")]
+            public void TestRequestAuthorizationCode(string scope, string state, string secret, string redirectUri)
+            {
+                AuthorizationCodeRequest codeRequest = new AuthorizationCodeRequest
+                (
+                    clientId: client.Name,
+                    clientSecret: secret,
+                    redirectUri: new Uri(redirectUri),
+                    responseType: AuthorizationCodeResponseType.Code,
+                    scope: scope,
+                    state: state
+                );
+
+                IAuthorizationCodeResponse response = provider.RequestAuthorizationCode(codeRequest, user);
+
+                Assert.NotNull(response);
+
+                if ((ISuccessfulAuthorizationCodeResponse success = response as ISuccessfulAuthorizationCodeResponse) != null)
+                {
+                    Assert.AreEqual(success.State, state);
+
+                    Assert.True(client.IsValidRedirectUri(new Uri(redirectUri)), "The client did not have a valid redirect Uri even though it was able to retrieve a code.");
+                    Assert.True(client.MatchesSecret(secret), "The client's secret was invalid even though it got through.");
+                    Assert.NotNull(provider.GetRequestedScopes(codeRequest.Scope), "The requested scope was invalid even though it got through.");
+                }
+                else
+                {
+                    IUnsuccessfulAuthorizationCodeResponse unsuccess = (IUnsuccessfulAuthorizationCodeResponse)response;
+                    switch (unsuccess.ErrorCode)
+                    {
+                        case AuthorizationCodeRequestErrorType.UnauthorizedClient:
+                            Assert.False(client.MatchesSecret(secret));
+                            break;
+                        case AuthorizationCodeRequestErrorType.InvalidScope:
+                            Assert.IsEmpty(provider.GetRequestedScopes(codeRequest.Scope));
+                            break;
+                        case AuthorizationCodeRequestErrorType.InvalidRequest:
+                            Assert.False(client.IsValidRedirectUri(codeRequest.RedirectUri));
+                            break;
+                    }
+                }
+            }
+
+            [Test]
+            [TestCase("bob", "secret", "exampleScope", "state", "http://example.com/oauth/response/token")]
+            public void TestRevokeAccess(string clientId, string clientSecret, string scope, string state, string redirectUri)
+            {
+                AuthorizationCodeRequest codeRequest = new AuthorizationCodeRequest(clientId, clientSecret, scope, state, new Uri(redirectUri), AuthorizationCodeResponseType.Code);
+
+                ISuccessfulAuthorizationCodeResponse response = provider.RequestAuthorizationCode(codeRequest, user) as ISuccessfulAuthorizationCodeResponse;
+
+                Assert.NotNull(response);
+
+                var tokenResponse = provider.RequestAccessToken(
+                    new AuthorizationCodeGrantAccessTokenRequest(response.Code, clientId, clientSecret, new Uri(redirectUri))
+                    ) as ISuccessfulAccessTokenResponse;
+
+                Assert.NotNull(tokenResponse);
+
+                Assert.True(provider.HasAccess(user, client, exampleScope));
+
+                IAccessToken token = provider.AccessTokenRepository.GetByToken(tokenResponse.AccessToken);
+
+                Assert.NotNull(token);
+
+                Assert.True(!token.Revoked);
+                Assert.True(!token.Expired);
+
+                token.Revoke();
+
+                Assert.True(token.Revoked);
+                Assert.True(!token.Expired);
+            }
+
+            [Test]
+            public void TestEndToEnd()
+            {
+                //A request from the client for an authorization code.
+                AuthorizationCodeRequest codeRequest = new AuthorizationCodeRequest
+                (
+                    clientId: "bob",
+                    clientSecret: "secret",
+                    redirectUri: new Uri("http://example.com/oauth/response/token"),
+                    responseType: AuthorizationCodeResponseType.Code,
+                    scope: "exampleScope",
+                    state: "state"
+                );
+
+                //Normally you would authorize the client and user here.
+                //You would also determine if the user needs to provide consent using
+                //provider.HasAccess(user, client, scope)
+
+                //Then retrieve the code
+                ISuccessfulAuthorizationCodeResponse response = provider.RequestAuthorizationCode(codeRequest, user) as ISuccessfulAuthorizationCodeResponse;
+
+                Assert.NotNull(response);
+
+                AuthorizationCodeGrantAccessTokenRequest tokenRequest = new AuthorizationCodeGrantAccessTokenRequest
+                (
+                    clientId: "bob",
+                    clientSecret: "secret",
+                    redirectUri: new Uri("http://example.com/oauth/response/token"),
+                    authorizationCode: response.Code
+                );
+
+                ISuccessfulAccessTokenResponse tokenResponse = provider.RequestAccessToken(tokenRequest) as ISuccessfulAccessTokenResponse;
+
+                Assert.NotNull(tokenResponse);
+
+                IAccessToken token = provider.AccessTokenRepository.GetByToken(tokenResponse.AccessToken);
+
+                Assert.NotNull(token);
+
+                Assert.True(!token.Expired && !token.Revoked);
+
+                Assert.True(provider.HasAccess(user, client, exampleScope), "The provider does not have access when it should");
+
+                Assert.False(provider.HasAccess(user, badClient, exampleScope), "The unathorized client had access when it shouldn't have.");
+
+                TokenRefreshRequest refreshRequest = new TokenRefreshRequest
+                (
+                    refreshToken: tokenResponse.RefreshToken,
+                    clientId: badClient.Name,
+                    clientSecret: "secret",
+                    grantType: "refresh_token",
+                    scope: tokenResponse.Scope
+                );
+
+                ISuccessfulAccessTokenResponse newTokenResponse = provider.RefreshAccessToken(refreshRequest) as ISuccessfulAccessTokenResponse;
+
+                Assert.NotNull(newTokenResponse);
+
+                token = provider.AccessTokenRepository.GetByToken(newTokenResponse.AccessToken);
+
+                Assert.NotNull(token);
+
+                token.Revoke();
+
+                Assert.False(provider.HasAccess(user, badClient, exampleScope));
+            }
+
+        }
+
         /// <summary>
         /// The default <see cref="IAccessTokenFactory{TAccessToken}"/> constructor.
         /// </summary>
@@ -425,11 +806,11 @@ namespace OAuthWorks
 
                     code.Revoke(); // Prevent this same code from being used again
 
-                    ICreatedToken<IAccessToken> accessToken = AccessTokenFactory.Create(client, code.User, code.Scopes);
+                    ICreatedToken<IAccessToken> accessToken = AccessTokenFactory.Create(code.User, client, code.Scopes);
                     ICreatedToken<IRefreshToken> refreshToken = null;
                     if (RefreshTokenFactory != null && DistributeRefreshTokens)
                     {
-                        refreshToken = RefreshTokenFactory.Create(client, code.User, code.Scopes);
+                        refreshToken = RefreshTokenFactory.Create(code.User, client, code.Scopes);
                         RefreshTokenRepository.Add(refreshToken);
                     }
 
@@ -500,13 +881,13 @@ namespace OAuthWorks
 
                     string refreshValue = request.RefreshToken;
 
-                    ICreatedToken<IAccessToken> newToken = AccessTokenFactory.Create(client, refreshToken.User, refreshToken.Scopes);
+                    ICreatedToken<IAccessToken> newToken = AccessTokenFactory.Create(refreshToken.User, client, refreshToken.Scopes);
 
                     AccessTokenRepository.Add(newToken);
 
                     if (!ReuseRefreshTokens)
                     {
-                        ICreatedToken<IRefreshToken> newRefresh = RefreshTokenFactory.Create(client, refreshToken.User, refreshToken.Scopes);
+                        ICreatedToken<IRefreshToken> newRefresh = RefreshTokenFactory.Create(refreshToken.User, client, refreshToken.Scopes);
                         refreshToken.Revoke();
                         if (DeleteRevokedTokens)
                         {
@@ -566,11 +947,11 @@ namespace OAuthWorks
                                 RefreshTokenRepository.Remove(t);
                         });
 
-                        ICreatedToken<IAccessToken> token = AccessTokenFactory.Create(client, request.User, scopes);
+                        ICreatedToken<IAccessToken> token = AccessTokenFactory.Create(request.User, client, scopes);
                         ICreatedToken<IRefreshToken> refreshToken = null;
                         if (RefreshTokenFactory != null && DistributeRefreshTokens)
                         {
-                            refreshToken = RefreshTokenFactory.Create(client, request.User, scopes);
+                            refreshToken = RefreshTokenFactory.Create(request.User, client, scopes);
                             RefreshTokenRepository.Add(refreshToken);
                         }
 

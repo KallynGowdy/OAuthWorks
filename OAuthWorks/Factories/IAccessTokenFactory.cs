@@ -35,6 +35,6 @@ namespace OAuthWorks.Factories
         /// <param name="user">The user that is giving access to the client.</param>
         /// <param name="scopes">The list of scopes that the client should have access to.</param>
         /// <returns>Returns a new OAuthWorks.CreatedToken(of TAccessToken) object.</returns>
-        ICreatedToken<TAccessToken> Create(IClient client, IUser user, IEnumerable<IScope> scopes);
+        ICreatedToken<TAccessToken> Create(IUser user, IClient client, IEnumerable<IScope> scopes);
     }
 }

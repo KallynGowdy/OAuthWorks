@@ -19,10 +19,14 @@ using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using NUnit.Framework;
+using Moq;
 
 namespace OAuthWorks.Implementation.Factories
 {
-
+    /// <summary>
+    /// Defines a static class that contains default values for <see cref="AuthorizationCodeFactory{TId}"/> objects.
+    /// </summary>
     public static class AuthorizationCodeFactory
     {
         /// <summary>
@@ -42,8 +46,82 @@ namespace OAuthWorks.Implementation.Factories
         /// </summary>
         public static readonly Func<int, string> DefaultValueGenerator = AccessTokenFactory.GenerateToken;
 
+        /// <summary>
+        /// Defines a test class that contains tests for the <see cref="AuthorizationCodeFactory"/> functions and fields.
+        /// </summary>
+        [TestFixture]
+        public class Tests
+        {
+            [TestCase(20)]
+            public void TestDefaultValueGenerator(int length)
+            {
+                Func<int, string> valueGenerator = DefaultValueGenerator;
+                Assert.That(valueGenerator, Is.Not.Null);
+                Assert.That(valueGenerator(length), Is.Not.Null.Or.Empty);
+            }
+
+            [TestCase(25)]
+            [TestCase(48)]
+            public void TestGenerateToken(int length)
+            {
+                string result = AccessTokenFactory.GenerateToken(length);
+                Assert.That(result, Is.Not.Null.Or.Empty);
+                Assert.That(Convert.FromBase64String(result).Length, Is.EqualTo(length));
+            }
+        }
+
+        /// <summary>
+        /// Defines a static class that contains default values for <see cref="AuthorizationCodeFactory{string}"/>.
+        /// </summary>
         public static class String
         {
+            /// <summary>
+            /// A class containing tests for <see cref="AuthorizationCodeFactory{string}"/> objects.
+            /// </summary>
+            [TestFixture]
+            public class Tests
+            {
+                [TestCase("scope")]
+                public void TestDefaultInstance(string s)
+                {
+                    IAuthorizationCodeFactory<IAuthorizationCode> instance = DefaultFactory;
+                    Assert.NotNull(instance);
+                    Mock<IUser> user = new Mock<IUser>();
+                    user.Setup(u => u.Id).Returns("Id");
+                    Mock<IClient> client = new Mock<IClient>();
+                    client.Setup(c => c.Name).Returns("Client");
+                    client.Setup(c => c.RedirectUris).Returns(new Uri[0]);
+                    Mock<IScope> scope = new Mock<IScope>();
+                    scope.Setup(sc => sc.Description).Returns("");
+                    scope.Setup(sc => sc.Id).Returns(s);
+                    var result = instance.Create(new Uri("http://www.example.com"), user.Object, client.Object, new[] { scope.Object });
+                    Assert.That(result, Is.Not.Null);
+                    Assert.That(result.Token, Is.Not.Null);
+                    Assert.That(result.TokenValue, Is.Not.Null);
+                }
+
+                [TestCase("abcdefghijklmnopqrstuvwxyz", "abcdefghijklmnopqrstuvwxyz")]
+                [TestCase("ABCDEFGHIJKLMNOPQRSTUVWXYZ", "ABCDEFGHIJKLMNOPQRSTUVWXYZ")]
+                [TestCase(@"123456789!@#$%^&*()-=\[];',./_+|{}:""<>?`~", @"123456789!@#$%^&*()-=\[];',./_+|{}:""<>?`~")]
+                public void TestDefaultIdFormatter(string id, string token)
+                {
+                    IValueIdFormatter<string> formatter = DefaultIdFormatter;
+                    Assert.NotNull(formatter);
+                    string formatted = formatter.FormatValue(id, token);
+                    Assert.NotNull(formatted);
+                    Assert.AreEqual(id, formatter.GetId(formatted));
+                    Assert.AreEqual(token, formatter.GetToken(formatted));
+                }
+
+                [Test]
+                public void TestDefaultIdGenerator()
+                {
+                    Func<string> generator = DefaultIdGenerator;
+                    Assert.NotNull(generator);
+                    Assert.DoesNotThrow(() => generator());
+                }
+            }
+
             /// <summary>
             /// The default length of the generated identifiers in bytes.
             /// </summary>
@@ -80,7 +158,6 @@ namespace OAuthWorks.Implementation.Factories
     /// </summary>
     public class AuthorizationCodeFactory<TId> : IAuthorizationCodeFactory<HashedAuthorizationCode<TId>>
     {
-
         /// <summary>
         /// Gets the function that, given an integer generates a string that represents that many pseudorandom bytes.
         /// </summary>

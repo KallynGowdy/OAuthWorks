@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using NUnit.Framework;
 using OAuthWorks.Factories;
 
 namespace OAuthWorks.Implementation.Factories
@@ -27,13 +28,31 @@ namespace OAuthWorks.Implementation.Factories
     public class AccessTokenResponseFactory : IAccessTokenResponseFactory
     {
         /// <summary>
-        /// Gets a new <see cref="OAuthWorks.ISuccessfulAccessTokenResponse"/> object given the distributed access refreshToken, refresh refreshToken, access refreshToken type, granted scope, and expiration date.
+        /// Defines a class that contains tests for <see cref="AccessTokenResponseFactory"/>.
         /// </summary>
-        /// <param name="accessToken">The access refreshToken that grants access to the resources governed by the scope.</param>
-        /// <param name="refreshToken">The refresh refreshToken that allows retrieval of additional access tokens.</param>
-        /// <param name="tokenType">The type of refreshToken that is returned.</param>
-        /// <param name="scope"></param>
-        /// <param name="expirationDateUtc"></param>
+        [TestFixture]
+        public class Tests
+        {
+            [TestCase("dalfhslfa", "asdflahs;", "bearer", "scope")]
+            public void TestCreate(string accessToken, string refreshToken, string tokenType, string scope)
+            {
+                AccessTokenResponseFactory factory = new AccessTokenResponseFactory();
+                ISuccessfulAccessTokenResponse response = factory.Create(accessToken, refreshToken, tokenType, scope, DateTime.UtcNow.AddHours(2));
+                Assert.That(response, Is.Not.Null);
+                Assert.That(response.AccessToken, Is.Not.Null.Or.Empty);
+                Assert.That(response.IsSuccessful, Is.True);
+                Assert.That(response.TokenType, Is.Not.Null.Or.Empty);
+            }
+        }
+
+        /// <summary>
+        /// Gets a new <see cref="OAuthWorks.ISuccessfulAccessTokenResponse"/> object given the distributed access token, refresh token, access token type, granted scope, and expiration date.
+        /// </summary>
+        /// <param name="accessToken">The access token that grants access to the resources governed by the scope.</param>
+        /// <param name="refreshToken">The refresh token that allows retrieval of additional access tokens.</param>
+        /// <param name="tokenType">The type of token that is returned.</param>
+        /// <param name="scope">The scope granted to the client.</param>
+        /// <param name="expirationDateUtc">The date that the token expires in Universal Coordinated Time (UTC).</param>
         /// <returns>Returns a new <see cref="OAuthWorks.ISuccessfulAccessTokenResponse"/> object.</returns>
         public ISuccessfulAccessTokenResponse Create(string accessToken, string refreshToken, string tokenType, string scope, DateTime expirationDateUtc)
         {

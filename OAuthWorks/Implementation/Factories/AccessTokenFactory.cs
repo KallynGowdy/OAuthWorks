@@ -20,6 +20,8 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using NUnit.Framework;
+using Moq;
 
 namespace OAuthWorks.Implementation.Factories
 {
@@ -34,10 +36,57 @@ namespace OAuthWorks.Implementation.Factories
         public static class Int
         {
             /// <summary>
+            /// A class containing tests for <see cref="AccessTokenFactory{int}"/> objects.
+            /// </summary>
+            [TestFixture]
+            public class Tests
+            {
+                [TestCase("scope")]
+                public void TestDefaultInstance(string s)
+                {
+                    IAccessTokenFactory<IAccessToken> instance = DefaultFactory;
+                    Assert.NotNull(instance);
+                    Mock<IUser> user = new Mock<IUser>();
+                    user.Setup(u => u.Id).Returns("Id");
+                    Mock<IClient> client = new Mock<IClient>();
+                    client.Setup(c => c.Name).Returns("Client");
+                    client.Setup(c => c.RedirectUris).Returns(new Uri[0]);
+                    Mock<IScope> scope = new Mock<IScope>();
+                    scope.Setup(sc => sc.Description).Returns("");
+                    scope.Setup(sc => sc.Id).Returns(s);
+                    var result = instance.Create(user.Object, client.Object, new[] { scope.Object });
+                    Assert.That(result, Is.Not.Null);
+                    Assert.That(result.Token, Is.Not.Null);
+                    Assert.That(result.TokenValue, Is.Not.Null);
+                }
+
+                [TestCase(1231, "abcdefghijklmnopqrstuvwxyz")]
+                [TestCase(1648, "ABCDEFGHIJKLMNOPQRSTUVWXYZ")]
+                [TestCase(165498, @"123456789!@#$%^&*()-=\[];',./_+|{}:""<>?`~")]
+                public void TestDefaultIdFormatter(int id, string token)
+                {
+                    IValueIdFormatter<int> formatter = DefaultIdFormatter;
+                    Assert.NotNull(formatter);
+                    string formatted = formatter.FormatValue(id, token);
+                    Assert.NotNull(formatted);
+                    Assert.AreEqual(id, formatter.GetId(formatted));
+                    Assert.AreEqual(token, formatter.GetToken(formatted));
+                }
+
+                [Test]
+                public void TestDefaultIdGenerator()
+                {
+                    Func<int> generator = DefaultIdGenerator;
+                    Assert.NotNull(generator);
+                    Assert.DoesNotThrow(() => generator());
+                }
+            }
+
+            /// <summary>
             /// Gets a new <see cref="AccessTokenFactory{int}"/> object that uses all of the default dependencies.
             /// </summary>
             /// <returns>Returns a new <see cref="AccessTokenFactory{int}"/> object.</returns>
-            public static AccessTokenFactory<int> DefaultInstance
+            public static AccessTokenFactory<int> DefaultFactory
             {
                 get
                 {
@@ -55,7 +104,7 @@ namespace OAuthWorks.Implementation.Factories
             /// </summary>
             public static readonly Func<int> DefaultIdGenerator = () =>
             {
-                using(RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider())
+                using (RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider())
                 {
                     byte[] b = new byte[4];
                     rng.GetBytes(b);
@@ -69,6 +118,53 @@ namespace OAuthWorks.Implementation.Factories
         /// </summary>
         public static class String
         {
+            /// <summary>
+            /// A class containing tests for <see cref="AccessTokenFactory{string}"/> objects.
+            /// </summary>
+            [TestFixture]
+            public class Tests
+            {
+                [TestCase("scope")]
+                public void TestDefaultInstance(string s)
+                {
+                    IAccessTokenFactory<IAccessToken> instance = DefaultFactory;
+                    Assert.NotNull(instance);
+                    Mock<IUser> user = new Mock<IUser>();
+                    user.Setup(u => u.Id).Returns("Id");
+                    Mock<IClient> client = new Mock<IClient>();
+                    client.Setup(c => c.Name).Returns("Client");
+                    client.Setup(c => c.RedirectUris).Returns(new Uri[0]);
+                    Mock<IScope> scope = new Mock<IScope>();
+                    scope.Setup(sc => sc.Description).Returns("");
+                    scope.Setup(sc => sc.Id).Returns(s);
+                    var result = instance.Create(user.Object, client.Object, new[] { scope.Object });
+                    Assert.That(result, Is.Not.Null);
+                    Assert.That(result.Token, Is.Not.Null);
+                    Assert.That(result.TokenValue, Is.Not.Null);
+                }
+
+                [TestCase("abcdefghijklmnopqrstuvwxyz", "abcdefghijklmnopqrstuvwxyz")]
+                [TestCase("ABCDEFGHIJKLMNOPQRSTUVWXYZ", "ABCDEFGHIJKLMNOPQRSTUVWXYZ")]
+                [TestCase(@"123456789!@#$%^&*()-=\[];',./_+|{}:""<>?`~", @"123456789!@#$%^&*()-=\[];',./_+|{}:""<>?`~")]
+                public void TestDefaultIdFormatter(string id, string token)
+                {
+                    IValueIdFormatter<string> formatter = DefaultIdFormatter;
+                    Assert.NotNull(formatter);
+                    string formatted = formatter.FormatValue(id, token);
+                    Assert.NotNull(formatted);
+                    Assert.AreEqual(id, formatter.GetId(formatted));
+                    Assert.AreEqual(token, formatter.GetToken(formatted));
+                }
+
+                [Test]
+                public void TestDefaultIdGenerator()
+                {
+                    Func<string> generator = DefaultIdGenerator;
+                    Assert.NotNull(generator);
+                    Assert.DoesNotThrow(() => generator());
+                }
+            }
+
             /// <summary>
             /// The default length (in bytes) for generated Ids.
             /// </summary>
@@ -100,6 +196,31 @@ namespace OAuthWorks.Implementation.Factories
         }
 
         /// <summary>
+        /// Defines a test class that contains tests for the <see cref="AccessTokenFactory"/> functions and fields.
+        /// </summary>
+        [TestFixture]
+        public class Tests
+        {
+
+            [TestCase(20)]
+            public void TestDefaultValueGenerator(int length)
+            {
+                Func<int, string> valueGenerator = DefaultValueGenerator;
+                Assert.That(valueGenerator, Is.Not.Null);
+                Assert.That(valueGenerator(length), Is.Not.Null.Or.Empty);
+            }
+
+            [TestCase(25)]
+            [TestCase(48)]
+            public void TestGenerateToken(int length)
+            {
+                string result = GenerateToken(length);
+                Assert.That(result, Is.Not.Null.Or.Empty);
+                Assert.That(Convert.FromBase64String(result).Length, Is.EqualTo(length));
+            }
+        }
+
+        /// <summary>
         /// The default pseudorandom value generator.
         /// </summary>
         public static readonly Func<int, string> DefaultValueGenerator = GenerateToken;
@@ -111,6 +232,11 @@ namespace OAuthWorks.Implementation.Factories
         /// <returns>Returns a base64 encoded version of the generated bytes.</returns>
         public static string GenerateToken(int length)
         {
+            if(length <= 0)
+            {
+                throw new ArgumentOutOfRangeException("length", "The length must be larger than 0.");
+            }
+
             using (RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider())
             {
                 byte[] b = new byte[length];
@@ -245,7 +371,7 @@ namespace OAuthWorks.Implementation.Factories
         /// <param name="user">The user that is giving access to the client.</param>
         /// <param name="scopes">The list of scopes that the client should have access to.</param>
         /// <returns>Returns a new OAuthWorks.CreatedToken(of TAccessToken) object.</returns>
-        public virtual ICreatedToken<HashedAccessToken<TId>> Create(IClient client, IUser user, IEnumerable<IScope> scopes)
+        public virtual ICreatedToken<HashedAccessToken<TId>> Create(IUser user, IClient client, IEnumerable<IScope> scopes)
         {
             string token = TokenValueGenerator(TokenLength);
             TId id = IdValueGenerator();
@@ -256,6 +382,6 @@ namespace OAuthWorks.Implementation.Factories
         public virtual HashedAccessToken<TId> Create()
         {
             return null;
-        }        
+        }
     }
 }

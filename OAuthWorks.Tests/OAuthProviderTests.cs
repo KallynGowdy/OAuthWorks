@@ -155,10 +155,10 @@ namespace OAuthWorks.Tests
                 Id = "Id"
             };
 
-            ICreatedToken<IAccessToken> oldToken = provider.AccessTokenFactory.Create(client, user, new[] { exampleScope });
+            ICreatedToken<IAccessToken> oldToken = provider.AccessTokenFactory.Create(user, client, new[] { exampleScope });
             provider.AccessTokenRepository.Add(oldToken);
 
-            ICreatedToken<IRefreshToken> refresh = provider.RefreshTokenFactory.Create(client, user, new[] { exampleScope });
+            ICreatedToken<IRefreshToken> refresh = provider.RefreshTokenFactory.Create(user, client, new[] { exampleScope });
             provider.RefreshTokenRepository.Add(refresh);
 
             ITokenRefreshRequest refreshRequest = new TokenRefreshRequest
