@@ -23,6 +23,7 @@ using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using OAuthWorks.Implementation;
 
 namespace OAuthWorks
 {
@@ -82,6 +83,14 @@ namespace OAuthWorks
             initialization(this);
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OAuthProvider"/> class.
+        /// </summary>
+        /// <param name="accessTokenFactory">The access token factory.</param>
+        /// <param name="accessTokenResponseFactory">The access token response factory.</param>
+        /// <param name="authorizationCodeFactory">The authorization code factory.</param>
+        /// <param name="authorizationCodeResponseFactory">The authorization code response factory.</param>
+        /// <param name="refreshTokenFactory">The refresh token factory.</param>
         public OAuthProvider(
             IAccessTokenFactory<IAccessToken> accessTokenFactory,
             IAccessTokenResponseFactory accessTokenResponseFactory,
@@ -102,6 +111,14 @@ namespace OAuthWorks
             RefreshTokenFactory = refreshTokenFactory;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OAuthProvider"/> class.
+        /// </summary>
+        /// <param name="accessTokenRepository">The access token repository.</param>
+        /// <param name="authorizationCodeRepository">The authorization code repository.</param>
+        /// <param name="scopeRepository">The scope repository.</param>
+        /// <param name="clientRepository">The client repository.</param>
+        /// <param name="refreshTokenRepository">The refresh token repository.</param>
         public OAuthProvider(
             IAccessTokenRepository accessTokenRepository,
             IAuthorizationCodeRepository authorizationCodeRepository,
@@ -255,14 +272,14 @@ namespace OAuthWorks
             }
         }
 
-        private Func<AccessTokenRequestError, IClient, string> accessTokenErrorDescriptionProvider = (e, c) => "";
+        private IAccessTokenErrorDescriptionProvider accessTokenErrorDescriptionProvider = new AccessTokenErrorDescriptionProvider();
 
         private Func<AccessTokenRequestError, IClient, Uri> accessTokenErrorUriProvider = (e, c) => null;
 
         /// <summary>
         /// Gets or sets the access token error description provider. That is, a function that, given the error and client, returns a string describing the problem.
         /// </summary>
-        public Func<AccessTokenRequestError, IClient, string> AccessTokenErrorDescriptionProvider
+        public IAccessTokenErrorDescriptionProvider AccessTokenErrorDescriptionProvider
         {
             get
             {
@@ -275,13 +292,13 @@ namespace OAuthWorks
             }
         }
 
-        private Func<AuthorizationCodeRequestErrorType, string> authorizationCodeErrorDescriptionProvider = e => null;
+        private IAuthorizationCodeErrorDescriptionProvider authorizationCodeErrorDescriptionProvider = new AuthorizationCodeErrorDescriptionProvider();
 
         /// <summary>
         /// Gets or sets the error description provider. That is, a function that, given the error, returns a string describing the problem.
         /// </summary>
-        /// <returns></returns>
-        public Func<AuthorizationCodeRequestErrorType, string> AuthorizationCodeErrorDescriptionProvider
+        /// <returns>Returns the authorization code error description provider used to provide descriptions for errors.</returns>
+        public IAuthorizationCodeErrorDescriptionProvider AuthorizationCodeErrorDescriptionProvider
         {
             get
             {
@@ -336,12 +353,13 @@ namespace OAuthWorks
         /// <returns>Returns a new <see cref="OAuthWorks.IAuthorizationCodeResponse"/> object that determines what values to put in the outgoing response.</returns>
         public IAuthorizationCodeResponse RequestAuthorizationCode(IAuthorizationCodeRequest request, IUser user)
         {
-            if (IsValidRequest(request))
+            AuthorizationCodeRequestSpecificErrorType? error = GetRequestError(request);
+            if (!error.HasValue)
             {
                 try
                 {
                     IClient client = ClientRepository.GetById(request.ClientId);
-                    if (IsValidClient(request, client))
+                    if ((error = GetClientError(request, client)) == null)
                     {
                         if (client.IsValidRedirectUri(request.RedirectUri))
                         {
@@ -360,40 +378,64 @@ namespace OAuthWorks
                             }
                             else
                             {
-                                return CreateAuthorizationCodeError(AuthorizationCodeRequestErrorType.InvalidScope, request.State, request.RedirectUri);
+                                return CreateAuthorizationCodeError(
+                                    AuthorizationCodeRequestSpecificErrorType.MissingOrUnknownScope,
+                                    request.State,
+                                    request.RedirectUri);
                             }
                         }
                         else
                         {
                             //Invalid redirect
-                            return CreateAuthorizationCodeError(AuthorizationCodeRequestErrorType.InvalidRequest, request.State, null);
+                            return CreateAuthorizationCodeError(
+                                AuthorizationCodeRequestSpecificErrorType.InvalidRedirectUri,
+                                request.State,
+                                null);
                         }
                     }
                     else
                     {
-                        return CreateAuthorizationCodeError(AuthorizationCodeRequestErrorType.UnauthorizedClient, request.State, request.RedirectUri);
+                        return CreateAuthorizationCodeError(
+                            error.Value,
+                            request.State,
+                            request.RedirectUri);
                     }
                 }
                 catch (SystemException e)
                 {
-                    return CreateAuthorizationCodeError(AuthorizationCodeRequestErrorType.ServerError, request.State, request.RedirectUri, e);
+                    return CreateAuthorizationCodeError(
+                        AuthorizationCodeRequestSpecificErrorType.ServerError,
+                        request.State,
+                        request.RedirectUri,
+                        e);
                 }
             }
             else
             {
-                return CreateAuthorizationCodeError(AuthorizationCodeRequestErrorType.InvalidRequest, null, null);
+                return CreateAuthorizationCodeError(error.Value, null, null);
             }
         }
 
         /// <summary>
-        /// Determines if the given <see cref="IAuthorizationCodeRequest"/> is valid for the given <see cref="IClient"/>.
+        /// Determines if the given <see cref="IAuthorizationCodeRequest"/> is valid for the given <see cref="IClient"/> and returns a value specifiying what was wrong if it wasn't valid.
         /// </summary>
         /// <param name="request">The request that should examined to see if the proper client credientials were given.</param>
         /// <param name="client">The client that the request should be validated against.</param>
-        /// <returns>Returns whether the given request contains valid client credentials.</returns>
-        private static bool IsValidClient(IAuthorizationCodeRequest request, IClient client)
+        /// <returns>Returns a new <see cref="AuthorizationCodeRequestSpecificErrorType"/> object that specifies what was wrong with the given client. Returns null if nothing was wrong.</returns>
+        private static AuthorizationCodeRequestSpecificErrorType? GetClientError(IAuthorizationCodeRequest request, IClient client)
         {
-            return client != null && client.MatchesSecret(request.ClientSecret);
+            if (client == null)
+            {
+                return AuthorizationCodeRequestSpecificErrorType.MissingClient;
+            }
+            else if (!client.MatchesSecret(request.ClientSecret))
+            {
+                return AuthorizationCodeRequestSpecificErrorType.UnauthorizedClient;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")] // Suppressed to be able to return IAccessTokenResponse objects according to OAuth 2.0
@@ -405,20 +447,21 @@ namespace OAuthWorks
         /// <returns>Returns a new <see cref="OAuthWorks.IAccessTokenResponse"/> object that represents what to return to the client.</returns>
         public IAccessTokenResponse RequestAccessToken(IAuthorizationCodeGrantAccessTokenRequest request)
         {
-            if (IsValidRequest(request))
+            AccessTokenSpecificRequestError? requestError = GetRequestError(request);
+            if (requestError == null)
             {
                 try
                 {
                     IClient client = ClientRepository.GetById(request.ClientId);
-                    if (!IsValidClient(request, client))
+                    if ((requestError = GetClientError(request, client)).HasValue)
                     {
-                        return CreateAccessTokenError(AccessTokenRequestError.InvalidClient, client);
+                        return CreateAccessTokenError(requestError.Value, client);
                     }
 
                     IAuthorizationCode code = AuthorizationCodeRepository.GetByValue(request.AuthorizationCode);
-                    if (!IsValidAuthorizationCode(code, request, client))
+                    if ((requestError = GetAuthorizationCodeError(code, request, client)).HasValue)
                     {
-                        return CreateAccessTokenError(AccessTokenRequestError.InvalidGrant, client);
+                        return CreateAccessTokenError(requestError.Value, client);
                     }
 
                     //Authorized!
@@ -446,12 +489,12 @@ namespace OAuthWorks
                 catch (SystemException e)
                 {
                     // Server error
-                    return CreateAccessTokenError(AccessTokenRequestError.ServerError, null, e);
+                    return CreateAccessTokenError(AccessTokenSpecificRequestError.ServerError, null, e);
                 }
             }
             else
             {
-                return CreateAccessTokenError(AccessTokenRequestError.InvalidRequest, null, null);
+                return CreateAccessTokenError(requestError.Value, null, null);
             }
         }
 
@@ -466,20 +509,21 @@ namespace OAuthWorks
         /// </returns>
         public IAccessTokenResponse RefreshAccessToken(ITokenRefreshRequest request)
         {
-            if (IsValidRequest(request))
+            AccessTokenSpecificRequestError? error = GetRequestError(request);
+            if (!error.HasValue)
             {
                 try
                 {
                     IClient client = ClientRepository.GetById(request.ClientId);
-                    if (!IsValidClient(request, client))
+                    if ((error = GetClientError(request, client)) != null)
                     {
-                        return CreateAccessTokenError(AccessTokenRequestError.InvalidClient, client);
+                        return CreateAccessTokenError(error.Value, client);
                     }
 
                     IRefreshToken refreshToken = RefreshTokenRepository.GetByValue(request.RefreshToken);
-                    if (!IsValidRefreshToken(refreshToken, request, client))
+                    if ((error = GetRefreshTokenError(refreshToken, request, client)) != null)
                     {
-                        return CreateAccessTokenError(AccessTokenRequestError.InvalidClient, client);
+                        return CreateAccessTokenError(error.Value, client);
                     }
 
                     foreach (IAccessToken oldToken in AccessTokenRepository.GetByUserAndClient(refreshToken.User, client).ToArray())
@@ -520,14 +564,14 @@ namespace OAuthWorks
                 }
                 catch (SystemException e)
                 {
-                    return CreateAccessTokenError(AccessTokenRequestError.ServerError, null, e);
+                    return CreateAccessTokenError(AccessTokenSpecificRequestError.ServerError, null, e);
                 }
             }
             else
             {
-                return CreateAccessTokenError(AccessTokenRequestError.InvalidRequest);
+                return CreateAccessTokenError(error.Value);
             }
-        }
+        }        
 
         /// <summary>
         /// Requests an access refreshToken from the authorization server based on the given request using the Resource Owner Password Credentials flow. (Section 4.3 [RFC 6749] http://tools.ietf.org/html/rfc6749#section-4.3).
@@ -538,20 +582,20 @@ namespace OAuthWorks
         /// </returns>
         public virtual IAccessTokenResponse RequestAccessToken(IPasswordCredentialsAccessTokenRequest request)
         {
-            if (IsValidRequest(request))
+            AccessTokenSpecificRequestError? error = GetRequestError(request);
+            if (!error.HasValue)
             {
                 try
                 {
                     IClient client = ClientRepository.GetById(request.ClientId);
-                    if (!IsValidClient(request, client))
+                    if ((error = GetClientError(request, client)).HasValue)
                     {
-                        return CreateAccessTokenError(AccessTokenRequestError.InvalidClient, client);
+                        return CreateAccessTokenError(error.Value, client);
                     }
 
                     IEnumerable<IScope> scopes = GetRequestedScopes(request.Scope);
                     if (scopes != null && scopes.Any())
                     {
-
                         AccessTokenRepository.GetByUserAndClient(request.User, client).ToArray().ForEach(t =>
                         {
                             t.Revoke();
@@ -584,75 +628,180 @@ namespace OAuthWorks
                     }
                     else
                     {
-                        return CreateAccessTokenError(AccessTokenRequestError.InvalidScope, client);
+                        return CreateAccessTokenError(AccessTokenSpecificRequestError.InvalidScope, client);
                     }
                 }
                 catch (SystemException e)
                 {
-                    return CreateAccessTokenError(AccessTokenRequestError.ServerError, null, e);
+                    return CreateAccessTokenError(AccessTokenSpecificRequestError.ServerError, null, e);
                 }
             }
             else
             {
-                return CreateAccessTokenError(AccessTokenRequestError.InvalidRequest);
+                return CreateAccessTokenError(error.Value);
             }
         }
 
         /// <summary>
-        /// Determines if the given request contains acceptable values for processing.
+        /// Gets the first error that is wrong with the given request, returns null if nothing is directly wrong.
         /// </summary>
-        /// <param name="request">The request the examine for faults.</param>
-        /// <returns>Returns true if the request is valid and therefore relatively safe for use in database transactions.</returns>
-        private static bool IsValidRequest(IAuthorizationCodeRequest request)
+        /// <param name="request">The request to examine for faults.</param>
+        /// <returns>Returns the error that identifies what is wrong with the given request, returns null if nothing is wrong.</returns>
+        private AccessTokenSpecificRequestError? GetRequestError(IAuthorizationCodeGrantAccessTokenRequest request)
         {
-            return request != null &&
-                !string.IsNullOrEmpty(request.ClientId) &&
-                !string.IsNullOrEmpty(request.ClientSecret) &&
-                !string.IsNullOrEmpty(request.Scope) &&
-                request.RedirectUri != null;
+            if (request == null)
+            {
+                return AccessTokenSpecificRequestError.NullRequest;
+            }
+            else if (request.RedirectUri == null)
+            {
+                return AccessTokenSpecificRequestError.NullRedirectUri;
+            }
+            else if (string.IsNullOrEmpty(request.ClientId))
+            {
+                return AccessTokenSpecificRequestError.NullClientId;
+            }
+            else if (string.IsNullOrEmpty(request.ClientSecret))
+            {
+                return AccessTokenSpecificRequestError.NullClientSecret;
+            }
+            else if (string.IsNullOrEmpty(request.AuthorizationCode))
+            {
+                return AccessTokenSpecificRequestError.NullAuthorizationCode;
+            }
+            else if (!"authorization_code".Equals(request.GrantType, StringComparison.Ordinal))
+            {
+                return AccessTokenSpecificRequestError.InvalidGrantType;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         /// <summary>
-        /// Determines if the given request contains acceptable values for processing.
+        /// Determines if the given request contains acceptable values for processing and returns the reason why a given request isn't acceptable.
         /// </summary>
         /// <param name="request">The request the examine for faults.</param>
-        /// <returns>Returns true if the request is valid and therefore relatively safe for use in database transactions.</returns>
-        private static bool IsValidRequest(ITokenRefreshRequest request)
+        /// <returns>Returns the <see cref="AuthorizationCodeRequestSpecificErrorType"/> object that specifies what was wrong, returns null if nothing was wrong.</returns>
+        private static AuthorizationCodeRequestSpecificErrorType? GetRequestError(IAuthorizationCodeRequest request)
         {
-            return request != null &&
-                !string.IsNullOrEmpty(request.ClientId) &&
-                !string.IsNullOrEmpty(request.ClientSecret) &&
-                !string.IsNullOrEmpty(request.RefreshToken) &&
-                "refresh_token".Equals(request.GrantType, StringComparison.Ordinal);
+            if (request == null)
+            {
+                return AuthorizationCodeRequestSpecificErrorType.NullRequest;
+            }
+            else if (request.RedirectUri == null)
+            {
+                return AuthorizationCodeRequestSpecificErrorType.NullRedirect;
+            }
+            else if (string.IsNullOrEmpty(request.ClientId))
+            {
+                return AuthorizationCodeRequestSpecificErrorType.NullClientId;
+            }
+            else if (string.IsNullOrEmpty(request.ClientSecret))
+            {
+                return AuthorizationCodeRequestSpecificErrorType.NullClientSecret;
+            }
+            else if (string.IsNullOrEmpty(request.Scope))
+            {
+                return AuthorizationCodeRequestSpecificErrorType.NullScope;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         /// <summary>
-        /// Determines if the given request contains acceptable values for processing.
+        /// Gets the first error that is wrong with the given refresh token, request and client, returns null if nothing is directly wrong.
         /// </summary>
-        /// <param name="request">The request the examine for faults.</param>
-        /// <returns>Returns true if the request is valid and therefore relatively safe for use in database transactions.</returns>
-        private static bool IsValidRequest(IAuthorizationCodeGrantAccessTokenRequest request)
+        /// <param name="refreshToken">The token to examine with the request.</param>
+        /// <param name="request">The request to examine with the token and client.</param>
+        /// <param name="client">The client to examine with the token and request.</param>
+        /// <returns>Returns the <see cref="AuthorizationCodeRequestSpecificErrorType"/> object that specifies what was wrong, returns null if nothing was wrong.</returns>
+        private AccessTokenSpecificRequestError? GetRefreshTokenError(IRefreshToken refreshToken, ITokenRefreshRequest request, IClient client)
         {
-            return request != null &&
-                request.RedirectUri != null &&
-                !string.IsNullOrEmpty(request.ClientId) &&
-                !string.IsNullOrEmpty(request.ClientSecret) &&
-                !string.IsNullOrEmpty(request.AuthorizationCode) &&
-                "authorization_code".Equals(request.GrantType, StringComparison.Ordinal);
+            if(refreshToken == null)
+            {
+                return AccessTokenSpecificRequestError.NullRefreshToken;
+            }
+            else if (!refreshToken.Client.Equals(client))
+            {
+                return AccessTokenSpecificRequestError.WrongClient;
+            }
+            else if (!refreshToken.IsValid())
+            {
+                return AccessTokenSpecificRequestError.TokenNoLongerValid;
+            }
+            else if (!refreshToken.MatchesValue(request.RefreshToken))
+            {
+                return AccessTokenSpecificRequestError.InvalidGrant;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         /// <summary>
-        /// Determines if the given <see cref="IPasswordCredentialsAccessTokenRequest"/> is valid. (Contains all required values)
+        /// Gets the first error that is wrong with the given refresh token, request and client, returns null if nothing is directly wrong.
         /// </summary>
-        /// <param name="request">The request to validate.</param>
-        /// <returns>Returns whether the given requests is relatively safe for processing.</returns>
-        private bool IsValidRequest(IPasswordCredentialsAccessTokenRequest request)
+        /// <param param name="request">The request to examine for faults.</param>
+        /// <returns>Returns the <see cref="AuthorizationCodeRequestSpecificErrorType"/> object that specifies what was wrong, returns null if nothing was wrong.</returns>
+        private AccessTokenSpecificRequestError? GetRequestError(ITokenRefreshRequest request)
         {
-            return request != null &&
-                "password".Equals(request.GrantType, StringComparison.Ordinal) &&
-                !string.IsNullOrEmpty(request.ClientId) &&
-                !string.IsNullOrEmpty(request.ClientSecret) &&
-                request.User != null;
+            if(request == null)
+            {
+                return AccessTokenSpecificRequestError.NullRequest;
+            }
+            else if (string.IsNullOrEmpty(request.ClientId))
+            {
+                return AccessTokenSpecificRequestError.NullClientId;
+            }
+            else if (string.IsNullOrEmpty(request.ClientSecret))
+            {
+                return AccessTokenSpecificRequestError.NullClientSecret;
+            }
+            else if (string.IsNullOrEmpty(request.RefreshToken))
+            {
+                return AccessTokenSpecificRequestError.NullRefreshToken;
+            }
+            else if(!"refresh_token".Equals(request.GrantType, StringComparison.Ordinal))
+            {
+                return AccessTokenSpecificRequestError.InvalidGrantType;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        private AccessTokenSpecificRequestError? GetRequestError(IPasswordCredentialsAccessTokenRequest request)
+        {
+            if(request == null)
+            {
+                return AccessTokenSpecificRequestError.NullRequest;
+            }
+            else if(!"password".Equals(request.GrantType, StringComparison.Ordinal))
+            {
+                return AccessTokenSpecificRequestError.InvalidGrantType;
+            }
+            else if (string.IsNullOrEmpty(request.ClientId))
+            {
+                return AccessTokenSpecificRequestError.NullClientId;
+            }
+            else if (string.IsNullOrEmpty(request.ClientSecret))
+            {
+                return AccessTokenSpecificRequestError.NullClientSecret;
+            }
+            else if(request.User == null)
+            {
+                return AccessTokenSpecificRequestError.NullUser;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         /// <summary>
@@ -662,9 +811,9 @@ namespace OAuthWorks
         /// <param name="state">The state that was sent by the client in the request.</param>
         /// <param name="innerException">The exception that caused the error to occur.</param>
         /// <returns>Returns a new <see cref="IUnsuccessfulAuthorizationCodeResponse"/> object that represents a valid OAuth 2.0 Authorization Code Error resposne.</returns>
-        private IUnsuccessfulAuthorizationCodeResponse CreateAuthorizationCodeError(AuthorizationCodeRequestErrorType errorCode, string state, Uri redirect, Exception innerException = null)
+        private IUnsuccessfulAuthorizationCodeResponse CreateAuthorizationCodeError(AuthorizationCodeRequestSpecificErrorType specificError, string state, Uri redirect, Exception innerException = null)
         {
-            return AuthorizationCodeResponseFactory.CreateError(errorCode, AuthorizationCodeErrorDescriptionProvider(errorCode), null, state, redirect, innerException);
+            return AuthorizationCodeResponseFactory.CreateError(specificError.GetSubgroup<AuthorizationCodeRequestErrorType>(), AuthorizationCodeErrorDescriptionProvider.GetDescription(specificError), null, state, redirect, innerException);
         }
 
         /// <summary>
@@ -674,24 +823,51 @@ namespace OAuthWorks
         /// <param name="client">The client that the error occured to.</param>
         /// <param name="exception">The exception that caused the error to occur.</param>
         /// <returns>Returns a new <see cref="IUnsuccessfulAccessTokenResponse"/> object that represents a valid OAuth 2.0 Access Token Error response (http://tools.ietf.org/html/rfc6749#section-5.2).</returns>
-        private IUnsuccessfulAccessTokenResponse CreateAccessTokenError(AccessTokenRequestError errorCode, IClient client = null, Exception exception = null)
+        private IUnsuccessfulAccessTokenResponse CreateAccessTokenError(AccessTokenSpecificRequestError errorCode, IClient client = null, Exception exception = null)
         {
+            AccessTokenRequestError code = errorCode.GetSubgroup<AccessTokenRequestError>();
             return AccessTokenResponseFactory.CreateError(
-                errorCode,
-                AccessTokenErrorDescriptionProvider(errorCode, client),
-                AccessTokenErrorUriProvider(errorCode, client),
+                code,
+                AccessTokenErrorDescriptionProvider.GetDescription(errorCode),
+                AccessTokenErrorUriProvider(code, client),
                 exception);
         }
 
+        
+
         /// <summary>
-        /// Determines if the given <see cref="IRefreshToken"/>, <see cref="ITokenRefreshRequest"/> and <see cref="IClient"/> are valid.
+        /// Gets the first specific error for the given request, if no errors are present, the code is valid.
         /// </summary>
-        /// <param name="refreshToken"></param>
-        /// <param name="request"></param>
-        /// <param name="client"></param>
-        private static bool IsValidRefreshToken(IRefreshToken refreshToken, ITokenRefreshRequest request, IClient client)
+        /// <param name="code">The authorization code to examine.</param>
+        /// <param name="request">The incomming access token request.</param>
+        /// <param name="client">The client that is requesting the access toking.</param>
+        /// <returns>Returns a new <see cref="AccessTokenSpecificRequestError"/> object that specifies the first thing wrong with the given parameters, returns null if none exist.</returns>
+        private static AccessTokenSpecificRequestError? GetAuthorizationCodeError(IAuthorizationCode code, IAuthorizationCodeGrantAccessTokenRequest request, IClient client)
         {
-            return (refreshToken != null && refreshToken.Client.Equals(client) && refreshToken.IsValid() && refreshToken.MatchesValue(request.RefreshToken));
+            if (code == null)
+            {
+                return AccessTokenSpecificRequestError.MissingCode;
+            }
+            else if (!code.Client.Equals(client))
+            {
+                return AccessTokenSpecificRequestError.WrongClient;
+            }
+            else if (!code.IsValid())
+            {
+                return AccessTokenSpecificRequestError.CodeNoLongerValid;
+            }
+            else if (!code.MatchesValue(request.AuthorizationCode))
+            {
+                return AccessTokenSpecificRequestError.InvalidGrant;
+            }
+            else if (Uri.Compare(code.RedirectUri, request.RedirectUri, UriComponents.AbsoluteUri, UriFormat.SafeUnescaped, StringComparison.Ordinal) != 0)
+            {
+                return AccessTokenSpecificRequestError.InvalidRedirect;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         /// <summary>
@@ -710,9 +886,17 @@ namespace OAuthWorks
         /// </summary>
         /// <param name="request"></param>
         /// <param name="client"></param>
-        private static bool IsValidClient(IAccessTokenRequest request, IClient client)
+        private static AccessTokenSpecificRequestError? GetClientError(IAccessTokenRequest request, IClient client)
         {
-            return client != null && client.MatchesSecret(request.ClientSecret);
+            if (client == null)
+            {
+                return AccessTokenSpecificRequestError.MissingClient;
+            }
+            else if (!client.MatchesSecret(request.ClientSecret))
+            {
+                return AccessTokenSpecificRequestError.UnauthorizedClient;
+            }
+            return null;
         }
 
         /// <summary>

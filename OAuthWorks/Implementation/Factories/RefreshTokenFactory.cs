@@ -144,9 +144,9 @@ namespace OAuthWorks.Implementation.Factories
 
             Contract.Requires(idFormatter != null);
             Contract.Requires(idGenerator != null);
-            this.TokenLength = tokenLength;
-            this.IdFormatter = idFormatter;
-            this.IdGenerator = idGenerator;
+            this.TokenLength    = tokenLength;
+            this.IdFormatter    = idFormatter;
+            this.IdGenerator    = idGenerator;
             this.ValueGenerator = valueGenerator;
         }
 

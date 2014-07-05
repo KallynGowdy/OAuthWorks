@@ -127,16 +127,16 @@ namespace OAuthWorks.Tests
         }
 
         [Test]
-        [TestCase(null, "secret", "code", "access_token", "http://example.com/oauth/response/token", AccessTokenRequestError.InvalidRequest)]
-        [TestCase("", "secret", "code", "access_token", "http://example.com/oauth/response/token", AccessTokenRequestError.InvalidRequest)]
-        [TestCase("bob", null, "code", "access_token", "http://example.com/oauth/response/token", AccessTokenRequestError.InvalidRequest)]
-        [TestCase("bob", "", "code", "access_token", "http://example.com/oauth/response/token", AccessTokenRequestError.InvalidRequest)]
+        [TestCase(null, "secret", "code", "access_token", "http://example.com/oauth/response/token", AccessTokenRequestError.InvalidClient)]
+        [TestCase("", "secret", "code", "access_token", "http://example.com/oauth/response/token", AccessTokenRequestError.InvalidClient)]
+        [TestCase("bob", null, "code", "access_token", "http://example.com/oauth/response/token", AccessTokenRequestError.InvalidClient)]
+        [TestCase("bob", "", "code", "access_token", "http://example.com/oauth/response/token", AccessTokenRequestError.InvalidClient)]
         [TestCase("bob", "secret", null, "access_token", "http://example.com/oauth/response/token", AccessTokenRequestError.InvalidRequest)]
         [TestCase("bob", "secret", "", "access_token", "http://example.com/oauth/response/token", AccessTokenRequestError.InvalidRequest)]
         [TestCase("bob", "secret", "code", "access_token", null, AccessTokenRequestError.InvalidRequest)]
-        [TestCase("bob", "secret", "code", null, "http://example.com/oauth/response/token", AccessTokenRequestError.InvalidRequest)]
-        [TestCase("bob", "secret", "code", "", "http://example.com/oauth/response/token", AccessTokenRequestError.InvalidRequest)]
-        [TestCase("bob", "secret", "code", "not_access_token", "http://example.com/oauth/response/token", AccessTokenRequestError.InvalidRequest)]
+        [TestCase("bob", "secret", "code", null, "http://example.com/oauth/response/token", AccessTokenRequestError.UnsupportedGrantType)]
+        [TestCase("bob", "secret", "code", "", "http://example.com/oauth/response/token", AccessTokenRequestError.UnsupportedGrantType)]
+        [TestCase("bob", "secret", "code", "not_access_token", "http://example.com/oauth/response/token", AccessTokenRequestError.UnsupportedGrantType)]
         public void TestInvalidAccessTokenRequest(string clientId, string clientSecret, string authorizationCode, string grantType, string redirectUri, AccessTokenRequestError expectedError)
         {
             var request = new InvalidAccessTokenRequest { ClientId = clientId, ClientSecret = clientSecret, AuthorizationCode = authorizationCode, GrantType = grantType, RedirectUri = (redirectUri != null ? new Uri(redirectUri) : null) };
