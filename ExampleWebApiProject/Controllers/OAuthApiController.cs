@@ -116,9 +116,16 @@ namespace ExampleWebApiProject.Controllers
             return r;
         }
 
+        /// <summary>
+        /// Defines a DTO (Data Transfer Object) that is used for Resource Owner Password Credentials access token requests.
+        /// </summary>
         [DataContract]
         public class CredentialsTokenRequest
         {
+            /// <summary>
+            /// The username of the resource owner.
+            /// </summary>
+            /// <returns></returns>
             [DataMember(Name = "username")]
             public string Username
             {
@@ -126,6 +133,10 @@ namespace ExampleWebApiProject.Controllers
                 set;
             }
 
+            /// <summary>
+            /// The password of the resource owner.
+            /// </summary>
+            /// <returns></returns>
             [DataMember(Name = "password")]
             public string Password
             {
@@ -133,6 +144,10 @@ namespace ExampleWebApiProject.Controllers
                 set;
             }
 
+            /// <summary>
+            /// The ID of the client requesting the access token.
+            /// </summary>
+            /// <returns></returns>
             [DataMember(Name = "client_id")]
             public string ClientId
             {
@@ -140,6 +155,10 @@ namespace ExampleWebApiProject.Controllers
                 set;
             }
 
+            /// <summary>
+            /// The secret/password of the client requesting the access token.
+            /// </summary>
+            /// <returns></returns>
             [DataMember(Name = "client_secret")]
             public string ClientSecret
             {
@@ -147,6 +166,10 @@ namespace ExampleWebApiProject.Controllers
                 set;
             }
 
+            /// <summary>
+            /// The scope(s) that the client is requesting authorization for.
+            /// </summary>
+            /// <returns></returns>
             [DataMember(Name = "scope")]
             public string Scope
             {
@@ -154,6 +177,10 @@ namespace ExampleWebApiProject.Controllers
                 set;
             }
 
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <returns></returns>
             [DataMember(Name = "redirect_uri")]
             public Uri RedirectUri
             {
@@ -169,6 +196,11 @@ namespace ExampleWebApiProject.Controllers
             }
         }
 
+        /// <summary>
+        /// Requests an access token from the authorization server using the Resource Owner Password Credentials OAuth 2.0 flow.
+        /// </summary>
+        /// <param name="request">The request that contains the </param>
+        /// <returns></returns>
         [Route("api/v1/accessToken")]
         [HttpPost]
         public async Task<HttpResponseMessage> RequestAccessToken(CredentialsTokenRequest request)
@@ -203,17 +235,17 @@ namespace ExampleWebApiProject.Controllers
                     )
                 );
                 await context.SaveChangesAsync(); // Save any changes that the provider made to the database
-                HttpResponseMessage r = Request.CreateResponse(response.StatusCode(), response); // Create a new response
+                HttpResponseMessage r = Request.CreateResponse(response.StatusCode(), response);
                 return AddHeadersToTokenResponse(r); // Add the headers and return the response
             }
         }
 
         [Route("api/v1/refreshToken")]
         [HttpPost]
-        public HttpResponseMessage RefreshAccessToken(TokenRefreshRequest request)
+        public async Task<HttpResponseMessage> RefreshAccessToken(TokenRefreshRequest request)
         {
-            using (DatabaseContext context = new DatabaseContext())
-            using (Provider = new OAuthProvider
+            using (DatabaseContext context = new DatabaseContext()) // Create unit-of-work
+            using (Provider = new OAuthProvider // Create provider for request
             {
                 AccessTokenRepository = new AccessTokenRepository(context),
                 RefreshTokenRepository = new RefreshTokenRepository(context),
@@ -223,9 +255,10 @@ namespace ExampleWebApiProject.Controllers
                 DeleteRevokedTokens = true
             })
             {
-                IAccessTokenResponse response = Provider.RefreshAccessToken(request);
-                context.SaveChanges();
-                return Request.CreateResponse(response.StatusCode(), response);
+                IAccessTokenResponse response = Provider.RefreshAccessToken(request); // Process refresh token request
+                await context.SaveChangesAsync(); // Save transaction
+                HttpResponseMessage r = Request.CreateResponse(response.StatusCode(), response);
+                return AddHeadersToTokenResponse(r); // Add required headers and return
             }
         }
     }

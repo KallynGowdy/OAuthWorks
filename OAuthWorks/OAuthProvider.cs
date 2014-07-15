@@ -603,7 +603,7 @@ namespace OAuthWorks
                                 AccessTokenRepository.Remove(t);
                         });
 
-                        RefreshTokenRepository.GetByUserAndClient(request.User, client).ForEach(t =>
+                        RefreshTokenRepository.GetByUserAndClient(request.User, client).ToArray().ForEach(t =>
                         {
                             t.Revoke();
                             if (DeleteRevokedTokens)
@@ -776,6 +776,11 @@ namespace OAuthWorks
             }
         }
 
+        /// <summary>
+        /// Gets the first specific error for the given request, if no errors are present, the code is valid.
+        /// </summary>
+        /// <param name="request">The incomming access token request.</param>
+        /// <returns>Returns a new <see cref="AccessTokenSpecificRequestError"/> object that specifies the first thing wrong with the given parameters, returns null if none exist.</returns>
         private AccessTokenSpecificRequestError? GetRequestError(IPasswordCredentialsAccessTokenRequest request)
         {
             if(request == null)
@@ -832,8 +837,6 @@ namespace OAuthWorks
                 AccessTokenErrorUriProvider(code, client),
                 exception);
         }
-
-        
 
         /// <summary>
         /// Gets the first specific error for the given request, if no errors are present, the code is valid.
