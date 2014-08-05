@@ -152,7 +152,6 @@
     <Compile Include="Factories\IFactory.cs" />
     <Compile Include="IHasId.cs" />
     <Compile Include="IOAuthProvider.cs" />
-    <Compile Include="IOAuthProviderDefinition.cs" />
     <Compile Include="DataAccess\Repositories\IReadStore.cs" />
     <Compile Include="DataAccess\Repositories\IRefreshTokenRepository.cs" />
     <Compile Include="DataAccess\Repositories\IRepository.cs" />

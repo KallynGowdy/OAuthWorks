@@ -78,14 +78,14 @@ namespace OAuthWorks
         ServerError,
 
         /// <summary>
-        /// Defines that the specified client was unauthorized.
+        /// Defines that one or more scopes was not authorized by the user for use by the client.
         /// </summary>
-        [EnumSubgroup(AuthorizationCodeRequestErrorType.UnauthorizedClient)]
-        [Description("The client was unauthorized either due to the client secret being invalid or the user denying the request.")]
-        UnauthorizedClient,
+        [EnumSubgroup(AuthorizationCodeRequestErrorType.AccessDenied)]
+        [Description("One or more scopes was not authorized by the user for use by the client.")]
+        UserUnauthorizedScopes,
 
         /// <summary>
-        /// Defines that no client exists with the client id contained in the request.
+        /// Defines that no client exists with the Client ID contained in the request.
         /// </summary>
         [EnumSubgroup(AuthorizationCodeRequestErrorType.UnauthorizedClient)]
         [Description("The client with the given ID could not be found.")]

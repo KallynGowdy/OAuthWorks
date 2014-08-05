@@ -56,6 +56,15 @@ namespace OAuthWorks
         }
 
         /// <summary>
+        /// Gets the sepecific error that occured, providing more information about what happened.
+        /// </summary>
+        /// <returns>Returns a <see cref="AuthorizationCodeRequestSpecificErrorType"/> object that represents the problem that occured.</returns>
+        AuthorizationCodeRequestSpecificErrorType SpecificErrorCode
+        {
+            get;
+        }
+
+        /// <summary>
         /// Gets the human-readable ASCII text that provides additional information that is used to assis the client developer
         /// in understanding the error that occurred.
         /// </summary>
@@ -81,5 +90,40 @@ namespace OAuthWorks
             get;
         }
 
+        /// <summary>
+        /// Gets the client that issued the request.
+        /// </summary>
+        /// <remarks>
+        /// When implementing, make sure to mark this property as not serializable to prevent any information from being leaked.
+        /// </remarks>
+        /// <returns>Returns the <see cref="IClient"/> object that represents the client that issued the Authorization Code Request.</returns>
+        IClient Client
+        {
+            get;
+        }
+
+        /// <summary>
+        /// Gets the user whose account the request was for.
+        /// </summary>
+        /// <remarks>
+        /// When implementing, make sure to mark this property as not serializable to prevent any information from being leaked.
+        /// </remarks>
+        /// <returns>Returns the <see cref="IUser"/> object that the Authorization Code Request was supposed to grant access to.</returns>
+        IUser User
+        {
+            get;
+        }
+
+        /// <summary>
+        /// Gets the list of parsed scopes that were requested from the user.
+        /// </summary>
+        /// <remarks>
+        /// When implementing, make sure to mark this property as not serializable to prevent any information from being leaked.
+        /// </remarks>
+        /// <returns>Returns a <see cref="IEnumerable{IScope}"/> object that enumerates the list of scopes that were requested from the user.</returns>
+        IEnumerable<IScope> Scopes
+        {
+            get;
+        }
     }
 }

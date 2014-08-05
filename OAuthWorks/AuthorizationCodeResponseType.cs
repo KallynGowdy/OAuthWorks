@@ -16,6 +16,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 
 namespace OAuthWorks
@@ -23,11 +24,14 @@ namespace OAuthWorks
     /// <summary>
     /// Defines a list of the possible response types that can be requested from an OAuth Provider.
     /// </summary>
+    [DataContract]
     public enum AuthorizationCodeResponseType
     {
         /// <summary>
-        /// Defines that the response should be an Authorization Code that the client can exchange for a refreshToken.
+        /// Defines that the response should be an Authorization Code that the client can exchange for a access token.
         /// </summary>
+        [EnumMember(Value = "code")]
+        [DataMember(Name = "code")]
         Code
     }
 }

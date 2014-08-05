@@ -200,15 +200,6 @@ namespace OAuthWorks
         /// <param name="request">The request that contains the access token.</param>
         /// <returns>Returns whether the given request is valid and can then access the given scope.</returns>
         //bool HasAccess(IApiRequest request, IScope scope);
-
-        /// <summary>
-        /// Gets the OAuthWorks.IOAuthProviderDefintion that contains information on the different endpoints provided by this
-        /// IOAuthProvider.
-        /// </summary>
-        IOAuthProviderDefinition Definition
-        {
-            get;
-        }
     }
 
     [ContractClassFor(typeof(IOAuthProvider))]
@@ -251,16 +242,6 @@ namespace OAuthWorks
             Contract.Requires(client != null);
             Contract.Requires(scope != null);
             return default(bool);
-        }
-
-
-        IOAuthProviderDefinition IOAuthProvider.Definition
-        {
-            get
-            {
-                Contract.Ensures(Contract.Result<IOAuthProviderDefinition>() != null);
-                return default(IOAuthProviderDefinition);
-            }
         }
 
         void IDisposable.Dispose()

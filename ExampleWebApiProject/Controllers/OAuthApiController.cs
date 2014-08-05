@@ -29,69 +29,93 @@ using System.Threading.Tasks;
 
 namespace ExampleWebApiProject.Controllers
 {
+    /// <summary>
+    /// Defines a controller that provides OAuth 2.0 endpoints through the use of an API.
+    /// </summary>
     public class OAuthApiController : ApiController
     {
-        public OAuthProvider Provider
-        {
-            get;
-            private set;
-        }
-
         public OAuthApiController()
         {
         }
 
+        /// <summary>
+        /// Requests an Authorization Code that can be used to retrieve an access token from the server for the client with the given client id and client secret.
+        /// </summary>
+        /// <param name="clientId">The ID of the client that is requesting the authorization code.</param>
+        /// <param name="redirectUri">The URI that the user should be redirected to upon successful distribution of the authorization code.</param>
+        /// <param name="responseType">The type of authorization code response that should be returned, this is always 'code'.</param>
+        /// <param name="scope">The scope of access requested by the client.</param>
+        /// <param name="state">An opaque value used by the client to maintain state between the request and the callback. Used to prevent Cross Site Request Forgery.</param>
+        /// <returns>Returns a <see cref="IAuthorizationCodeResponse"/> object that contains the granted authorization code.</returns>
         [Route("api/v1/authorizationCode")]
         [HttpGet]
-        public IHttpActionResult RequestAuthorizationCode(string clientId, string clientSecret, string redirectUri, AuthorizationCodeResponseType responseType, string scope, string state)
+        public IHttpActionResult RequestAuthorizationCode(string clientId, string redirectUri, AuthorizationCodeResponseType responseType, string scope, string state)
         {
             using (DatabaseContext context = new DatabaseContext())
-            using (Provider = new OAuthProvider(p =>
+            using (IOAuthProvider Provider = new OAuthProvider(p =>
             {
                 p.AuthorizationCodeRepository = new AuthorizationCodeRepository(context);
                 p.ScopeRepository = new ScopeRepository(context);
                 p.ClientRepository = new ClientRepository(context);
             }))
             {
-
                 AuthorizationCodeRequest request = new AuthorizationCodeRequest
                 (
                     clientId: clientId,
-                    clientSecret: clientSecret,
                     redirectUri: new Uri(redirectUri),
                     responseType: responseType,
                     scope: scope,
                     state: state
                 );
 
-                if (User.Identity.IsAuthenticated)
+                if (User.Identity.IsAuthenticated) // Check for logged in user
                 {
                     User user = context.Users.Find(User.Identity.Name);
 
-                    IAuthorizationCodeResponse response = Provider.RequestAuthorizationCode(request, user);
+                    IAuthorizationCodeResponse response = Provider.RequestAuthorizationCode(request, user); // Issue authorization code
                     context.SaveChanges();
-                    if (response.ShouldRedirect())
+                    if (response.IsSuccessful || response.ShouldRedirect())
                     {
-                        return Redirect(response.Redirect);
+                        if (response.ShouldRedirect())
+                        {
+                            return Redirect(response.Redirect);
+                        }
+                        else
+                        {
+                            return null;
+                        }
                     }
                     else
                     {
-                        return null;
+                        IUnsuccessfulAuthorizationCodeResponse ur = (IUnsuccessfulAuthorizationCodeResponse)response;
+                        if(ur.SpecificErrorCode == AuthorizationCodeRequestSpecificErrorType.UserUnauthorizedScopes)
+                        {
+                            return RedirectToRoute("/oauth/consent", null);
+                        }
+                        else
+                        {
+                            return null;
+                        }
                     }
                 }
                 else
                 {
-                    return RedirectToRoute("/users/login", new { @return = Request.RequestUri.AbsoluteUri });
+                    return RedirectToRoute("/users/login", new { @return = Request.RequestUri.AbsoluteUri }); // Redirect to login
                 }
             }
         }
 
+        /// <summary>
+        /// Requests an access token from the server using the given <see cref="AuthorizationCodeGrantAccessTokenRequest"/>.
+        /// </summary>
+        /// <param name="request">The request containing the previously obtained authorization code.</param>
+        /// <returns>Returns a <see cref="IAccessTokenResponse"/> object that contains the access token and optional refresh token.</returns>
         [Route("api/v1/accessToken")]
         [HttpPost]
         public HttpResponseMessage RequestAccessToken(AuthorizationCodeGrantAccessTokenRequest request)
         {
             using (DatabaseContext context = new DatabaseContext())
-            using (Provider = new OAuthProvider
+            using (IOAuthProvider Provider = new OAuthProvider
             {
                 AccessTokenRepository = new AccessTokenRepository(context),
                 AuthorizationCodeRepository = new AuthorizationCodeRepository(context),
@@ -109,6 +133,11 @@ namespace ExampleWebApiProject.Controllers
             }
         }
 
+        /// <summary>
+        /// Adds the required headers to the given response specifiying that the user agent shouldn't cache the response at all.
+        /// </summary>
+        /// <param name="r">The message that the headers should be added to.</param>
+        /// <returns>Returns the message with the headers added.</returns>
         private static HttpResponseMessage AddHeadersToTokenResponse(HttpResponseMessage r)
         {
             r.Headers.Add("Cache-Control", "no-store");
@@ -199,14 +228,14 @@ namespace ExampleWebApiProject.Controllers
         /// <summary>
         /// Requests an access token from the authorization server using the Resource Owner Password Credentials OAuth 2.0 flow.
         /// </summary>
-        /// <param name="request">The request that contains the </param>
+        /// <param name="request">The request that contains the user credentials for the authorization request.</param>
         /// <returns></returns>
         [Route("api/v1/accessToken")]
         [HttpPost]
         public async Task<HttpResponseMessage> RequestAccessToken(CredentialsTokenRequest request)
         {
             using (DatabaseContext context = new DatabaseContext()) // Create the unit-of-work
-            using (Provider = new OAuthProvider // Create the provider for the request
+            using (IOAuthProvider Provider = new OAuthProvider // Create the provider for the request
             {
                 AccessTokenRepository = new AccessTokenRepository(context), // Pass in our repositories and arguments
                 AuthorizationCodeRepository = new AuthorizationCodeRepository(context),
@@ -240,12 +269,17 @@ namespace ExampleWebApiProject.Controllers
             }
         }
 
+        /// <summary>
+        /// Refreshes an access token using the given <see cref="TokenRefreshRequest"/>.
+        /// </summary>
+        /// <param name="request">The refresh access token request containing the granted refresh token.</param>
+        /// <returns>Returns a new <see cref="IAccessTokenResponse"/> containing the new access token and refresh token.</returns>
         [Route("api/v1/refreshToken")]
         [HttpPost]
         public async Task<HttpResponseMessage> RefreshAccessToken(TokenRefreshRequest request)
         {
             using (DatabaseContext context = new DatabaseContext()) // Create unit-of-work
-            using (Provider = new OAuthProvider // Create provider for request
+            using (IOAuthProvider Provider = new OAuthProvider // Create provider for request
             {
                 AccessTokenRepository = new AccessTokenRepository(context),
                 RefreshTokenRepository = new RefreshTokenRepository(context),

@@ -329,11 +329,10 @@ namespace OAuthWorks
         }
 
         /// <summary>
-        /// Gets a list of the scopes that are being requested by the given OAuthWorks.IAuthorizationCodeRequest object.
+        /// Gets a list of the scopes that are being requested by the given <see cref="IAuthorizationCodeRequest"/> object.
         /// </summary>
         /// <param name="request">The request that is being used to request an authorization code.</param>
         /// <returns>Returns an enumerable list of scopes that define the permissions requested. Null if one of the requested scopes are invalid.</returns>
-        /// <exception cref="System.ArgumentNullException">Thrown if the given request object is null.</exception>
         public IEnumerable<IScope> GetRequestedScopes(string scopes)
         {
             IEnumerable<IScope> result = ScopeParser(this, scopes != null ? scopes : string.Empty);
@@ -341,15 +340,12 @@ namespace OAuthWorks
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")] // Suppressed to be able to return IAuthorizationCodeResponse objects according to OAuth 2.0
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")] // Already validated by IsValidRequest
         /// <summary>
         /// Initiates the Authorization Code flow based on the given request and returns a response that defines what response to send back to the user agent.
         /// Be sure to authenticate the user and request consent before calling this. THIS METHOD ASSUMES THAT USER CONSENT WAS GIVEN.
         /// </summary>
         /// <param name="request">The request that contains the values that were sent by the client.</param>
         /// <param name="user">The user that the request is for.</param>
-        /// <exception cref="OAuthWorks.AuthorizationCodeResponseExceptionBase">Thrown if an exception occurs inside this method or if the given request was invalid in some way.</exception>
-        /// <exception cref="System.ArgumentNullException">Thrown if the given request is null.</exception>
         /// <returns>Returns a new <see cref="OAuthWorks.IAuthorizationCodeResponse"/> object that determines what values to put in the outgoing response.</returns>
         public IAuthorizationCodeResponse RequestAuthorizationCode(IAuthorizationCodeRequest request, IUser user)
         {
@@ -367,21 +363,38 @@ namespace OAuthWorks
 
                             if (scopes != null && scopes.Any())
                             {
-                                //Revoke all of the current authorization codes.
-                                AuthorizationCodeRepository.GetByUserAndClient(user, client).ForEach(c => c.Revoke());
+                                if (scopes.All(s => user.HasGrantedScope(client, s)))
+                                {
 
-                                ICreatedToken<IAuthorizationCode> authCode = AuthorizationCodeFactory.Create(request.RedirectUri, user, client, scopes);
-                                AuthorizationCodeRepository.Add(authCode);
+                                    //Revoke all of the current authorization codes.
+                                    AuthorizationCodeRepository.GetByUserAndClient(user, client).ForEach(c => c.Revoke());
 
-                                //return a successful response
-                                return AuthorizationCodeResponseFactory.Create(authCode.TokenValue, request.State, request.RedirectUri);
+                                    ICreatedToken<IAuthorizationCode> authCode = AuthorizationCodeFactory.Create(request.RedirectUri, user, client, scopes);
+                                    AuthorizationCodeRepository.Add(authCode);
+
+                                    //return a successful response
+                                    return AuthorizationCodeResponseFactory.Create(authCode.TokenValue, request.State, request.RedirectUri);
+                                }
+                                else
+                                {
+                                    return CreateAuthorizationCodeError(
+                                        AuthorizationCodeRequestSpecificErrorType.UserUnauthorizedScopes,
+                                        request.State,
+                                        request.RedirectUri,
+                                        client,
+                                        user,
+                                        scopes);
+                                }
                             }
                             else
                             {
                                 return CreateAuthorizationCodeError(
                                     AuthorizationCodeRequestSpecificErrorType.MissingOrUnknownScope,
                                     request.State,
-                                    request.RedirectUri);
+                                    request.RedirectUri,
+                                    client,
+                                    user,
+                                    scopes);
                             }
                         }
                         else
@@ -390,7 +403,9 @@ namespace OAuthWorks
                             return CreateAuthorizationCodeError(
                                 AuthorizationCodeRequestSpecificErrorType.InvalidRedirectUri,
                                 request.State,
-                                null);
+                                null,
+                                client: client,
+                                user: user);
                         }
                     }
                     else
@@ -398,7 +413,9 @@ namespace OAuthWorks
                         return CreateAuthorizationCodeError(
                             error.Value,
                             request.State,
-                            request.RedirectUri);
+                            request.RedirectUri,
+                            user: user,
+                            client: client);
                     }
                 }
                 catch (SystemException e)
@@ -407,12 +424,13 @@ namespace OAuthWorks
                         AuthorizationCodeRequestSpecificErrorType.ServerError,
                         request.State,
                         request.RedirectUri,
-                        e);
+                        user: user,
+                        innerException: e);
                 }
             }
             else
             {
-                return CreateAuthorizationCodeError(error.Value, null, null);
+                return CreateAuthorizationCodeError(error.Value, null, null, user: user);
             }
         }
 
@@ -427,10 +445,6 @@ namespace OAuthWorks
             if (client == null)
             {
                 return AuthorizationCodeRequestSpecificErrorType.MissingClient;
-            }
-            else if (!client.MatchesSecret(request.ClientSecret))
-            {
-                return AuthorizationCodeRequestSpecificErrorType.UnauthorizedClient;
             }
             else
             {
@@ -571,7 +585,7 @@ namespace OAuthWorks
             {
                 return CreateAccessTokenError(error.Value);
             }
-        }        
+        }
 
         /// <summary>
         /// Requests an access refreshToken from the authorization server based on the given request using the Resource Owner Password Credentials flow. (Section 4.3 [RFC 6749] http://tools.ietf.org/html/rfc6749#section-4.3).
@@ -698,10 +712,6 @@ namespace OAuthWorks
             {
                 return AuthorizationCodeRequestSpecificErrorType.NullClientId;
             }
-            else if (string.IsNullOrEmpty(request.ClientSecret))
-            {
-                return AuthorizationCodeRequestSpecificErrorType.NullClientSecret;
-            }
             else if (string.IsNullOrEmpty(request.Scope))
             {
                 return AuthorizationCodeRequestSpecificErrorType.NullScope;
@@ -721,7 +731,7 @@ namespace OAuthWorks
         /// <returns>Returns the <see cref="AuthorizationCodeRequestSpecificErrorType"/> object that specifies what was wrong, returns null if nothing was wrong.</returns>
         private AccessTokenSpecificRequestError? GetRefreshTokenError(IRefreshToken refreshToken, ITokenRefreshRequest request, IClient client)
         {
-            if(refreshToken == null)
+            if (refreshToken == null)
             {
                 return AccessTokenSpecificRequestError.NullRefreshToken;
             }
@@ -750,7 +760,7 @@ namespace OAuthWorks
         /// <returns>Returns the <see cref="AuthorizationCodeRequestSpecificErrorType"/> object that specifies what was wrong, returns null if nothing was wrong.</returns>
         private AccessTokenSpecificRequestError? GetRequestError(ITokenRefreshRequest request)
         {
-            if(request == null)
+            if (request == null)
             {
                 return AccessTokenSpecificRequestError.NullRequest;
             }
@@ -766,7 +776,7 @@ namespace OAuthWorks
             {
                 return AccessTokenSpecificRequestError.NullRefreshToken;
             }
-            else if(!"refresh_token".Equals(request.GrantType, StringComparison.Ordinal))
+            else if (!"refresh_token".Equals(request.GrantType, StringComparison.Ordinal))
             {
                 return AccessTokenSpecificRequestError.InvalidGrantType;
             }
@@ -783,11 +793,11 @@ namespace OAuthWorks
         /// <returns>Returns a new <see cref="AccessTokenSpecificRequestError"/> object that specifies the first thing wrong with the given parameters, returns null if none exist.</returns>
         private AccessTokenSpecificRequestError? GetRequestError(IPasswordCredentialsAccessTokenRequest request)
         {
-            if(request == null)
+            if (request == null)
             {
                 return AccessTokenSpecificRequestError.NullRequest;
             }
-            else if(!"password".Equals(request.GrantType, StringComparison.Ordinal))
+            else if (!"password".Equals(request.GrantType, StringComparison.Ordinal))
             {
                 return AccessTokenSpecificRequestError.InvalidGrantType;
             }
@@ -799,7 +809,7 @@ namespace OAuthWorks
             {
                 return AccessTokenSpecificRequestError.NullClientSecret;
             }
-            else if(request.User == null)
+            else if (request.User == null)
             {
                 return AccessTokenSpecificRequestError.NullUser;
             }
@@ -816,9 +826,18 @@ namespace OAuthWorks
         /// <param name="state">The state that was sent by the client in the request.</param>
         /// <param name="innerException">The exception that caused the error to occur.</param>
         /// <returns>Returns a new <see cref="IUnsuccessfulAuthorizationCodeResponse"/> object that represents a valid OAuth 2.0 Authorization Code Error resposne.</returns>
-        private IUnsuccessfulAuthorizationCodeResponse CreateAuthorizationCodeError(AuthorizationCodeRequestSpecificErrorType specificError, string state, Uri redirect, Exception innerException = null)
+        private IUnsuccessfulAuthorizationCodeResponse CreateAuthorizationCodeError(AuthorizationCodeRequestSpecificErrorType specificError, string state, Uri redirect, IClient client = null, IUser user = null, IEnumerable<IScope> scopes = null, Exception innerException = null)
         {
-            return AuthorizationCodeResponseFactory.CreateError(specificError.GetSubgroup<AuthorizationCodeRequestErrorType>(), AuthorizationCodeErrorDescriptionProvider.GetDescription(specificError), null, state, redirect, innerException);
+            return AuthorizationCodeResponseFactory.CreateError(
+                specificError, 
+                client, 
+                user, 
+                scopes, 
+                AuthorizationCodeErrorDescriptionProvider.GetDescription(specificError) ?? specificError.GetDescription(), 
+                null, 
+                state, 
+                redirect, 
+                innerException);
         }
 
         /// <summary>
@@ -939,16 +958,6 @@ namespace OAuthWorks
                 return ScopeRepository.Any(a => a.Equals(scope) && token.Scopes.Contains(a));
             }
             return false;
-        }
-
-        /// <summary>
-        /// Gets the <see cref="IOAuthProviderDefinition"/> that contains information on the different endpoints provided by this
-        /// <see cref="IOAuthProvider"/>.
-        /// </summary>
-        public IOAuthProviderDefinition Definition
-        {
-            get;
-            set;
         }
 
         /// <summary>

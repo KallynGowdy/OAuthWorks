@@ -191,7 +191,6 @@ namespace OAuthWorks.Tests
             AuthorizationCodeRequest request = new AuthorizationCodeRequest
             (
                 clientId: client.Id,
-                clientSecret: secret,
                 redirectUri: new Uri(redirectUri),
                 responseType: AuthorizationCodeResponseType.Code,
                 scope: scope,
@@ -222,7 +221,6 @@ namespace OAuthWorks.Tests
             AuthorizationCodeRequest request = new AuthorizationCodeRequest
             (
                 clientId: client.Id,
-                clientSecret: secret,
                 redirectUri: new Uri(redirectUri),
                 responseType: AuthorizationCodeResponseType.Code,
                 scope: scope,
@@ -243,11 +241,11 @@ namespace OAuthWorks.Tests
         }
 
         [Test]
-        [TestCase("exampleScope", "state", "secret", "http://example.com/oauth/response/token")]
-        [TestCase("nonExistantScope", "state", "secret", "http://example.com/oauth/response/token")]
-        [TestCase("exampleScope", "state", "badSecret", "http://example.com/oauth/response/token")]
-        [TestCase("exampleScope", "state", "secret", "http://example.com/oauth/v1/response/token")]
-        public void TestRequestAuthorizationCode(string scope, string state, string secret, string redirectUri)
+        [TestCase("exampleScope", "state", "http://example.com/oauth/response/token")]
+        [TestCase("nonExistantScope", "state", "http://example.com/oauth/response/token")]
+        [TestCase("exampleScope", "state", "http://example.com/oauth/response/token")]
+        [TestCase("exampleScope", "state", "http://example.com/oauth/v1/response/token")]
+        public void TestRequestAuthorizationCode(string scope, string state, string redirectUri)
         {
             User user = new User
             {
@@ -257,7 +255,6 @@ namespace OAuthWorks.Tests
             AuthorizationCodeRequest codeRequest = new AuthorizationCodeRequest
             (
                 clientId: client.Id,
-                clientSecret: secret,
                 redirectUri: new Uri(redirectUri),
                 responseType: AuthorizationCodeResponseType.Code,
                 scope: scope,
@@ -273,7 +270,6 @@ namespace OAuthWorks.Tests
                 Assert.AreEqual(success.State, state);
 
                 Assert.True(client.IsValidRedirectUri(new Uri(redirectUri)), "The client did not have a valid redirect Uri even though it was able to retrieve a code.");
-                Assert.True(client.MatchesSecret(secret), "The client's secret was invalid even though it got through.");
                 Assert.NotNull(provider.GetRequestedScopes(codeRequest.Scope), "The requested scope was invalid even though it got through.");
             }
             else
@@ -281,9 +277,6 @@ namespace OAuthWorks.Tests
                 IUnsuccessfulAuthorizationCodeResponse unsuccess = (IUnsuccessfulAuthorizationCodeResponse)response;
                 switch (unsuccess.ErrorCode)
                 {
-                    case AuthorizationCodeRequestErrorType.UnauthorizedClient:
-                        Assert.False(client.MatchesSecret(secret));
-                        break;
                     case AuthorizationCodeRequestErrorType.InvalidScope:
                         Assert.IsEmpty(provider.GetRequestedScopes(codeRequest.Scope));
                         break;
@@ -303,7 +296,7 @@ namespace OAuthWorks.Tests
                 Id = "Id"
             };
 
-            AuthorizationCodeRequest codeRequest = new AuthorizationCodeRequest(clientId, clientSecret, scope, state, new Uri(redirectUri), AuthorizationCodeResponseType.Code);
+            AuthorizationCodeRequest codeRequest = new AuthorizationCodeRequest(clientId, scope, state, new Uri(redirectUri), AuthorizationCodeResponseType.Code);
 
             ISuccessfulAuthorizationCodeResponse response = provider.RequestAuthorizationCode(codeRequest, user) as ISuccessfulAuthorizationCodeResponse;
 
@@ -342,7 +335,6 @@ namespace OAuthWorks.Tests
             AuthorizationCodeRequest codeRequest = new AuthorizationCodeRequest
             (
                 clientId: "bob",
-                clientSecret: "secret",
                 redirectUri: new Uri("http://example.com/oauth/response/token"),
                 responseType: AuthorizationCodeResponseType.Code,
                 scope: "exampleScope",

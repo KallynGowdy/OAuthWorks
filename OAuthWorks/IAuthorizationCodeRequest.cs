@@ -25,6 +25,12 @@ namespace OAuthWorks
     /// of the Authorization Code flow in the OAuth 2.0 specification.
     /// (RFC 6749, Section 4.1, http://tools.ietf.org/html/rfc6749#section-4.1)
     /// </summary>
+    /// <remarks>
+    /// This interface requires all of the values that must be passed to a <see cref="OAuthProvider"/> when the client requests an Authorization Code as a part
+    /// of the Authorization Code Flow (RFC 6749, Section 4.1, http://tools.ietf.org/html/rfc6749#section-4.1). Notice that the Client ID is required but the
+    /// Client Secret is not, this is to prevent it from being stolen by the user as the authorization request must be issued from a front-end framework. Once the
+    /// Authorization Code is granted and sent back to the client's server, then it can be exchanged for an Access Token which requires the Client Secret.
+    /// </remarks>
     public interface IAuthorizationCodeRequest
     {
         // As per the spec, the Authorization Code Request MUST contain the following values:
@@ -41,8 +47,6 @@ namespace OAuthWorks
         //                              server includes this value when redirecting the user-agent back
         //                              to the client. (RFC 6749, Section 10.12, http://tools.ietf.org/html/rfc6749#section-10.12)
 
-        //  We require the client to provide a password/secret for simple authentication.
-
         /// <summary>
         /// Gets the response_type that defines what the OAuth Provider should return. Required to be 'Code'.
         /// </summary>
@@ -55,14 +59,6 @@ namespace OAuthWorks
         /// Gets the Id of the client. This value is required to be non-null and not empty.
         /// </summary>
         string ClientId
-        {
-            get;
-        }
-
-        /// <summary>
-        /// Gets the secret that the client provided in the request. This value is required to be non-null and not empty.
-        /// </summary>
-        string ClientSecret
         {
             get;
         }

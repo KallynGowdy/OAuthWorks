@@ -50,15 +50,6 @@ namespace OAuthWorks.Implementation
             private set;
         }
 
-        /// <summary>
-        /// Gets or sets secret that the client provided in the request.
-        /// </summary>
-        [DataMember(Name = "client_secret")]
-        public string ClientSecret
-        {
-            get;
-            private set;
-        }
 
         /// <summary>
         /// Gets or sets the client Id that designates who this request is coming from.
@@ -106,17 +97,17 @@ namespace OAuthWorks.Implementation
         /// Initializes a new instance of the <see cref="AuthorizationCodeRequest"/> class.
         /// </summary>
         /// <param name="clientId">The identifier of the client.</param>
-        /// <param name="clientSecret">The secret/password of the client.</param>
         /// <param name="scope">The scope that is requested by the client.</param>
         /// <param name="state">The state that is provided by the client.</param>
         /// <param name="redirectUri">The URI that the user should be redirected to.</param>
         /// <param name="responseType">Type of the response requested by the client.</param>
-        public AuthorizationCodeRequest(string clientId, string clientSecret, string scope, string state, Uri redirectUri, AuthorizationCodeResponseType responseType)
+        public AuthorizationCodeRequest(string clientId, string scope, string state, Uri redirectUri, AuthorizationCodeResponseType responseType)
         {
-            Contract.Requires(!string.IsNullOrEmpty(clientId));
-            Contract.Requires(!string.IsNullOrEmpty(clientSecret));
+            if (string.IsNullOrEmpty(clientId))
+            {
+                throw new ArgumentException("The given clientId must not be null or empty.", clientId);
+            }
             this.ClientId = clientId;
-            this.ClientSecret = clientSecret;
             this.Scope = scope;
             this.State = state;
             this.RedirectUri = redirectUri;

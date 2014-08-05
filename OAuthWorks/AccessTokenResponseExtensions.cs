@@ -29,8 +29,8 @@ namespace OAuthWorks
         /// <summary>
         /// Gets the <see cref="HttpStatusCode"/> that represents whether the request was a success or failure.
         /// </summary>
-        /// <param name="response"></param>
-        /// <returns></returns>
+        /// <param name="response">The response that the <see cref="HttpStatusCode"/> should be retrieved for.</param>
+        /// <returns>Returns the <see cref="HttpStatusCode"/> representing the status code of the <see cref="IAccessTokenResponse"/>.</returns>
         public static HttpStatusCode StatusCode(this IAccessTokenResponse response)
         {
             return response is ISuccessfulAccessTokenResponse ? HttpStatusCode.OK : HttpStatusCode.BadRequest;

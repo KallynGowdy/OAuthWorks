@@ -15,6 +15,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Reflection;
@@ -141,6 +142,18 @@ namespace OAuthWorks
             MemberInfo member = type.GetMember(value.ToString()).First();
             IEnumerable<EnumSubgroupAttribute> attributes = member.GetCustomAttributes<EnumSubgroupAttribute>(false);
             return (TEnum) attributes.Where(e => e.SubgroupOf is TEnum).First().SubgroupOf;
+        }
+
+        /// <summary>
+        /// Gets the description of this enum value, returns null if no description attribute was applied.
+        /// </summary>
+        /// <param name="value">The value to get the description of.</param>
+        /// <returns>Returns a string representing the description of the value.</returns>
+        public static string GetDescription(this Enum value)
+        {
+            Type type = value.GetType();
+            MemberInfo member = type.GetMember(value.ToString()).First();
+            return member.GetCustomAttribute<DescriptionAttribute>().Description;
         }
     }
 }

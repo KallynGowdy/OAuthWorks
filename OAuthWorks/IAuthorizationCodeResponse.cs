@@ -36,7 +36,7 @@ namespace OAuthWorks
 
         /// <summary>
         /// Gets the <see cref="Uri"/> that specifies where the user should be redirected to. 
-        /// This value should contain all of the values needed for a successful OAuth 2.0 authorization code redirect. (Section 4.1.2 [RFC 6749] http://tools.ietf.org/html/rfc6749#section-4.1.2)
+        /// This value should contain all of the values needed for a successful OAuth 2.0 authorization code redirect. (<a href="http://tools.ietf.org/html/rfc6749#section-4.1.2">Section 4.1.2 [RFC 6749]</a>)
         /// </summary>
         /// <returns>Returns the <see cref="Uri"/> that the user should be redirected to. Reuturns null if the user should not be redirected for security reasons.</returns>
         Uri Redirect
