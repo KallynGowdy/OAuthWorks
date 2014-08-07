@@ -28,8 +28,18 @@ namespace OAuthWorks.Tests
             set;
         }
 
+        public Dictionary<IClient, IEnumerable<IScope>> Scopes
+        {
+            get;
+            set;
+        }
+
         public bool HasGrantedScope(IClient client, IScope scope)
         {
+            if(Scopes.TryGetValue(client, out var scopes))
+            {
+                return scopes.Contains(scope);
+            }
             return false;
         }
     }

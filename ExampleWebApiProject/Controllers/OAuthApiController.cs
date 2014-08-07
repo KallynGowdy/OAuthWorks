@@ -34,8 +34,88 @@ namespace ExampleWebApiProject.Controllers
     /// </summary>
     public class OAuthApiController : ApiController
     {
+        IDisposableObject<DatabaseContext> context;
+
+        IDisposableObject<IOAuthProvider> provider;
+
+        /// <summary>
+        /// Gets the <see cref="DatabaseContext"/> used in this controller.
+        /// </summary>
+        /// <returns>Returns the <see cref="DatabaseContext"/> used by this controller.</returns>
+        public DatabaseContext Context
+        {
+            get
+            {
+                return context.Value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="IOAuthProvider"/> used by this controller.
+        /// </summary>
+        /// <returns>Returns the <see cref="IOAuthProvider"/> used by this controller.</returns>
+        public IOAuthProvider Provider
+        {
+            get
+            {
+                return provider.Value;
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OAuthApiController"/> class.
+        /// </summary>
         public OAuthApiController()
         {
+            this.context = new DisposableObject<DatabaseContext>(new DatabaseContext(), shouldDispose: true);
+            this.provider = new DisposableObject<IOAuthProvider>(new OAuthProvider(p =>
+            {
+                p.AuthorizationCodeRepository = new AuthorizationCodeRepository(context.Value);
+                p.ScopeRepository = new ScopeRepository(context.Value);
+                p.ClientRepository = new ClientRepository(context.Value);
+                p.AccessTokenRepository = new AccessTokenRepository(context.Value);
+                p.RefreshTokenRepository = new RefreshTokenRepository(context.Value);
+                p.DistributeRefreshTokens = true;
+                p.DeleteRevokedTokens = false;
+            }), shouldDispose: true);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OAuthApiController"/> class.
+        /// </summary>
+        /// <param name="context">The <see cref="DatabaseContext"/> object that should be used for database transactions in this controller.</param>
+        /// <param name="provider">The <see cref="IOAuthProvider"/> object that should be used for OAuth 2.0 transactions in this controller.</param>
+        public OAuthApiController(DatabaseContext context, IOAuthProvider provider)
+        {
+            if (context == null)
+            {
+                context = new DatabaseContext();
+            }
+            if (provider == null)
+            {
+                provider = new OAuthProvider();
+            }
+            this.context = new DisposableObject<DatabaseContext>(context, shouldDispose: true);
+            this.provider = new DisposableObject<IOAuthProvider>(provider, shouldDispose: true);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OAuthApiController"/> class.
+        /// </summary>
+        /// <param name="context">The <see cref="IDisposableObject{DatabaseContext}"/> object that should be used for database transactions in this controller and determines whether the underlying <see cref="DatabaseContext"/> should be disposed.</param>
+        /// <param name="provider">The <see cref="IDisposableObject{IOAuthProvider}"/> object that should be used for OAuth 2.0 transactions in this controller and determines whether the underlying <see cref="IOAuthProvider"/> should be disposed.</param>
+        public OAuthApiController(IDisposableObject<DatabaseContext> context, IDisposableObject<IOAuthProvider> provider)
+        {
+            if ((bool @null = context == null) || context.Value == null)
+            {
+                throw new ArgumentNullException(@null ? "context" : "context.Value");
+            }
+            if ((bool @null = context == null) || provider.Value == null)
+            {
+                throw new ArgumentNullException(@null ? "provider" : "provider.Value");
+            }
+            this.context = context;
+            this.provider = provider;
         }
 
         /// <summary>
@@ -51,57 +131,37 @@ namespace ExampleWebApiProject.Controllers
         [HttpGet]
         public IHttpActionResult RequestAuthorizationCode(string clientId, string redirectUri, AuthorizationCodeResponseType responseType, string scope, string state)
         {
-            using (DatabaseContext context = new DatabaseContext())
-            using (IOAuthProvider Provider = new OAuthProvider(p =>
-            {
-                p.AuthorizationCodeRepository = new AuthorizationCodeRepository(context);
-                p.ScopeRepository = new ScopeRepository(context);
-                p.ClientRepository = new ClientRepository(context);
-            }))
-            {
-                AuthorizationCodeRequest request = new AuthorizationCodeRequest
-                (
-                    clientId: clientId,
-                    redirectUri: new Uri(redirectUri),
-                    responseType: responseType,
-                    scope: scope,
-                    state: state
-                );
+            AuthorizationCodeRequest request = new AuthorizationCodeRequest
+            (
+                clientId: clientId,
+                redirectUri: new Uri(redirectUri),
+                responseType: responseType,
+                scope: scope,
+                state: state
+            );
 
-                if (User.Identity.IsAuthenticated) // Check for logged in user
+            if (User.Identity.IsAuthenticated) // Check for logged in user
+            {
+                User user = Context.Users.Find(User.Identity.Name);
+
+                IAuthorizationCodeResponse response = Provider.RequestAuthorizationCode(request, user); // Issue authorization code
+                Context.SaveChanges();
+                if (response.ShouldRedirect())
                 {
-                    User user = context.Users.Find(User.Identity.Name);
-
-                    IAuthorizationCodeResponse response = Provider.RequestAuthorizationCode(request, user); // Issue authorization code
-                    context.SaveChanges();
-                    if (response.IsSuccessful || response.ShouldRedirect())
-                    {
-                        if (response.ShouldRedirect())
-                        {
-                            return Redirect(response.Redirect);
-                        }
-                        else
-                        {
-                            return null;
-                        }
-                    }
-                    else
-                    {
-                        IUnsuccessfulAuthorizationCodeResponse ur = (IUnsuccessfulAuthorizationCodeResponse)response;
-                        if(ur.SpecificErrorCode == AuthorizationCodeRequestSpecificErrorType.UserUnauthorizedScopes)
-                        {
-                            return RedirectToRoute("/oauth/consent", null);
-                        }
-                        else
-                        {
-                            return null;
-                        }
-                    }
+                    return Redirect(response.Redirect);
+                }
+                else if ((var scopeRequest = response.GetScopeAuthorizationRequest()) != null)
+                {
+                    return RedirectToRoute("/users/authorize", new { request = scopeRequest });
                 }
                 else
                 {
-                    return RedirectToRoute("/users/login", new { @return = Request.RequestUri.AbsoluteUri }); // Redirect to login
+                    return null;
                 }
+            }
+            else
+            {
+                return RedirectToRoute("/users/login", new { @return = Request.RequestUri.AbsoluteUri }); // Redirect to login
             }
         }
 
@@ -114,23 +174,10 @@ namespace ExampleWebApiProject.Controllers
         [HttpPost]
         public HttpResponseMessage RequestAccessToken(AuthorizationCodeGrantAccessTokenRequest request)
         {
-            using (DatabaseContext context = new DatabaseContext())
-            using (IOAuthProvider Provider = new OAuthProvider
-            {
-                AccessTokenRepository = new AccessTokenRepository(context),
-                AuthorizationCodeRepository = new AuthorizationCodeRepository(context),
-                RefreshTokenRepository = new RefreshTokenRepository(context),
-                ClientRepository = new ClientRepository(context),
-                ScopeRepository = new ScopeRepository(context),
-                DistributeRefreshTokens = true,
-                DeleteRevokedTokens = true
-            })
-            {
-                IAccessTokenResponse response = Provider.RequestAccessToken(request);
-                context.SaveChanges();
-                var r = Request.CreateResponse(response.StatusCode(), response);
-                return AddHeadersToTokenResponse(r);
-            }
+            IAccessTokenResponse response = Provider.RequestAccessToken(request);
+            Context.SaveChanges();
+            var r = Request.CreateResponse(response.StatusCode(), response);
+            return AddHeadersToTokenResponse(r);
         }
 
         /// <summary>
@@ -256,10 +303,10 @@ namespace ExampleWebApiProject.Controllers
                     new PasswordCredentialsAccessTokenRequest // Send the request to the provider
                     (
                         user,
-                        request.ClientId, 
-                        request.ClientSecret, 
-                        request.GrantType, 
-                        request.RedirectUri, 
+                        request.ClientId,
+                        request.ClientSecret,
+                        request.GrantType,
+                        request.RedirectUri,
                         request.Scope
                     )
                 );
@@ -278,22 +325,32 @@ namespace ExampleWebApiProject.Controllers
         [HttpPost]
         public async Task<HttpResponseMessage> RefreshAccessToken(TokenRefreshRequest request)
         {
-            using (DatabaseContext context = new DatabaseContext()) // Create unit-of-work
-            using (IOAuthProvider Provider = new OAuthProvider // Create provider for request
+            IAccessTokenResponse response = Provider.RefreshAccessToken(request); // Process refresh token request
+            await Context.SaveChangesAsync(); // Save transaction
+            HttpResponseMessage r = Request.CreateResponse(response.StatusCode(), response);
+            return AddHeadersToTokenResponse(r); // Add required headers and return
+        }
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
             {
-                AccessTokenRepository = new AccessTokenRepository(context),
-                RefreshTokenRepository = new RefreshTokenRepository(context),
-                ClientRepository = new ClientRepository(context),
-                ScopeRepository = new ScopeRepository(context),
-                DistributeRefreshTokens = true,
-                DeleteRevokedTokens = true
-            })
-            {
-                IAccessTokenResponse response = Provider.RefreshAccessToken(request); // Process refresh token request
-                await context.SaveChangesAsync(); // Save transaction
-                HttpResponseMessage r = Request.CreateResponse(response.StatusCode(), response);
-                return AddHeadersToTokenResponse(r); // Add required headers and return
+                if (context != null)
+                {
+                    context.Dispose();
+                    context = null;
+                }
+                if (provider != null)
+                {
+                    context.Dispose();
+                    context = null;
+                }
             }
+            base.Dispose(disposing);
         }
     }
 }

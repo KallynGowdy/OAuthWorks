@@ -215,7 +215,11 @@ namespace OAuthWorks.Tests
         {
             User user = new User
             {
-                Id = "Id"
+                Id = "Id",
+                Scopes = new Dictionary<IClient, IEnumerable<IScope>>
+                {
+                    { client, new IScope[] { exampleScope } }
+                }
             };
 
             AuthorizationCodeRequest request = new AuthorizationCodeRequest
@@ -293,7 +297,11 @@ namespace OAuthWorks.Tests
         {
             User user = new User
             {
-                Id = "Id"
+                Id = "Id",
+                Scopes = new Dictionary<IClient, IEnumerable<IScope>>
+                {
+                    { client, new IScope[] { exampleScope } }
+                }
             };
 
             AuthorizationCodeRequest codeRequest = new AuthorizationCodeRequest(clientId, scope, state, new Uri(redirectUri), AuthorizationCodeResponseType.Code);
@@ -328,7 +336,11 @@ namespace OAuthWorks.Tests
         {
             User user = new User
             {
-                Id = "Id"
+                Id = "Id",
+                Scopes = new Dictionary<IClient, IEnumerable<IScope>>
+                {
+                    { client, new IScope[] { exampleScope } }
+                }
             };
 
             //A request from the client for an authorization code.

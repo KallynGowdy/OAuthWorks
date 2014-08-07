@@ -119,9 +119,11 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\OAuthApiController.cs" />
     <Compile Include="Controllers\UsersApiController.cs" />
+    <Compile Include="DisposableObject.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="IDisposableObject.cs" />
     <Compile Include="Migrations\201405042051435_Initial.cs" />
     <Compile Include="Migrations\201405042051435_Initial.Designer.cs">
       <DependentUpon>201405042051435_Initial.cs</DependentUpon>

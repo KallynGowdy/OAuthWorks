@@ -12,6 +12,7 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
+using OAuthWorks.Implementation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,11 +29,47 @@ namespace OAuthWorks
         /// <summary>
         /// Determines if the user should be redirected to the <see cref="Uri"/> contained in the response.
         /// </summary>
-        /// <param name="response">The response to examine whether redirection is valid.</param>
+        /// <param name="response">The response to examine whether redirection is allowed.</param>
         /// <returns>Returns true if the user should be redirect, otherwise false.</returns>
         public static bool ShouldRedirect(this IAuthorizationCodeResponse response)
         {
             return response.Redirect != null;
         }
-    }
+
+        /// <summary>
+        /// Determines if the user should be prompted to authorize all of the requested scopes contained in the request.
+        /// </summary>
+        /// <param name="response">The response from the <see cref="IOAuthProvider"/> object.</param>
+        /// <returns>Returns true if the user should be prompted, otherwise false.</returns>
+        public static bool ShouldValidateScopes(this IAuthorizationCodeResponse response)
+        {
+            return response is IUnsuccessfulAuthorizationCodeResponse &&
+                ((IUnsuccessfulAuthorizationCodeResponse)response).SpecificErrorCode == AuthorizationCodeRequestSpecificErrorType.UserUnauthorizedScopes;
+        }
+
+        /// <summary>
+        /// Gets a new <see cref="IScopeAuthorizationRequest"/> object that contains values used in the user scope authorization if authorization is required,
+        /// otherwise returns null.
+        /// </summary>
+        /// <param name="response">The <see cref="IAuthorizationCodeResponse"/> returned from the <see cref="IOAuthProvider"/>.</param>
+        /// <returns>Returns a new <see cref="IScopeAuthorizationRequest"/> object if user authorization is required, otherwise null.</returns>
+        public static IScopeAuthorizationRequest GetScopeAuthorizationRequest(this IAuthorizationCodeResponse response)
+        {
+            if ((IUnsuccessfulAuthorizationCodeResponse unsuccessfulResponse = response as IUnsuccessfulAuthorizationCodeResponse) != null &&
+                (unsuccessfulResponse.SpecificErrorCode == AuthorizationCodeRequestSpecificErrorType.UserUnauthorizedScopes))
+            {
+                return new ScopeAuthorizationRequest
+                (
+                    client: unsuccessfulResponse.Client,
+                    scopes: unsuccessfulResponse.Scopes,
+                    state: unsuccessfulResponse.State,
+                    user: unsuccessfulResponse.User
+                );
+            }
+            else
+            {
+                return null;
+            }
+        }
+    }    
 }

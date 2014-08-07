@@ -22,7 +22,9 @@ using System.Threading.Tasks;
 
 namespace OAuthWorks.Implementation.Factories
 {
-
+    /// <summary>
+    /// Defines a static class that acts as a wrapper for the different default implementations of <see cref="AuthorizationCodeFactory{TId}"/>.
+    /// </summary>
     public static class AuthorizationCodeFactory
     {
         /// <summary>
@@ -76,7 +78,7 @@ namespace OAuthWorks.Implementation.Factories
     }
 
     /// <summary>
-    /// Defines a class which provides a basic implementation of <see cref="OAuthWorks.IAuthorizationCodeFactory"/>.
+    /// Defines a class which provides a basic implementation of <see cref="OAuthWorks.IAuthorizationCodeFactory{HashedAuthorizationCode{TId}"/>.
     /// </summary>
     public class AuthorizationCodeFactory<TId> : IAuthorizationCodeFactory<HashedAuthorizationCode<TId>>
     {
