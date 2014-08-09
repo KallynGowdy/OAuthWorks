@@ -77,7 +77,7 @@ There are a couple things to note with that previous example:
         }
     }
     ```
-  2. This still allows the [unit-or-work] flow to work, as a new controller is initialized for each request and disposed when the request is handled.
+  2. This still allows the [unit-or-work][unit-of-work] flow to work, as a new controller is initialized for each request and disposed when the request is handled.
 
 
 *OAuthWorks* provides sensible defaults for factories for you, while still letting you determine how the information should be stored. You can provide your own versions by implementing the `IYYYFactory` interfaces. For example, if you wanted to provide your own Authorization Code generation mechanizm, you would implement `IAuthorizationCodeFactory` and provide an instance to the `OAuthProvider`.
