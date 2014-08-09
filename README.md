@@ -26,7 +26,7 @@ How that is achieved is specific to the flow. *OAuthWorks* handles all of these 
 [HttpPost]
 public HttpResponseMessage RequestAccessToken(AuthorizationCodeGrantAccessTokenRequest request)
 {
-    using(DatabaseContext context = new DatabaseContext) // Your EF DataContext (Unit of work/transaction)
+    using(DatabaseContext context = new DatabaseContext()) // Your EF DataContext (Unit of work/transaction)
     using(OAuthProvider provider = new OAuthProvider
             {
                 // Custom-built repositories for EF
@@ -56,7 +56,32 @@ Now, let's examine what's going on here:
     - Client Repository, used for retrieving and therefore validating the client.
     - Scope Repository, used for validating and providing access to the granted scopes to the client though the issued token.
 
-- Third, process the request and get the response. We send any object that implements `IAuthorizationCodeGrantAccessTokenRequest` to the provider and it will build a valid response to that request. This is done by using a combination of the repositories and factories. The repositories are used to retrieve and store information. The factories are used to generate new information, like new access tokens or authorization codes. *OAuthWorks* provides sensible defaults for factories for you, while still letting you determine how the information should be stored. You can provide your own versions by implementing the `IYYYFactory` interfaces. For example, if you wanted to provide your own Authorization Code generation mechanizm, you would implement `IAuthorizationCodeFactory` and provide an instance to the `OAuthProvider`.
+- Third, process the request and get the response. We send any object that implements `IAuthorizationCodeGrantAccessTokenRequest` to the provider and it will build a valid response to that request. This is done by using a combination of the repositories and factories. The repositories are used to retrieve and store information. The factories are used to generate new information, like new access tokens or authorization codes.
+There are a couple things to note with that previous example:
+
+1. The `DatabaseContext` object will be disposed when the method returns, this means that any information that has not been enumerated yet will result in an exception because the `DatabaseContext` has been disposed.
+  1. You can prevent this by defining your `context` in the class instead of each method and overriding `Dispose(bool disposing)` in your controller and disposing the `DatabaseContext` in it:
+
+    ```csharp
+    private DatabaseContext context = new DatabaseContext();
+    ...
+    protected override void Dispose(bool disposing)
+    {
+        if(disposing)
+        {
+            if(context != null)
+            {
+                context.Dispose();
+                context = null;
+            }
+        }
+    }
+    ```
+  2. This still allows the [unit-or-work] flow to work, as a new controller is initialized for each request and disposed when the request is handled.
+
+
+*OAuthWorks* provides sensible defaults for factories for you, while still letting you determine how the information should be stored. You can provide your own versions by implementing the `IYYYFactory` interfaces. For example, if you wanted to provide your own Authorization Code generation mechanizm, you would implement `IAuthorizationCodeFactory` and provide an instance to the `OAuthProvider`.
+
 
 ```csharp
 public class AuthorizationCodeFactory : OAuthWorks.IAuthorizationCodeFactory<MyAuthorizationCodeImplementation>
@@ -67,14 +92,25 @@ public class AuthorizationCodeFactory : OAuthWorks.IAuthorizationCodeFactory<MyA
                                                                    IEnumerable<IScope> scopes)
     {
         //Generate the code according to your own rules.
-        string code = new Random().Next(0, int.MaxValue).ToString(); // Non-secure, but proves the point.
+        string code = new Random().Next(0, int.MaxValue).ToString(); // Non-secure, but proves the point. 
+                                                                     // The default factories use secure pseudo-random 
+                                                                     // number generation methods 
+                                                                     // (RNGCryptoServiceProvider) for code and ID
+                                                                     // generation.
         // Create the token according to your own buisness rules, all the users, clients and scopes
         // are only provided from your own repositories, so casting is fine.
-        return new CreatedToken(code, new MyAuthorizationCodeImplementation(code: code, 
-                                                                            user: user,
-                                                                            client: client,
-                                                                            redirectUri: redirectUri,
-                                                                            scopes: scopes));
+        return new CreatedToken<MyAuthorizationCode>
+        (
+            code, 
+            new MyAuthorizationCodeImplementation
+            (
+                code: code, 
+                user: user,
+                client: client,
+                redirectUri: redirectUri,
+                scopes: scopes
+            )
+        );
     }
     
     public ICreatedToken<MyAuthorizationCodeImplementation> Create()
