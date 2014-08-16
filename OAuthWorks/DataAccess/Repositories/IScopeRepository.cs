@@ -27,10 +27,10 @@ namespace OAuthWorks.DataAccess.Repositories
     public interface IScopeRepository<out TOut> : IReadStore<string, TOut>, IEnumerable<TOut> where TOut : IScope
     {
         /// <summary>
-        /// Gets a list of all of the scopes that are provided by the given access refreshToken.
+        /// Gets a list of all of the scopes that are provided by the given access refresh token.
         /// </summary>
-        /// <param name="refreshToken">The refreshToken to get all of the scopes for.</param>
-        /// <returns>Returns an enumerable list of the scopes that are provided by the given refreshToken.</returns>
+        /// <param name="refreshToken">The refresh token to get all of the scopes for.</param>
+        /// <returns>Returns an enumerable list of the scopes that are provided by the given refresh token.</returns>
         IEnumerable<TOut> GetByToken(IAccessToken token);
     }
 }

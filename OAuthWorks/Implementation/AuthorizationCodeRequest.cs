@@ -38,7 +38,6 @@ namespace OAuthWorks.Implementation
             get;
             private set;
         }
-        
 
         /// <summary>
         /// Gets or sets the client id that designates who this request is coming from.
@@ -48,18 +47,6 @@ namespace OAuthWorks.Implementation
         {
             get;
             private set;
-        }
-
-
-        /// <summary>
-        /// Gets or sets the client Id that designates who this request is coming from.
-        /// </summary>
-        string IAuthorizationCodeRequest.ClientId
-        {
-            get
-            {
-                return this.ClientId.ToString();
-            }
         }
 
         /// <summary>
@@ -103,15 +90,21 @@ namespace OAuthWorks.Implementation
         /// <param name="responseType">Type of the response requested by the client.</param>
         public AuthorizationCodeRequest(string clientId, string scope, string state, Uri redirectUri, AuthorizationCodeResponseType responseType)
         {
-            if (string.IsNullOrEmpty(clientId))
-            {
-                throw new ArgumentException("The given clientId must not be null or empty.", clientId);
-            }
             this.ClientId = clientId;
             this.Scope = scope;
             this.State = state;
             this.RedirectUri = redirectUri;
             this.ResponseType = responseType;
+        }
+
+        public AuthorizationCodeRequest(string clientId, string scope, string state, string redirectUri, AuthorizationCodeResponseType responseType)
+            : this(
+                  clientId,
+                  scope,
+                  state,
+                  redirectUri != null ? new Uri(redirectUri) : null,
+                  responseType)
+        {
         }
     }
 }

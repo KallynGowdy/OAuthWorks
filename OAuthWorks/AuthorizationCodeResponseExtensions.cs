@@ -63,7 +63,8 @@ namespace OAuthWorks
                     client: unsuccessfulResponse.Client,
                     scopes: unsuccessfulResponse.Scopes,
                     state: unsuccessfulResponse.State,
-                    user: unsuccessfulResponse.User
+                    user: unsuccessfulResponse.User,
+                    redirectUri: unsuccessfulResponse.Redirect.AbsoluteUri
                 );
             }
             else

@@ -830,7 +830,7 @@ namespace OAuthWorks
         {
             return AuthorizationCodeResponseFactory.CreateError(
                 specificError, 
-                client, 
+                client,
                 user, 
                 scopes, 
                 AuthorizationCodeErrorDescriptionProvider.GetDescription(specificError) ?? specificError.GetDescription(), 

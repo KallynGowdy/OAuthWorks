@@ -72,22 +72,36 @@ namespace OAuthWorks.Implementation
         }
 
         /// <summary>
+        /// Gets the redirect uri that the client gave in the request.
+        /// </summary>
+        /// <returns></returns>
+        [DataMember(Name = "redirect_uri", IsRequired = true)]
+        public string RedirectUri
+        {
+            get;
+            private set;
+        }
+
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ScopeAuthorizationRequest"/> class.
         /// </summary>
         /// <param name="client">The client that made the authorization request.</param>
         /// <param name="user">The user that the client made the authorization request for.</param>
         /// <param name="scopes">The scopes that the client is requesting authorization for.</param>
         /// <param name="state">The state that the client sent in it's request.</param>
-        public ScopeAuthorizationRequest(IClient client, IUser user, IEnumerable<IScope> scopes, string state)
+        public ScopeAuthorizationRequest(IClient client, IUser user, IEnumerable<IScope> scopes, string state, string redirectUri)
         {
             if (client == null) throw new ArgumentNullException("client");
             if (user == null) throw new ArgumentNullException("user");
             if (scopes == null) throw new ArgumentNullException("scopes");
+            if (redirectUri == null) throw new ArgumentNullException("redirectUri");
 
             this.Client = client;
             this.User = user;
             this.Scopes = scopes;
             this.State = state;
+            this.RedirectUri = redirectUri;
         }
     }
 }

@@ -61,5 +61,14 @@ namespace OAuthWorks
         {
             get;
         }
+
+        /// <summary>
+        /// Gets the redirect uri that the client gave in the request.
+        /// </summary>
+        /// <returns></returns>
+        string RedirectUri
+        {
+            get;
+        }
     }
 }
