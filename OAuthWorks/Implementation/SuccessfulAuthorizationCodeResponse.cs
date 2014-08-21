@@ -25,15 +25,19 @@ namespace OAuthWorks.Implementation
     /// Defines a class that provides a basic implementation of <see cref="OAuthWorks.IAuthorizationCodeResponse"/>.
     /// </summary>
     [DataContract]
-    public class SuccessfulAuthorizationCodeResponse : ISuccessfulAuthorizationCodeResponse
+    public class SuccessfulAuthorizationCodeResponse : AuthorizationCodeResponse, ISuccessfulAuthorizationCodeResponse
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="SuccessfulAuthorizationCodeResponse"/> class.
+        /// Initializes a new instance of the <see cref="SuccessfulAuthorizationCodeResponse" /> class.
         /// </summary>
         /// <param name="code">The code that should be returned to the client.</param>
         /// <param name="state">The state that should be returned to the client.</param>
+        /// <param name="redirectUri">The redirect URI.</param>
+        /// <param name="request">The request that led to this response.</param>
         /// <exception cref="System.ArgumentException">The given code must not be null or empty.;code</exception>
-        public SuccessfulAuthorizationCodeResponse(string code, string state, Uri redirectUri)
+        /// <exception cref="System.ArgumentNullException">redirectUri</exception>
+        public SuccessfulAuthorizationCodeResponse(string code, Uri redirectUri, IProcessedAuthorizationCodeRequest request)
+            : base(request)
         {
             if (string.IsNullOrEmpty(code))
             {
@@ -44,8 +48,7 @@ namespace OAuthWorks.Implementation
                 throw new ArgumentNullException("redirectUri");
             }
             this.Code = code;
-            this.State = state;
-            this.Redirect = new Uri(redirectUri, string.Format("?code={0}&state={1}", Uri.EscapeDataString(code), Uri.EscapeDataString(state)));
+            this.Redirect = new Uri(redirectUri, string.Format("?code={0}&state={1}", Uri.EscapeDataString(code), Uri.EscapeDataString(State)));
         }
 
         /// <summary>
@@ -62,35 +65,12 @@ namespace OAuthWorks.Implementation
         /// Gets whether the request for an authorization code was successful.
         /// </summary>
         /// <returns>Returns whether the request was successful.</returns>
-        public bool IsSuccessful
+        public override bool IsSuccessful
         {
             get
             {
                 return true;
             }
-        }
-
-        /// <summary>
-        /// Gets the 
-        /// <see cref="Uri" /> that specifies where the user should be redirected to. 
-        /// This value should contain all of the values needed for a successful OAuth 2.0 authorization code redirect. (Section 4.1.2 [RFC 6749] http://tools.ietf.org/html/rfc6749#section-4.1.2)
-        /// </summary>
-        /// <returns></returns>
-        public Uri Redirect
-        {
-            get;
-            private set;
-        }
-
-
-        /// <summary>
-        /// Gets the state that was sent by the client in the Authorization Request. REQUIRED ONLY IF the state was sent in the request.
-        /// </summary>
-        [DataMember(Name = "state")]
-        public string State
-        {
-            get;
-            private set;
         }
     }
 }

@@ -373,14 +373,20 @@ namespace OAuthWorks
                                     AuthorizationCodeRepository.Add(authCode);
 
                                     //return a successful response
-                                    return AuthorizationCodeResponseFactory.Create(authCode.TokenValue, request.State, request.RedirectUri);
+                                    return AuthorizationCodeResponseFactory.Create(authCode.TokenValue, request.RedirectUri, new ProcessedAuthorizationCodeRequest
+                                        (
+                                            request,
+                                            client,
+                                            user,
+                                            scopes
+                                        ));
                                 }
                                 else
                                 {
                                     return CreateAuthorizationCodeError(
                                         AuthorizationCodeRequestSpecificErrorType.UserUnauthorizedScopes,
-                                        request.State,
                                         request.RedirectUri,
+                                        request,
                                         client,
                                         user,
                                         scopes);
@@ -390,8 +396,8 @@ namespace OAuthWorks
                             {
                                 return CreateAuthorizationCodeError(
                                     AuthorizationCodeRequestSpecificErrorType.MissingOrUnknownScope,
-                                    request.State,
                                     request.RedirectUri,
+                                    request,
                                     client,
                                     user,
                                     scopes);
@@ -402,18 +408,18 @@ namespace OAuthWorks
                             //Invalid redirect
                             return CreateAuthorizationCodeError(
                                 AuthorizationCodeRequestSpecificErrorType.InvalidRedirectUri,
-                                request.State,
                                 null,
-                                client: client,
-                                user: user);
+                                request,
+                                client,
+                                user);
                         }
                     }
                     else
                     {
                         return CreateAuthorizationCodeError(
                             error.Value,
-                            request.State,
                             request.RedirectUri,
+                            request,
                             user: user,
                             client: client);
                     }
@@ -422,8 +428,8 @@ namespace OAuthWorks
                 {
                     return CreateAuthorizationCodeError(
                         AuthorizationCodeRequestSpecificErrorType.ServerError,
-                        request.State,
                         request.RedirectUri,
+                        request,
                         user: user,
                         innerException: e);
                 }
@@ -820,24 +826,51 @@ namespace OAuthWorks
         }
 
         /// <summary>
-        /// Creates a new <see cref="IUnsuccessfulAuthorizationCodeResponse"/> object that represents the given error code with the given exception.
+        /// Creates a new <see cref="IUnsuccessfulAuthorizationCodeResponse" /> object that represents the given error code with the given exception.
         /// </summary>
-        /// <param name="errorCode">The <see cref="AuthorizationCodeRequestErrorType"/> object that specifies what basic error occurred.</param>
-        /// <param name="state">The state that was sent by the client in the request.</param>
+        /// <param name="specificError">The specific error.</param>
+        /// <param name="redirect">The redirect.</param>
+        /// <param name="request">The request.</param>
         /// <param name="innerException">The exception that caused the error to occur.</param>
-        /// <returns>Returns a new <see cref="IUnsuccessfulAuthorizationCodeResponse"/> object that represents a valid OAuth 2.0 Authorization Code Error resposne.</returns>
-        private IUnsuccessfulAuthorizationCodeResponse CreateAuthorizationCodeError(AuthorizationCodeRequestSpecificErrorType specificError, string state, Uri redirect, IClient client = null, IUser user = null, IEnumerable<IScope> scopes = null, Exception innerException = null)
+        /// <returns>
+        /// Returns a new <see cref="IUnsuccessfulAuthorizationCodeResponse" /> object that represents a valid OAuth 2.0 Authorization Code Error resposne.
+        /// </returns>
+        private IUnsuccessfulAuthorizationCodeResponse CreateAuthorizationCodeError(AuthorizationCodeRequestSpecificErrorType specificError, Uri redirect, IAuthorizationCodeRequest request, IClient client = null, IUser user = null, IEnumerable<IScope> scopes = null, Exception innerException = null)
         {
             return AuthorizationCodeResponseFactory.CreateError(
-                specificError, 
-                client,
-                user, 
-                scopes, 
-                AuthorizationCodeErrorDescriptionProvider.GetDescription(specificError) ?? specificError.GetDescription(), 
-                null, 
-                state, 
-                redirect, 
-                innerException);
+                errorCode: specificError,
+                request: new ProcessedAuthorizationCodeRequest
+                (
+                    originalRequest: request,
+                    client: client,
+                    user: user,
+                    scopes: scopes
+                ),
+                errorDescription: AuthorizationCodeErrorDescriptionProvider.GetDescription(specificError) ?? specificError.GetDescription(),
+                errorUri: null,
+                redirectUri: redirect,
+                innerException: innerException);
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="IUnsuccessfulAuthorizationCodeResponse" /> object that represents the given error code with the given exception.
+        /// </summary>
+        /// <param name="specificError">The specific error.</param>
+        /// <param name="redirect">The redirect.</param>
+        /// <param name="request">The request.</param>
+        /// <param name="innerException">The exception that caused the error to occur.</param>
+        /// <returns>
+        /// Returns a new <see cref="IUnsuccessfulAuthorizationCodeResponse" /> object that represents a valid OAuth 2.0 Authorization Code Error resposne.
+        /// </returns>
+        private IUnsuccessfulAuthorizationCodeResponse CreateAuthorizationCodeError(AuthorizationCodeRequestSpecificErrorType specificError, Uri redirect, IProcessedAuthorizationCodeRequest request, Exception innerException = null)
+        {
+            return AuthorizationCodeResponseFactory.CreateError(
+                errorCode: specificError,
+                request: request,
+                errorDescription: AuthorizationCodeErrorDescriptionProvider.GetDescription(specificError) ?? specificError.GetDescription(),
+                errorUri: null,
+                redirectUri: redirect,
+                innerException: innerException);
         }
 
         /// <summary>

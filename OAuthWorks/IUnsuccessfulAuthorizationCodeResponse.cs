@@ -81,49 +81,5 @@ namespace OAuthWorks
         {
             get;
         }
-
-        /// <summary>
-        /// Gets the state that was provided by the client in the incomming Authorization Request. REQUIRED ONLY IF the state was provided in the request.
-        /// </summary>
-        string State
-        {
-            get;
-        }
-
-        /// <summary>
-        /// Gets the client that issued the request.
-        /// </summary>
-        /// <remarks>
-        /// When implementing, make sure to mark this property as not serializable to prevent any information from being leaked.
-        /// </remarks>
-        /// <returns>Returns the <see cref="IClient"/> object that represents the client that issued the Authorization Code Request.</returns>
-        IClient Client
-        {
-            get;
-        }
-
-        /// <summary>
-        /// Gets the user whose account the request was for.
-        /// </summary>
-        /// <remarks>
-        /// When implementing, make sure to mark this property as not serializable to prevent any information from being leaked.
-        /// </remarks>
-        /// <returns>Returns the <see cref="IUser"/> object that the Authorization Code Request was supposed to grant access to.</returns>
-        IUser User
-        {
-            get;
-        }
-
-        /// <summary>
-        /// Gets the list of parsed scopes that were requested from the user.
-        /// </summary>
-        /// <remarks>
-        /// When implementing, make sure to mark this property as not serializable to prevent any information from being leaked.
-        /// </remarks>
-        /// <returns>Returns a <see cref="IEnumerable{IScope}"/> object that enumerates the list of scopes that were requested from the user.</returns>
-        IEnumerable<IScope> Scopes
-        {
-            get;
-        }
     }
 }

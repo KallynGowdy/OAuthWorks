@@ -152,7 +152,7 @@ namespace ExampleMvcWebApplication.Controllers
                 }
                 else if ((var scopeRequest = response.GetScopeAuthorizationRequest()) != null)
                 {
-                    return RedirectToRoute("/oauth/authorize", new { request = scopeRequest });
+                    return RedirectToRoute("Default", new { controller = "OAuth", action = "Authorize", request = scopeRequest });
                 }
                 else
                 {

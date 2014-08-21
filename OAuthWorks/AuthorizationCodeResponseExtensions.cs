@@ -33,7 +33,8 @@ namespace OAuthWorks
         /// <returns>Returns true if the user should be redirect, otherwise false.</returns>
         public static bool ShouldRedirect(this IAuthorizationCodeResponse response)
         {
-            return response.Redirect != null;
+            return response.Redirect != null &&
+                response.IsSuccessful;
         }
 
         /// <summary>
@@ -60,10 +61,10 @@ namespace OAuthWorks
             {
                 return new ScopeAuthorizationRequest
                 (
-                    client: unsuccessfulResponse.Client,
-                    scopes: unsuccessfulResponse.Scopes,
+                    client: unsuccessfulResponse.Request.Client,
+                    scopes: unsuccessfulResponse.Request.Scopes,
                     state: unsuccessfulResponse.State,
-                    user: unsuccessfulResponse.User,
+                    user: unsuccessfulResponse.Request.User,
                     redirectUri: unsuccessfulResponse.Redirect.AbsoluteUri
                 );
             }

@@ -96,8 +96,10 @@
     <Compile Include="Implementation\AccessTokenErrorDescriptionProvider.cs" />
     <Compile Include="Implementation\AccessTokenRequest.cs" />
     <Compile Include="Implementation\AuthorizationCodeErrorDescriptionProvider.cs" />
+    <Compile Include="Implementation\AuthorizationCodeResponse.cs" />
     <Compile Include="Implementation\BasicAccessToken.cs" />
     <Compile Include="Implementation\Hashing\HashedValue.cs" />
+    <Compile Include="Implementation\ProcessedAuthorizationCodeRequest.cs" />
     <Compile Include="Implementation\ScopeAuthorizationRequest.cs" />
     <Compile Include="Implementation\UnsuccessfulAccessTokenResponse.cs" />
     <Compile Include="Implementation\AuthorizationCode.cs" />
@@ -138,6 +140,7 @@
     <Compile Include="Implementation\UnsuccessfulAuthorizationCodeResponse.cs" />
     <Compile Include="Implementation\ValueIdFormatter.cs" />
     <Compile Include="IPasswordCredentialsAccessTokenRequest.cs" />
+    <Compile Include="IProcessedAuthorizationCodeRequest.cs" />
     <Compile Include="IRefreshToken.cs" />
     <Compile Include="IScopeAuthorizationRequest.cs" />
     <Compile Include="ISuccessfulAuthorizationCodeResponse.cs" />

@@ -43,5 +43,25 @@ namespace OAuthWorks
         {
             get;
         }
+
+        /// <summary>
+        /// Gets the <see cref="IProcessedAuthorizationCodeRequest"/> that led to this response.
+        /// </summary>
+        /// <remarks>
+        /// When implementing, make sure to mark this property as not serializable to prevent any information from being leaked.
+        /// </remarks>
+        /// <returns>Returns a <see cref="IProcessedAuthorizationCodeRequest"/> object.</returns>
+        IProcessedAuthorizationCodeRequest Request
+        {
+            get;
+        }
+
+        /// <summary>
+        /// Gets the state that was provided by the client in the incomming Authorization Request. REQUIRED ONLY IF the state was provided in the request.
+        /// </summary>
+        string State
+        {
+            get;
+        }
     }
 }

@@ -52,15 +52,5 @@ namespace OAuthWorks
         {
             get;
         }
-
-        /// <summary>
-        /// Gets the state that was sent by the client in the Authorization Request. REQUIRED ONLY IF the state was sent in the request.
-        /// </summary>
-        string State
-        {
-            get;
-        }
-
-        
     }
 }
