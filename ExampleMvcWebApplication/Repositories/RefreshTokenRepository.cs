@@ -129,7 +129,7 @@ namespace ExampleMvcWebApplication.Repositories
         public IEnumerable<IRefreshToken> GetByUserAndClient(IUser user, IClient client)
         {
             ThrowIfDisposed();
-            return Context.RefreshTokens.Where(t => t.User.Equals(user) && t.Client.Equals(client));
+            return Context.RefreshTokens.Where(t => t.User.Id == user.Id && t.Client.Name == client.Name);
         }
 
         /// <summary>

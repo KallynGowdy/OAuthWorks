@@ -194,12 +194,13 @@ namespace OAuthWorks
         /// <returns>Returns true if the client has access to the given users resources restricted by the given scope, otherwise false.</returns>
         bool HasAccess(IUser user, IClient client, IScope scope);
 
+
         /// <summary>
-        /// Determines if the given request contains a valid acess token that can retrieve/manipulate the given scope.
+        /// Validates the given authorization values (access token) and returns a result representing whether or not it was successful and what was wrong with it.
         /// </summary>
-        /// <param name="request">The request that contains the access token.</param>
-        /// <returns>Returns whether the given request is valid and can then access the given scope.</returns>
-        //bool HasAccess(IApiRequest request, IScope scope);
+        /// <param name="request">An object that contains values that were provided by the client to be used for authorization.</param>
+        /// <returns>Returns a new <see cref="IAuthorizationResult"/>An object that contains values provided by the client for authorization.</returns>
+        IAuthorizationResult ValidateAuthorization(IAuthorizationRequest request);
     }
 
     [ContractClassFor(typeof(IOAuthProvider))]
@@ -246,7 +247,6 @@ namespace OAuthWorks
 
         void IDisposable.Dispose()
         {
-            
         }
 
         IAccessTokenResponse IOAuthProvider.RequestAccessToken(IPasswordCredentialsAccessTokenRequest request)
@@ -258,6 +258,13 @@ namespace OAuthWorks
         {
             Contract.Ensures(Contract.Result<IEnumerable<IScope>>() != null);
             return default(IEnumerable<IScope>);
+        }
+
+        IAuthorizationResult IOAuthProvider.ValidateAuthorization(IAuthorizationRequest request)
+        {
+            Contract.Requires(request != null);
+            Contract.Ensures(Contract.Result<IAuthorizationResult>() != null);
+            return default(IAuthorizationResult);
         }
     }
 }

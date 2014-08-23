@@ -216,20 +216,20 @@ namespace OAuthWorks.Implementation.Hashing
         /// <summary>
         /// Determines if the specified value equals this one..
         /// </summary>
-        /// <param name="value">The value to determine equality against.</param>
+        /// <param name="other">The value to determine equality against.</param>
         /// <returns><c>true</c> if the specified <see cref="HashedValue"/> is equal to this instance; otherwise, <c>false</c>.</returns>
-        public bool Equals(HashedValue value)
+        public bool Equals(HashedValue other)
         {
-            return value != null &&
+            return other != null &&
                 (
                     ( //neither null
-                        value.Hash != null &&
+                        other.Hash != null &&
                         this.Hash != null &&
-                        value.Hash.Equals(this.Hash, StringComparison.Ordinal)
+                        other.Hash.Equals(this.Hash, StringComparison.Ordinal)
                     )
                     ||
                     ( //both null
-                        value.Hash == null &&
+                        other.Hash == null &&
                         this.Hash == null
                     )
                 );

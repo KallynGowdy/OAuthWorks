@@ -28,6 +28,7 @@ namespace OAuthWorks.Implementation.Factories
     /// </summary>
     public static class AccessTokenFactory
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
         /// <summary>
         /// Defines a static class that contains default values for <see cref="AccessTokenFactory{int}"/>.
         /// </summary>
@@ -64,8 +65,10 @@ namespace OAuthWorks.Implementation.Factories
             };
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "String")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
         /// <summary>
-        /// Defines a static class that 
+        /// Defines a static class that contains default values for <see cref="AccessTokenFactory{string}"/>.
         /// </summary>
         public static class String
         {
@@ -118,17 +121,7 @@ namespace OAuthWorks.Implementation.Factories
                 return Convert.ToBase64String(b);
             }
         }
-    }
 
-    /// <summary>
-    /// Defines a class that provides a basic implementation of <see cref="OAuthWorks.Factories.IAccessTokenFactory{T}"/>.
-    /// </summary>
-    /// <remarks>
-    /// This factory produces <see cref="OAuthWorks.Implementation.HashedAccessToken{TId}"/> objects. 
-    /// All of the tokens that it produces are Bearer tokens.
-    /// </remarks>
-    public class AccessTokenFactory<TId> : IAccessTokenFactory<HashedAccessToken<TId>>
-    {
         /// <summary>
         /// The default length (in bytes) of tokens that are generated.
         /// </summary>
@@ -140,7 +133,17 @@ namespace OAuthWorks.Implementation.Factories
         /// </summary>
         /// <value>3600 or 1 hour.</value>
         public const int DefaultTokenLifetime = 3600;
+    }
 
+    /// <summary>
+    /// Defines a class that provides a basic implementation of <see cref="OAuthWorks.Factories.IAccessTokenFactory{T}"/>.
+    /// </summary>
+    /// <remarks>
+    /// This factory produces <see cref="OAuthWorks.Implementation.HashedAccessToken{TId}"/> objects. 
+    /// All of the tokens that it produces are Bearer tokens.
+    /// </remarks>
+    public class AccessTokenFactory<TId> : IAccessTokenFactory<HashedAccessToken<TId>>
+    {
         /// <summary>
         /// Gets the function thatr generates a unique random ID.
         /// </summary>
@@ -200,7 +203,7 @@ namespace OAuthWorks.Implementation.Factories
         /// Initializes a new instance of the <see cref="AccessTokenFactory"/> class.
         /// </summary>
         public AccessTokenFactory(IValueIdFormatter<TId> idFormatter, Func<TId> idGenerator)
-            : this(DefaultTokenLength, DefaultTokenLifetime, idFormatter, idGenerator)
+            : this(AccessTokenFactory.DefaultTokenLength, AccessTokenFactory.DefaultTokenLifetime, idFormatter, idGenerator)
         {
         }
 

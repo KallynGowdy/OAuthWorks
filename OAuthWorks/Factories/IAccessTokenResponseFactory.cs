@@ -46,6 +46,6 @@ namespace OAuthWorks.Factories
         /// <param name="errorDescription">A more in-depth description of the error. May be null.</param>
         /// <param name="errorUri">A uri where a developer can go to find information about the error.</param>
         /// <returns>Returns a new <see cref="OAuthWorks.IUnsuccessfulAccessTokenResponse"/> object.</returns>
-        IUnsuccessfulAccessTokenResponse CreateError(AccessTokenRequestError errorCode, string errorDescription, Uri errorUri, Exception innerException);
+        IUnsuccessfulAccessTokenResponse CreateError(AccessTokenSpecificRequestError errorCode, string errorDescription, Uri errorUri, Exception innerException);
     }
 }

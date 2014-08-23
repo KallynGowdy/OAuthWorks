@@ -21,7 +21,7 @@ namespace ExampleMvcWebApplication
     /// should be disposed of or not.
     /// </summary>
     /// <typeparam name="T">The type of object wrapped by this object.</typeparam>
-    public interface IDisposableObject<T> : IDisposable where T : class, IDisposable
+    public interface IDisposableObject<out T> : IDisposable where T : class, IDisposable
     {
         /// <summary>
         /// Gets whether this object has been disposed already.

@@ -36,6 +36,8 @@ namespace OAuthWorks.Implementation.Factories
         /// </summary>
         public static readonly Func<int, string> DefaultValueGenerator = AccessTokenFactory.GenerateToken;
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "String")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")] // These are by design
         public static class String
         {
             /// <summary>
@@ -140,7 +142,7 @@ namespace OAuthWorks.Implementation.Factories
         /// <param name="valueGenerator">A function that, given an integer returns a string that represents that many pseudorandom bytes.</param>
         public RefreshTokenFactory(int tokenLength, IValueIdFormatter<TId> idFormatter, Func<TId> idGenerator, Func<int, string> valueGenerator)
         {
-            if (tokenLength <= 0) throw new ArgumentOutOfRangeException("tokenLength must be greater than 0.", "tokenLength");
+            if (tokenLength <= 0) throw new ArgumentOutOfRangeException("tokenLength", "tokenLength must be greater than 0.");
 
             Contract.Requires(idFormatter != null);
             Contract.Requires(idGenerator != null);

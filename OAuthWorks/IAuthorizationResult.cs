@@ -1,4 +1,4 @@
-﻿// Copyright 2014 Kallyn Gowdy
+// Copyright 2014 Kallyn Gowdy
 // 
 //    Licensed under the Apache License, Version 2.0 (the "License");
 //    you may not use this file except in compliance with the License.
@@ -12,37 +12,32 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace OAuthWorks
 {
     /// <summary>
-    /// Defines an attribute that specifies that particular enum value belongs to a subgroup of another enum value.
+    /// Defines an interface for objects that represent the result of the validation of an access token that was given during a request
+    /// to protected resources.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Field)]
-    public sealed class EnumSubgroupAttribute : Attribute
+    public interface IAuthorizationResult
     {
         /// <summary>
-        /// Gets or sets the enum value that this Enum member is a subgroup of.
+        /// Gets whether or not the authorization was successful.
+        /// If true, the given access token/request was valid, otherwise it is not.
         /// </summary>
         /// <returns></returns>
-        public object SubgroupOf
+        bool IsSuccessful
         {
             get;
-            private set;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EnumSubgroupAttribute"/> class.
+        /// Gets a <see cref="IAuthorizationResultDescription"/> object that describes the error that occured.
+        /// Can be null if <see cref="IsSuccessful"/> is true.
         /// </summary>
-        /// <param name="subgroupOf">The subgroup that this enum member is a member of.</param>
-        public EnumSubgroupAttribute(object subgroupOf)
+        /// <returns></returns>
+        IAuthorizationResultDescription ErrorDescription
         {
-            this.SubgroupOf = subgroupOf;
+            get;
         }
     }
 }

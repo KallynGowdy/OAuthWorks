@@ -31,6 +31,17 @@ namespace OAuthWorks.Implementation.Hashing
     {
         Rfc2898DeriveBytes pbkdf2;
 
+        /// <summary>
+        /// Whether this object has been disposed or not.
+        /// </summary>
+        private bool disposed = false;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Pbkdf2Sha1"/> class.
+        /// </summary>
+        /// <param name="password">The password.</param>
+        /// <param name="salt">The salt.</param>
+        /// <param name="iterations">The iterations.</param>
         public Pbkdf2Sha1(byte[] password, byte[] salt, int iterations)
         {
             Contract.Requires(password != null);
@@ -39,6 +50,12 @@ namespace OAuthWorks.Implementation.Hashing
             pbkdf2 = new Rfc2898DeriveBytes(password, salt, iterations);
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Pbkdf2Sha1"/> class.
+        /// </summary>
+        /// <param name="password">The password.</param>
+        /// <param name="saltLength">Length of the salt.</param>
+        /// <param name="iterations">The iterations.</param>
         public Pbkdf2Sha1(byte[] password, int saltLength, int iterations)
         {
             Contract.Requires(password != null);
@@ -53,34 +70,87 @@ namespace OAuthWorks.Implementation.Hashing
             pbkdf2 = new Rfc2898DeriveBytes(password, salt, iterations);
         }
 
+        /// <summary>
+        /// Gets the salt that is used for hashing.
+        /// </summary>
         public byte[] Salt
         {
-            get { return pbkdf2.Salt; }
+            get
+            {
+                ThrowIfDisposed();
+                return pbkdf2.Salt;
+            }
         }
 
+        /// <summary>
+        /// Gets the number of iterations used in creating the derived hash.
+        /// </summary>
         public int Iterations
         {
-            get { return pbkdf2.IterationCount; }
+            get
+            {
+                ThrowIfDisposed();
+                return pbkdf2.IterationCount;
+            }
         }
 
+        /// <summary>
+        /// Returns the pseudo-random key for this object.
+        /// </summary>
+        /// <param name="length">The number of pseudo-random bytes to return.</param>
+        /// <returns></returns>
         public byte[] GetBytes(int length)
         {
+            ThrowIfDisposed();
             return pbkdf2.GetBytes(length);
         }
 
+        /// <summary>
+        /// Throws a new <see cref="ObjectDisposedException"/> if this object has been disposed.
+        /// </summary>
+        private void ThrowIfDisposed()
+        {
+            if (disposed)
+            {
+                throw new ObjectDisposedException(GetType().FullName);
+            }
+        }
 
+        /// <summary>
+        /// Finalizes an instance of the <see cref="Pbkdf2Sha1"/> class.
+        /// </summary>
+        ~Pbkdf2Sha1()
+        {
+            Dispose(false);
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
         public void Dispose()
         {
             this.Dispose(true);
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing)
+            if (!disposed)
             {
-                pbkdf2.Dispose();
-            }            
+                if (disposing)
+                {
+                    if (pbkdf2 != null)
+                    {
+                        pbkdf2.Dispose();
+                        pbkdf2 = null;
+                    }
+                }
+            }
+            disposed = true;
         }
     }
 }

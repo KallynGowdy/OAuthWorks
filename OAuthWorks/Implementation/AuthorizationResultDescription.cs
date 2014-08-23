@@ -15,34 +15,49 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OAuthWorks
+namespace OAuthWorks.Implementation
 {
     /// <summary>
-    /// Defines an attribute that specifies that particular enum value belongs to a subgroup of another enum value.
+    /// Defines a class that provides a basic implementation of <see cref="IAuthorizationResultDescription"/>.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Field)]
-    public sealed class EnumSubgroupAttribute : Attribute
+    [DataContract]
+    public class AuthorizationResultDescription : IAuthorizationResultDescription
     {
         /// <summary>
-        /// Gets or sets the enum value that this Enum member is a subgroup of.
+        /// Gets the error code that was returned by the server.
         /// </summary>
         /// <returns></returns>
-        public object SubgroupOf
+        [DataMember(Name = "error")]
+        public string Error
         {
             get;
-            private set;
+            set;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EnumSubgroupAttribute"/> class.
+        /// Gets the human-readable description of the error.
         /// </summary>
-        /// <param name="subgroupOf">The subgroup that this enum member is a member of.</param>
-        public EnumSubgroupAttribute(object subgroupOf)
+        /// <returns></returns>
+        [DataMember(Name = "error_description")]
+        public string ErrorDescription
         {
-            this.SubgroupOf = subgroupOf;
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets the uri that points to a web page that provides a description of the error.
+        /// </summary>
+        /// <returns></returns>
+        [DataMember(Name = "error_uri")]
+        public string ErrorUri
+        {
+            get;
+            set;
         }
     }
 }

@@ -24,9 +24,9 @@ using System.Threading.Tasks;
 namespace OAuthWorks.Implementation
 {
     /// <summary>
-    /// Defines a class that provides an implementation of <see cref="OAuthWorks.AuthorizationCode"/>.
+    /// Defines a static class that contains default values for <see cref="HashedAuthorizationCode{TId}"/> objects.
     /// </summary>
-    public class HashedAuthorizationCode<TId> : AuthorizationCode<TId>
+    public static class HashedAuthorizationCode
     {
         /// <summary>
         /// The default number of hash iterations for authorization codes.
@@ -43,7 +43,13 @@ namespace OAuthWorks.Implementation
         /// </summary>
         /// <value>20 bytes (160 bits)</value>
         public const int DefaultHashLength = 20;
+    }
 
+    /// <summary>
+    /// Defines a class that provides an implementation of <see cref="OAuthWorks.AuthorizationCode"/>.
+    /// </summary>
+    public class HashedAuthorizationCode<TId> : AuthorizationCode<TId>
+    {
         /// <summary>
         /// Gets the hash of the code.
         /// </summary>

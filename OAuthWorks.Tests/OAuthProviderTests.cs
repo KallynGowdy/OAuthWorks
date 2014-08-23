@@ -28,6 +28,18 @@ namespace OAuthWorks.Tests
     [TestFixture]
     public class OAuthProviderTests
     {
+        private const string clientId = "bob";
+        private const string exampleScopeId = "exampleScope";
+        private const string otherScopeId = "otherScope";
+        private const string clientName = "Client";
+        private const string badClientId = "bill";
+        private const string badClientName = "Evil";
+        private const string clientRedirectUri = "http://example.com/oauth/response/token";
+        private const string secret = "secret";
+        private const string otherSecret = "otherSecret";
+        private const string code = "code";
+        private const string access_token = "access_token";
+        private const string not_access_token = "not_access_token";
         OAuthProvider provider;
         DependencyInjector dependencyInjector = new DependencyInjector();
 
@@ -50,36 +62,36 @@ namespace OAuthWorks.Tests
 
             exampleScope = new Scope
             {
-                Id = "exampleScope",
+                Id = exampleScopeId,
                 Description = "The first scope that can be requested"
             };
 
             otherScope = new Scope
             {
-                Id = "otherScope",
+                Id = otherScopeId,
                 Description = "Another scope that can be requested."
             };
 
             ((ScopeRepository)provider.ScopeRepository).Add(exampleScope);
             ((ScopeRepository)provider.ScopeRepository).Add(otherScope);
 
-            client = new Client("secret")
+            client = new Client(secret)
             {
-                Id = "bob",
-                Name = "Client",
+                Id = clientId,
+                Name = clientName,
                 RedirectUris = new Uri[]
                 {
-                    new Uri("http://example.com/oauth/response/token")
+                    new Uri(clientRedirectUri)
                 }
             };
 
-            badClient = new Client("otherSecret")
+            badClient = new Client(otherSecret)
             {
-                Id = "bill",
-                Name = "Evil",
+                Id = badClientId,
+                Name = badClientName,
                 RedirectUris = new Uri[]
                 {
-                    new Uri("http://example.com/oauth/response/token")
+                    new Uri(clientRedirectUri)
                 }
             };
 
@@ -127,24 +139,24 @@ namespace OAuthWorks.Tests
         }
 
         [Test]
-        [TestCase(null, "secret", "code", "access_token", "http://example.com/oauth/response/token", AccessTokenRequestError.InvalidClient)]
-        [TestCase("", "secret", "code", "access_token", "http://example.com/oauth/response/token", AccessTokenRequestError.InvalidClient)]
-        [TestCase("bob", null, "code", "access_token", "http://example.com/oauth/response/token", AccessTokenRequestError.InvalidClient)]
-        [TestCase("bob", "", "code", "access_token", "http://example.com/oauth/response/token", AccessTokenRequestError.InvalidClient)]
-        [TestCase("bob", "secret", null, "access_token", "http://example.com/oauth/response/token", AccessTokenRequestError.InvalidRequest)]
-        [TestCase("bob", "secret", "", "access_token", "http://example.com/oauth/response/token", AccessTokenRequestError.InvalidRequest)]
-        [TestCase("bob", "secret", "code", "access_token", null, AccessTokenRequestError.InvalidRequest)]
-        [TestCase("bob", "secret", "code", null, "http://example.com/oauth/response/token", AccessTokenRequestError.UnsupportedGrantType)]
-        [TestCase("bob", "secret", "code", "", "http://example.com/oauth/response/token", AccessTokenRequestError.UnsupportedGrantType)]
-        [TestCase("bob", "secret", "code", "not_access_token", "http://example.com/oauth/response/token", AccessTokenRequestError.UnsupportedGrantType)]
-        public void TestInvalidAccessTokenRequest(string clientId, string clientSecret, string authorizationCode, string grantType, string redirectUri, AccessTokenRequestError expectedError)
+        [TestCase(null, secret, code, access_token, clientRedirectUri, AccessTokenSpecificRequestError.NullClientId)]
+        [TestCase("", secret, code, access_token, clientRedirectUri, AccessTokenSpecificRequestError.NullClientId)]
+        [TestCase(clientId, null, code, access_token, clientRedirectUri, AccessTokenSpecificRequestError.NullClientSecret)]
+        [TestCase(clientId, "", code, access_token, clientRedirectUri, AccessTokenSpecificRequestError.NullClientSecret)]
+        [TestCase(clientId, secret, null, access_token, clientRedirectUri, AccessTokenSpecificRequestError.NullAuthorizationCode)]
+        [TestCase(clientId, secret, "", access_token, clientRedirectUri, AccessTokenSpecificRequestError.NullAuthorizationCode)]
+        [TestCase(clientId, secret, code, access_token, null, AccessTokenSpecificRequestError.NullRedirectUri)]
+        [TestCase(clientId, secret, code, null, clientRedirectUri, AccessTokenSpecificRequestError.NullGrantType)]
+        [TestCase(clientId, secret, code, "", clientRedirectUri, AccessTokenSpecificRequestError.NullGrantType)]
+        [TestCase(clientId, secret, code, not_access_token, clientRedirectUri, AccessTokenSpecificRequestError.InvalidGrantType)]
+        public void TestInvalidAccessTokenRequest(string clientId, string clientSecret, string authorizationCode, string grantType, string redirectUri, AccessTokenSpecificRequestError expectedError)
         {
             var request = new InvalidAccessTokenRequest { ClientId = clientId, ClientSecret = clientSecret, AuthorizationCode = authorizationCode, GrantType = grantType, RedirectUri = (redirectUri != null ? new Uri(redirectUri) : null) };
 
             IUnsuccessfulAccessTokenResponse response = provider.RequestAccessToken(request) as IUnsuccessfulAccessTokenResponse;
 
             Assert.NotNull(response);
-            Assert.AreEqual(expectedError, response.Error);
+            Assert.AreEqual(expectedError, response.SpecificError);
         }
 
         [Test]
@@ -164,10 +176,10 @@ namespace OAuthWorks.Tests
             ITokenRefreshRequest refreshRequest = new TokenRefreshRequest
             (
                 refresh.TokenValue,
-                "bob",
+                clientId,
                 "secret",
                 "refresh_token",
-                "exampleScope"
+                exampleScopeId
             );
 
             ISuccessfulAccessTokenResponse response = provider.RefreshAccessToken(refreshRequest) as ISuccessfulAccessTokenResponse;
@@ -175,17 +187,17 @@ namespace OAuthWorks.Tests
             Assert.That(response, Is.Not.Null);
             Assert.That(response.AccessToken, Is.Not.Null);
             Assert.That(response.RefreshToken, Is.Not.Null);
-            Assert.That(response.Scope, Is.EqualTo("exampleScope"));
+            Assert.That(response.Scope, Is.EqualTo(exampleScopeId));
             Assert.That(response.TokenType, Is.EqualTo("Bearer"));
             Assert.That(oldToken.Token.IsValid(), Is.False);
             Assert.That(refresh.Token.IsValid(), Is.False);
         }
 
         [Test]
-        [TestCase("exampleScope", "state", "secret", "http://example.com/oauth/response/token")]
-        [TestCase("nonExistantScope", "state", "secret", "http://example.com/oauth/response/token")]
-        [TestCase("otherScope, exampleScope", "state", "secret", "http://example.com/oauth/response/token")]
-        [TestCase("", "state", "secret", "http://example.com/oauth/response/token")]
+        [TestCase(exampleScopeId, "state", "secret", clientRedirectUri)]
+        [TestCase("nonExistantScope", "state", "secret", clientRedirectUri)]
+        [TestCase("otherScope, exampleScope", "state", "secret", clientRedirectUri)]
+        [TestCase("", "state", "secret", clientRedirectUri)]
         public void TestGetRequestedScopes(string scope, string state, string secret, string redirectUri)
         {
             AuthorizationCodeRequest request = new AuthorizationCodeRequest
@@ -210,7 +222,7 @@ namespace OAuthWorks.Tests
         }
 
         [Test]
-        [TestCase("exampleScope", "state", "secret", "otherSecret", "http://example.com/oauth/response/token")]
+        [TestCase(exampleScopeId, "state", "secret", otherSecret, clientRedirectUri)]
         public void TestInvalidClientTokenRetrieval(string scope, string state, string secret, string badSecret, string redirectUri)
         {
             User user = new User
@@ -245,11 +257,11 @@ namespace OAuthWorks.Tests
         }
 
         [Test]
-        [TestCase("exampleScope", "state", "http://example.com/oauth/response/token")]
-        [TestCase("nonExistantScope", "state", "http://example.com/oauth/response/token")]
-        [TestCase("exampleScope", "state", "http://example.com/oauth/response/token")]
-        [TestCase("exampleScope", "state", "http://example.com/oauth/v1/response/token")]
-        public void TestRequestAuthorizationCode(string scope, string state, string redirectUri)
+        [TestCase(clientId, exampleScopeId, "state", clientRedirectUri)]
+        [TestCase(clientId, "nonExistantScope", "state", clientRedirectUri)]
+        [TestCase(clientId, exampleScopeId, "state", clientRedirectUri)]
+        [TestCase(clientId, exampleScopeId, "state", "http://example.com/oauth/v1/response/token")]
+        public void TestRequestAuthorizationCode(string clientId, string scope, string state, string redirectUri)
         {
             User user = new User
             {
@@ -279,20 +291,24 @@ namespace OAuthWorks.Tests
             else
             {
                 IUnsuccessfulAuthorizationCodeResponse unsuccess = (IUnsuccessfulAuthorizationCodeResponse)response;
-                switch (unsuccess.ErrorCode)
+                switch (unsuccess.SpecificErrorCode)
                 {
-                    case AuthorizationCodeRequestErrorType.InvalidScope:
+                    case AuthorizationCodeRequestSpecificErrorType.MissingOrUnknownScope:
                         Assert.IsEmpty(provider.GetRequestedScopes(codeRequest.Scope));
                         break;
-                    case AuthorizationCodeRequestErrorType.InvalidRequest:
+                    case AuthorizationCodeRequestSpecificErrorType.InvalidRedirectUri:
                         Assert.False(client.IsValidRedirectUri(codeRequest.RedirectUri));
                         break;
+                    case AuthorizationCodeRequestSpecificErrorType.MissingClient:
+                        Assert.True(string.IsNullOrEmpty(clientId));
+                        break;
+
                 }
             }
         }
 
         [Test]
-        [TestCase("bob", "secret", "exampleScope", "state", "http://example.com/oauth/response/token")]
+        [TestCase(clientId, "secret", exampleScopeId, "state", clientRedirectUri)]
         public void TestRevokeAccess(string clientId, string clientSecret, string scope, string state, string redirectUri)
         {
             User user = new User
@@ -325,7 +341,7 @@ namespace OAuthWorks.Tests
             Assert.True(!token.Revoked);
             Assert.True(!token.Expired);
 
-            token.Revoke();
+            provider.RevokeAccess(user, client);
 
             Assert.True(token.Revoked);
             Assert.True(!token.Expired);
@@ -346,10 +362,10 @@ namespace OAuthWorks.Tests
             //A request from the client for an authorization code.
             AuthorizationCodeRequest codeRequest = new AuthorizationCodeRequest
             (
-                clientId: "bob",
-                redirectUri: new Uri("http://example.com/oauth/response/token"),
+                clientId: clientId,
+                redirectUri: new Uri(clientRedirectUri),
                 responseType: AuthorizationCodeResponseType.Code,
-                scope: "exampleScope",
+                scope: exampleScopeId,
                 state: "state"
             );
 
@@ -364,9 +380,9 @@ namespace OAuthWorks.Tests
 
             AuthorizationCodeGrantAccessTokenRequest tokenRequest = new AuthorizationCodeGrantAccessTokenRequest
             (
-                clientId: "bob",
+                clientId: clientId,
                 clientSecret: "secret",
-                redirectUri: new Uri("http://example.com/oauth/response/token"),
+                redirectUri: new Uri(clientRedirectUri),
                 authorizationCode: response.Code
             );
 
@@ -382,7 +398,7 @@ namespace OAuthWorks.Tests
 
             Assert.True(provider.HasAccess(user, client, exampleScope), "The provider does not have access when it should");
 
-            Client otherClient = new Client("otherSecret")
+            Client otherClient = new Client(otherSecret)
             {
                 Id = "evilClient",
                 Name = "BadGuy",

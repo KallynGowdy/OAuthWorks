@@ -12,8 +12,6 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-
-
 using OAuthWorks.DataAccess.Repositories;
 using OAuthWorks.Factories;
 using OAuthWorks.Implementation.Factories;
@@ -30,6 +28,7 @@ namespace OAuthWorks
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Auth")]
     public class OAuthProvider : IOAuthProvider
     {
+        #region Defaults
         /// <summary>
         /// The default <see cref="IAccessTokenFactory{TAccessToken}"/> constructor.
         /// </summary>
@@ -48,13 +47,16 @@ namespace OAuthWorks
         /// <summary>
         /// The default <see cref="IAuthorizationCodeResponseFactory"/> constructor.
         /// </summary>
-        public static readonly Func<IAuthorizationCodeResponseFactory> DefaultAuthorizationCodeReponseFactoryConstructor = () => new AuthorizationCodeResponseFactory();
+        public static readonly Func<IAuthorizationCodeResponseFactory> DefaultAuthorizationCodeResponseFactoryConstructor = () => new AuthorizationCodeResponseFactory();
 
         /// <summary>
         /// The default <see cref="IRefreshTokenFactory{TRefreshToken}"/> constructor.
         /// </summary>
         public static readonly Func<IRefreshTokenFactory<IRefreshToken>> DefaultRefreshTokenFactoryConstructor = () => Implementation.Factories.RefreshTokenFactory.String.DefaultFactory;
 
+        #endregion
+
+        #region Constructors
         /// <summary>
         /// Creates a new <see cref="OAuthProvider"/> using a default factories.
         /// </summary>
@@ -63,7 +65,7 @@ namespace OAuthWorks
                 DefaultAccessTokenFactoryConstructor(),
                 DefaultAccessTokenResponseFactoryConstructor(),
                 DefaultAuthorizationCodeFactoryConstructor(),
-                DefaultAuthorizationCodeReponseFactoryConstructor(),
+                DefaultAuthorizationCodeResponseFactoryConstructor(),
                 DefaultRefreshTokenFactoryConstructor()
             )
         {
@@ -139,6 +141,11 @@ namespace OAuthWorks
             RefreshTokenRepository = refreshTokenRepository;
         }
 
+        #endregion
+
+        #region Data Members
+
+        #region Repositories
         /// <summary>
         /// Gets or sets the repository of scopes that this provider has access to.
         /// </summary>
@@ -161,14 +168,6 @@ namespace OAuthWorks
             get;
             set;
         }
-        /// <summary>
-        /// Gets or sets the factory used to create new <see cref="OAuthWorks.IAuthorizationCodeResponse"/> objects.
-        /// </summary>
-        public IAuthorizationCodeResponseFactory AuthorizationCodeResponseFactory
-        {
-            get;
-            set;
-        }
 
         /// <summary>
         /// Gets or sets the repository of Authorization Code objects that this provider has access to.
@@ -179,6 +178,34 @@ namespace OAuthWorks
             set;
         }
 
+        /// <summary>
+        /// Gets or sets the repository of Access Token objects that this provider has access to.
+        /// </summary>
+        public IAccessTokenRepository AccessTokenRepository
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets the repository that is used to store OAuthWorks.IRefreshToken objects.
+        /// </summary>
+        public IRefreshTokenRepository RefreshTokenRepository
+        {
+            get;
+            set;
+        }
+        #endregion
+
+        #region Factories
+        /// <summary>
+        /// Gets or sets the factory used to create new <see cref="OAuthWorks.IAuthorizationCodeResponse"/> objects.
+        /// </summary>
+        public IAuthorizationCodeResponseFactory AuthorizationCodeResponseFactory
+        {
+            get;
+            set;
+        }
 
         /// <summary>
         /// Gets or sets the factory that creates Authorization Code objects for this provider.
@@ -189,15 +216,6 @@ namespace OAuthWorks
             set;
         }
 
-
-        /// <summary>
-        /// Gets or sets the repository of Access Token objects that this provider has access to.
-        /// </summary>
-        public IAccessTokenRepository AccessTokenRepository
-        {
-            get;
-            set;
-        }
 
         /// <summary>
         /// Gets or sets the factory that creates Access Token objects for this provider.
@@ -225,16 +243,9 @@ namespace OAuthWorks
             get;
             set;
         }
+        #endregion
 
-        /// <summary>
-        /// Gets or sets the repository that is used to store OAuthWorks.IRefreshToken objects.
-        /// </summary>
-        public IRefreshTokenRepository RefreshTokenRepository
-        {
-            get;
-            set;
-        }
-
+        #region Scope Utilities
         private Func<IEnumerable<IScope>, string> scopeFormatter = s => string.Join(" ", s);
 
         /// <summary>
@@ -271,7 +282,9 @@ namespace OAuthWorks
                 scopeParser = value;
             }
         }
+        #endregion
 
+        #region Description/Uri Providers
         private IAccessTokenErrorDescriptionProvider accessTokenErrorDescriptionProvider = new AccessTokenErrorDescriptionProvider();
 
         private Func<AccessTokenRequestError, IClient, Uri> accessTokenErrorUriProvider = (e, c) => null;
@@ -327,6 +340,48 @@ namespace OAuthWorks
                 accessTokenErrorUriProvider = value;
             }
         }
+        #endregion
+
+        #region Token Distribution/Cleanup Options
+        /// <summary>
+        /// Gets or sets whether to distribue refresh tokens.
+        /// </summary>
+        public bool DistributeRefreshTokens
+        {
+            get;
+            set;
+        }
+        = true;
+
+        /// <summary>
+        /// Gets or sets whether to reuse refresh tokens across newly issued tokens.
+        /// </summary>
+        public bool ReuseRefreshTokens
+        {
+            get;
+            set;
+        }
+        = false;
+
+        /// <summary>
+        /// Gets or sets whether newly revoked tokens (access or refresh) should be deleted from their respective repository.
+        /// </summary>
+        /// <remarks>
+        /// When <see cref="IOAuthProvider.RevokeAccess(IUser, IClient)"/> or <see cref="IOAuthProvider.RefreshAccessToken(ITokenRefreshRequest)"/> is called,
+        /// access tokens and/or refresh tokens become invalidated. When this value is true, access tokens and refresh tokens that are revoked by this provider
+        /// will be deleted by calling <see cref="IAccessTokenRepository{IAccessToken}.Remove(IAccessToken)"/> or <see cref="IRefreshTokenRepository{IRefreshToken}.Remove(IRefreshToken)"/>
+        /// </remarks>
+        public bool DeleteRevokedTokens
+        {
+            get;
+            set;
+        }
+        = false;
+        #endregion
+
+        #endregion
+
+        #region IOAuthProvider Implementation
 
         /// <summary>
         /// Gets a list of the scopes that are being requested by the given <see cref="IAuthorizationCodeRequest"/> object.
@@ -339,6 +394,7 @@ namespace OAuthWorks
             return result.All(s => s != null) ? result : new IScope[0];
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")] // Validated by call to 'GetRequestError()'
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")] // Suppressed to be able to return IAuthorizationCodeResponse objects according to OAuth 2.0
         /// <summary>
         /// Initiates the Authorization Code flow based on the given request and returns a response that defines what response to send back to the user agent.
@@ -437,24 +493,6 @@ namespace OAuthWorks
             else
             {
                 return CreateAuthorizationCodeError(error.Value, null, null, user: user);
-            }
-        }
-
-        /// <summary>
-        /// Determines if the given <see cref="IAuthorizationCodeRequest"/> is valid for the given <see cref="IClient"/> and returns a value specifiying what was wrong if it wasn't valid.
-        /// </summary>
-        /// <param name="request">The request that should examined to see if the proper client credientials were given.</param>
-        /// <param name="client">The client that the request should be validated against.</param>
-        /// <returns>Returns a new <see cref="AuthorizationCodeRequestSpecificErrorType"/> object that specifies what was wrong with the given client. Returns null if nothing was wrong.</returns>
-        private static AuthorizationCodeRequestSpecificErrorType? GetClientError(IAuthorizationCodeRequest request, IClient client)
-        {
-            if (client == null)
-            {
-                return AuthorizationCodeRequestSpecificErrorType.MissingClient;
-            }
-            else
-            {
-                return null;
             }
         }
 
@@ -593,6 +631,7 @@ namespace OAuthWorks
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")] // Validated by call to 'GetRequestError()'
         /// <summary>
         /// Requests an access refreshToken from the authorization server based on the given request using the Resource Owner Password Credentials flow. (Section 4.3 [RFC 6749] http://tools.ietf.org/html/rfc6749#section-4.3).
         /// </summary>
@@ -663,11 +702,120 @@ namespace OAuthWorks
         }
 
         /// <summary>
+        /// Revokes access from the given client on behalf of the given user.
+        /// </summary>
+        /// <param name="user">The user that wants to revoke access from the given client.</param>
+        /// <param name="client">The client to revoke access from.</param>
+        /// <exception cref="System.ArgumentNullException">Thrown if one of the given arguments is null.</exception>
+        public void RevokeAccess(IUser user, IClient client)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+            if (client == null)
+            {
+                throw new ArgumentNullException("client");
+            }
+
+            AuthorizationCodeRepository.GetByUserAndClient(user, client).Where(c => c != null && !c.Revoked).ForEach(c => c.Revoke());
+            AccessTokenRepository.GetByUserAndClient(user, client).Where(t => t != null && !t.Revoked).ForEach(t => t.Revoke());
+            RefreshTokenRepository.GetByUserAndClient(user, client).Where(t => t != null && !t.Revoked).ForEach(t => t.Revoke());
+        }
+
+        /// <summary>
+        /// Validates the given authorization values (access token) and returns a result representing whether or not it was successful and what was wrong with it.
+        /// </summary>
+        /// <param name="request">An object that contains values that were provided by the client to be used for authorization.</param>
+        /// <returns>
+        /// Returns a new <see cref="IAuthorizationResult" />
+        /// </returns>
+        public IAuthorizationResult ValidateAuthorization(IAuthorizationRequest request)
+        {
+            if (request == null) throw new ArgumentNullException("request");
+            if ("bearer".Equals(request.Type, StringComparison.OrdinalIgnoreCase))
+            {
+                IAccessToken token = AccessTokenRepository.GetByToken(request.Authorization);
+
+                if (token != null)
+                {
+                    if (!token.Expired)
+                    {
+                        if (!token.Revoked)
+                        {
+                            if (request.RequiredScopes.All(s => token.Scopes.Contains(s)))
+                            {
+                                return AuthorizationResult.Success;
+                            }
+                            else
+                            {
+                                return AuthorizationResult.Failure.NotGrantedPermission;
+                            }
+                        }
+                        else
+                        {
+                            return AuthorizationResult.Failure.RevokedToken;
+                        }
+                    }
+                    else
+                    {
+                        return AuthorizationResult.Failure.ExpiredToken;
+                    }
+                }
+                else
+                {
+                    return AuthorizationResult.Failure.MissingToken;
+                }
+            }
+            else
+            {
+                return AuthorizationResult.Failure.UnsupportedType;
+            }
+        }
+
+        /// <summary>
+        /// Determines if the given client has been given access to the given scope by the given user.
+        /// </summary>
+        /// <param name="user">The User that is currently logged in.</param>
+        /// <param name="client">The client to determine access for.</param>
+        /// <param name="scope">The scope that the client wants access to.</param>
+        /// <returns>Returns true if the client has access to the given users resources restricted by the given scope, otherwise false.</returns>
+        public bool HasAccess(IUser user, IClient client, IScope scope)
+        {
+            IAccessToken token = AccessTokenRepository.GetByUserAndClient(user, client).FirstOrDefault(t => !t.Revoked && !t.Expired);
+            if (token != null)
+            {
+                return ScopeRepository.Any(a => a.Equals(scope) && token.Scopes.Contains(a));
+            }
+            return false;
+        }
+        #endregion
+
+        #region Validation
+        /// <summary>
+        /// Determines if the given <see cref="IAuthorizationCodeRequest"/> is valid for the given <see cref="IClient"/> and returns a value specifiying what was wrong if it wasn't valid.
+        /// </summary>
+        /// <param name="request">The request that should examined to see if the proper client credientials were given.</param>
+        /// <param name="client">The client that the request should be validated against.</param>
+        /// <returns>Returns a new <see cref="AuthorizationCodeRequestSpecificErrorType"/> object that specifies what was wrong with the given client. Returns null if nothing was wrong.</returns>
+        protected virtual AuthorizationCodeRequestSpecificErrorType? GetClientError(IAuthorizationCodeRequest request, IClient client)
+        {
+            if (client == null)
+            {
+                return AuthorizationCodeRequestSpecificErrorType.MissingClient;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Gets the first error that is wrong with the given request, returns null if nothing is directly wrong.
         /// </summary>
         /// <param name="request">The request to examine for faults.</param>
         /// <returns>Returns the error that identifies what is wrong with the given request, returns null if nothing is wrong.</returns>
-        private AccessTokenSpecificRequestError? GetRequestError(IAuthorizationCodeGrantAccessTokenRequest request)
+        protected virtual AccessTokenSpecificRequestError? GetRequestError(IAuthorizationCodeGrantAccessTokenRequest request)
         {
             if (request == null)
             {
@@ -688,6 +836,10 @@ namespace OAuthWorks
             else if (string.IsNullOrEmpty(request.AuthorizationCode))
             {
                 return AccessTokenSpecificRequestError.NullAuthorizationCode;
+            }
+            else if(string.IsNullOrEmpty(request.GrantType))
+            {
+                return AccessTokenSpecificRequestError.NullGrantType;
             }
             else if (!"authorization_code".Equals(request.GrantType, StringComparison.Ordinal))
             {
@@ -735,7 +887,7 @@ namespace OAuthWorks
         /// <param name="request">The request to examine with the token and client.</param>
         /// <param name="client">The client to examine with the token and request.</param>
         /// <returns>Returns the <see cref="AuthorizationCodeRequestSpecificErrorType"/> object that specifies what was wrong, returns null if nothing was wrong.</returns>
-        private AccessTokenSpecificRequestError? GetRefreshTokenError(IRefreshToken refreshToken, ITokenRefreshRequest request, IClient client)
+        protected virtual AccessTokenSpecificRequestError? GetRefreshTokenError(IRefreshToken refreshToken, ITokenRefreshRequest request, IClient client)
         {
             if (refreshToken == null)
             {
@@ -764,7 +916,7 @@ namespace OAuthWorks
         /// </summary>
         /// <param param name="request">The request to examine for faults.</param>
         /// <returns>Returns the <see cref="AuthorizationCodeRequestSpecificErrorType"/> object that specifies what was wrong, returns null if nothing was wrong.</returns>
-        private AccessTokenSpecificRequestError? GetRequestError(ITokenRefreshRequest request)
+        protected virtual AccessTokenSpecificRequestError? GetRequestError(ITokenRefreshRequest request)
         {
             if (request == null)
             {
@@ -797,7 +949,7 @@ namespace OAuthWorks
         /// </summary>
         /// <param name="request">The incomming access token request.</param>
         /// <returns>Returns a new <see cref="AccessTokenSpecificRequestError"/> object that specifies the first thing wrong with the given parameters, returns null if none exist.</returns>
-        private AccessTokenSpecificRequestError? GetRequestError(IPasswordCredentialsAccessTokenRequest request)
+        protected virtual AccessTokenSpecificRequestError? GetRequestError(IPasswordCredentialsAccessTokenRequest request)
         {
             if (request == null)
             {
@@ -862,7 +1014,7 @@ namespace OAuthWorks
         /// <returns>
         /// Returns a new <see cref="IUnsuccessfulAuthorizationCodeResponse" /> object that represents a valid OAuth 2.0 Authorization Code Error resposne.
         /// </returns>
-        private IUnsuccessfulAuthorizationCodeResponse CreateAuthorizationCodeError(AuthorizationCodeRequestSpecificErrorType specificError, Uri redirect, IProcessedAuthorizationCodeRequest request, Exception innerException = null)
+        protected virtual IUnsuccessfulAuthorizationCodeResponse CreateAuthorizationCodeError(AuthorizationCodeRequestSpecificErrorType specificError, Uri redirect, IProcessedAuthorizationCodeRequest request, Exception innerException = null)
         {
             return AuthorizationCodeResponseFactory.CreateError(
                 errorCode: specificError,
@@ -882,11 +1034,10 @@ namespace OAuthWorks
         /// <returns>Returns a new <see cref="IUnsuccessfulAccessTokenResponse"/> object that represents a valid OAuth 2.0 Access Token Error response (http://tools.ietf.org/html/rfc6749#section-5.2).</returns>
         private IUnsuccessfulAccessTokenResponse CreateAccessTokenError(AccessTokenSpecificRequestError errorCode, IClient client = null, Exception exception = null)
         {
-            AccessTokenRequestError code = errorCode.GetSubgroup<AccessTokenRequestError>();
             return AccessTokenResponseFactory.CreateError(
-                code,
+                errorCode,
                 AccessTokenErrorDescriptionProvider.GetDescription(errorCode),
-                AccessTokenErrorUriProvider(code, client),
+                AccessTokenErrorUriProvider(errorCode.GetSubgroup<AccessTokenRequestError>(), client),
                 exception);
         }
 
@@ -897,8 +1048,9 @@ namespace OAuthWorks
         /// <param name="request">The incomming access token request.</param>
         /// <param name="client">The client that is requesting the access toking.</param>
         /// <returns>Returns a new <see cref="AccessTokenSpecificRequestError"/> object that specifies the first thing wrong with the given parameters, returns null if none exist.</returns>
-        private static AccessTokenSpecificRequestError? GetAuthorizationCodeError(IAuthorizationCode code, IAuthorizationCodeGrantAccessTokenRequest request, IClient client)
+        protected virtual AccessTokenSpecificRequestError? GetAuthorizationCodeError(IAuthorizationCode code, IAuthorizationCodeGrantAccessTokenRequest request, IClient client)
         {
+            if (request == null) throw new ArgumentNullException("request");
             if (code == null)
             {
                 return AccessTokenSpecificRequestError.MissingCode;
@@ -931,8 +1083,9 @@ namespace OAuthWorks
         /// <param name="code"></param>
         /// <param name="request"></param>
         /// <param name="client"></param>
-        private static bool IsValidAuthorizationCode(IAuthorizationCode code, IAuthorizationCodeGrantAccessTokenRequest request, IClient client)
+        protected virtual bool IsValidAuthorizationCode(IAuthorizationCode code, IAuthorizationCodeGrantAccessTokenRequest request, IClient client)
         {
+            if (request == null) throw new ArgumentNullException("request");
             return code != null && code.Client.Equals(client) && code.IsValid() && code.MatchesValue(request.AuthorizationCode) && Uri.Compare(code.RedirectUri, request.RedirectUri, UriComponents.AbsoluteUri, UriFormat.SafeUnescaped, StringComparison.Ordinal) == 0;
         }
 
@@ -941,8 +1094,9 @@ namespace OAuthWorks
         /// </summary>
         /// <param name="request"></param>
         /// <param name="client"></param>
-        private static AccessTokenSpecificRequestError? GetClientError(IAccessTokenRequest request, IClient client)
+        protected virtual AccessTokenSpecificRequestError? GetClientError(IAccessTokenRequest request, IClient client)
         {
+            if (request == null) throw new ArgumentNullException("request");
             if (client == null)
             {
                 return AccessTokenSpecificRequestError.MissingClient;
@@ -954,80 +1108,9 @@ namespace OAuthWorks
             return null;
         }
 
-        /// <summary>
-        /// Revokes access from the given client on behalf of the given user.
-        /// </summary>
-        /// <param name="user">The user that wants to revoke access from the given client.</param>
-        /// <param name="client">The client to revoke access from.</param>
-        /// <exception cref="System.ArgumentNullException">Thrown if one of the given arguments is null.</exception>
-        public void RevokeAccess(IUser user, IClient client)
-        {
-            if (user == null)
-            {
-                throw new ArgumentNullException("user");
-            }
-            if (client == null)
-            {
-                throw new ArgumentNullException("client");
-            }
+        #endregion
 
-            AuthorizationCodeRepository.GetByUserAndClient(user, client).Where(c => c != null && !c.Revoked).ForEach(c => c.Revoke());
-            AccessTokenRepository.GetByUserAndClient(user, client).Where(t => t != null && !t.Revoked).ForEach(t => t.Revoke());
-            RefreshTokenRepository.GetByUserAndClient(user, client).Where(t => t != null && !t.Revoked).ForEach(t => t.Revoke());
-        }
-
-        /// <summary>
-        /// Determines if the given client has been given access to the given scope by the given user.
-        /// </summary>
-        /// <param name="user">The User that is currently logged in.</param>
-        /// <param name="client">The client to determine access for.</param>
-        /// <param name="scope">The scope that the client wants access to.</param>
-        /// <returns>Returns true if the client has access to the given users resources restricted by the given scope, otherwise false.</returns>
-        public bool HasAccess(IUser user, IClient client, IScope scope)
-        {
-            IAccessToken token = AccessTokenRepository.GetByUserAndClient(user, client).FirstOrDefault(t => !t.Revoked && !t.Expired);
-            if (token != null)
-            {
-                return ScopeRepository.Any(a => a.Equals(scope) && token.Scopes.Contains(a));
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// Gets or sets whether to distribue refresh tokens.
-        /// </summary>
-        public bool DistributeRefreshTokens
-        {
-            get;
-            set;
-        }
-        = true;
-
-        /// <summary>
-        /// Gets or sets whether to reuse refresh tokens across newly issued tokens.
-        /// </summary>
-        public bool ReuseRefreshTokens
-        {
-            get;
-            set;
-        }
-        = false;
-
-        /// <summary>
-        /// Gets or sets whether newly revoked tokens (access or refresh) should be deleted from their respective repository.
-        /// </summary>
-        /// <remarks>
-        /// When <see cref="IOAuthProvider.RevokeAccess(IUser, IClient)"/> or <see cref="IOAuthProvider.RefreshAccessToken(ITokenRefreshRequest)"/> is called,
-        /// access tokens and/or refresh tokens become invalidated. When this value is true, access tokens and refresh tokens that are revoked by this provider
-        /// will be deleted by calling <see cref="IAccessTokenRepository{IAccessToken}.Remove(IAccessToken)"/> or <see cref="IRefreshTokenRepository{IRefreshToken}.Remove(IRefreshToken)"/>
-        /// </remarks>
-        public bool DeleteRevokedTokens
-        {
-            get;
-            set;
-        }
-        = false;
-
+        #region IDisposable Implementation
         /// <summary>
         /// Finalizes an instance of the <see cref="OAuthProvider" /> class.
         /// </summary>
@@ -1086,5 +1169,6 @@ namespace OAuthWorks
             }
             disposed = true;
         }
+        #endregion
     }
 }

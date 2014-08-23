@@ -31,36 +31,36 @@ namespace OAuthWorks.Implementation
         /// <summary>
         /// Initializes a new instance of the <see cref="UnsuccessfulAccessTokenResponse"/> class.
         /// </summary>
-        /// <param name="errorCode">The error code.</param>
+        /// <param name="specificErrorCode">The error code.</param>
         /// <param name="errorDescription">The error description.</param>
         /// <param name="errorUri">The error URI.</param>
-        public UnsuccessfulAccessTokenResponse(AccessTokenRequestError errorCode, string errorDescription, Uri errorUri)
-            : this(errorCode, errorDescription, errorUri, null)
+        public UnsuccessfulAccessTokenResponse(AccessTokenSpecificRequestError specificErrorCode, string errorDescription, Uri errorUri)
+            : this(specificErrorCode, errorDescription, errorUri, null)
         {
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UnsuccessfulAccessTokenResponse"/> class.
         /// </summary>
-        /// <param name="errorCode">The error code.</param>
+        /// <param name="specificErrorCode">The error code.</param>
         /// <param name="errorDescription">The error description.</param>
         /// <param name="errorUri">The error URI.</param>
         /// <param name="innerException">The exception that caused the error to occur.</param>
-        public UnsuccessfulAccessTokenResponse(AccessTokenRequestError errorCode, string errorDescription, Uri errorUri, Exception innerException)
+        public UnsuccessfulAccessTokenResponse(AccessTokenSpecificRequestError specificErrorCode, string errorDescription, Uri errorUri, Exception innerException)
         {
-            this.errorCode = errorCode;
+            this.specificErrorCode = specificErrorCode;
             this.errorDescription = errorDescription;
             this.errorUri = errorUri;
             this.innerException = innerException;
         }
 
-        [DataMember(Name = "error_code")]
-        private readonly AccessTokenRequestError errorCode;
+        [DataMember(Name = "specific_error_code")]
+        private readonly AccessTokenSpecificRequestError specificErrorCode;
 
-        [DataMember(Name ="error_description")]
+        [DataMember(Name = "error_description")]
         private readonly string errorDescription;
 
-        [DataMember(Name ="error_uri")]
+        [DataMember(Name = "error_uri")]
         private readonly Uri errorUri;
 
         private readonly Exception innerException;
@@ -78,16 +78,27 @@ namespace OAuthWorks.Implementation
         }
 
         /// <summary>
-        /// Gets the error code.
+        /// Gets the specific error code that describes what exactly was wrong with the request.
         /// </summary>
-        /// <value>
-        /// The error code.
-        /// </value>
-        public AccessTokenRequestError ErrorCode
+        /// <returns>Returns a <see cref="AccessTokenSpecificRequestError"/> object that describes what exactly was wrong with the request.</returns>
+        public AccessTokenSpecificRequestError SpecificError
         {
             get
             {
-                return this.errorCode;
+                return specificErrorCode;
+            }
+        }
+
+        /// <summary>
+        /// Gets the error code that describes what was wrong with the request.
+        /// </summary>
+        /// <returns>Returns a <see cref="AccessTokenRequestError"/> object that describes what was wrong with the request.</returns>
+        [DataMember(Name = "error_code")]
+        public AccessTokenRequestError Error
+        {
+            get
+            {
+                return specificErrorCode.GetSubgroup<AccessTokenRequestError>();
             }
         }
 
@@ -116,18 +127,6 @@ namespace OAuthWorks.Implementation
             get
             {
                 return this.errorUri;
-            }
-        }
-
-        /// <summary>
-        /// Gets the error code that describes what was wrong with the request.
-        /// </summary>
-        /// <returns>Returns a <see cref="AccessTokenRequestError" /> object that describes what was wrong with the request.</returns>
-        public AccessTokenRequestError Error
-        {
-            get
-            {
-                return errorCode;
             }
         }
 

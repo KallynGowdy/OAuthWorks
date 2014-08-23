@@ -1,4 +1,4 @@
-﻿// Copyright 2014 Kallyn Gowdy
+// Copyright 2014 Kallyn Gowdy
 // 
 //    Licensed under the Apache License, Version 2.0 (the "License");
 //    you may not use this file except in compliance with the License.
@@ -12,37 +12,41 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OAuthWorks
 {
     /// <summary>
-    /// Defines an attribute that specifies that particular enum value belongs to a subgroup of another enum value.
+    /// Defines an interface for objects that represent a request/requirement for authorization of an access token in order to
+    /// access a protected resource.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Field)]
-    public sealed class EnumSubgroupAttribute : Attribute
+    public interface IAuthorizationRequest
     {
         /// <summary>
-        /// Gets or sets the enum value that this Enum member is a subgroup of.
+        /// Gets the value that was given in the 'Authorization' header of the request.
         /// </summary>
         /// <returns></returns>
-        public object SubgroupOf
+        string Authorization
         {
             get;
-            private set;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EnumSubgroupAttribute"/> class.
+        /// Gets the authorization type that was given in the 'Authorization' header of the request.
         /// </summary>
-        /// <param name="subgroupOf">The subgroup that this enum member is a member of.</param>
-        public EnumSubgroupAttribute(object subgroupOf)
+        /// <returns></returns>
+        string Type
         {
-            this.SubgroupOf = subgroupOf;
+            get;
+        }
+
+        /// <summary>
+        /// Gets the list of scopes that are required to have been granted to the token in order for the request to be valid/authorized.
+        /// </summary>
+        /// <returns></returns>
+        IEnumerable<IScope> RequiredScopes
+        {
+            get;
         }
     }
 }

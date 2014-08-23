@@ -1,4 +1,4 @@
-﻿// Copyright 2014 Kallyn Gowdy
+// Copyright 2014 Kallyn Gowdy
 // 
 //    Licensed under the Apache License, Version 2.0 (the "License");
 //    you may not use this file except in compliance with the License.
@@ -12,37 +12,38 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace OAuthWorks
 {
     /// <summary>
-    /// Defines an attribute that specifies that particular enum value belongs to a subgroup of another enum value.
+    /// Defines an interface for objects that contain descriptive information about what occurred in a request that caused the given result.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Field)]
-    public sealed class EnumSubgroupAttribute : Attribute
+    public interface IAuthorizationResultDescription
     {
         /// <summary>
-        /// Gets or sets the enum value that this Enum member is a subgroup of.
+        /// Gets the error code that was returned by the server.
         /// </summary>
         /// <returns></returns>
-        public object SubgroupOf
+        string Error
         {
             get;
-            private set;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EnumSubgroupAttribute"/> class.
+        /// Gets the human-readable description of the error.
         /// </summary>
-        /// <param name="subgroupOf">The subgroup that this enum member is a member of.</param>
-        public EnumSubgroupAttribute(object subgroupOf)
+        /// <returns></returns>
+        string ErrorDescription
         {
-            this.SubgroupOf = subgroupOf;
+            get;
+        }
+
+        /// <summary>
+        /// Gets the uri that points to a web page that provides a description of the error.
+        /// </summary>
+        /// <returns></returns>
+        string ErrorUri
+        {
+            get;
         }
     }
 }

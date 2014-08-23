@@ -106,10 +106,17 @@ namespace OAuthWorks
         NullAuthorizationCode,
 
         /// <summary>
-        /// Defines that the 'grant_type' parameter was either missing, named incorrectly, equal to an empty string, or contained an unsupported grant type.
+        /// Defines that the 'grant_type' parameter was either missing, named incorrectly, or equal to an empty string.
         /// </summary>
         [EnumSubgroup(AccessTokenRequestError.UnsupportedGrantType)]
         [Description("The 'grant_type' parameter was either missing, named incorrectly, or equal to an empty string.")]
+        NullGrantType,
+
+        /// <summary>
+        /// Defines that the 'grant_type' parameter contains a value that is not supported.
+        /// </summary>
+        [EnumSubgroup(AccessTokenRequestError.UnsupportedGrantType)]
+        [Description("The given 'grant_type' is not supported.")]
         InvalidGrantType,
 
         /// <summary>

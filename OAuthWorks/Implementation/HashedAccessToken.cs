@@ -24,6 +24,23 @@ using System.Threading.Tasks;
 
 namespace OAuthWorks.Implementation
 {
+    public static class HashedAccessToken
+    {
+        private static readonly Lazy<IHashFactory> lazyDefaultHashFactory = new Lazy<IHashFactory>(() => new Pbkdf2Sha1Factory());
+
+        /// <summary>
+        /// Gets the default <see cref="IHashFactory"/> used to create new <see cref="IHasher"/> objects.
+        /// </summary>
+        /// <returns></returns>
+        public static IHashFactory DefaultHashFactory
+        {
+            get
+            {
+                return lazyDefaultHashFactory.Value;
+            }
+        }
+    }
+
     /// <summary>
     /// Defines a class that provides an implementation of <see cref="OAuthWorks.Implementation.AccessToken"/> that hashes it's value to prevent stealing.
     /// </summary>
@@ -35,16 +52,6 @@ namespace OAuthWorks.Implementation
     [DataContract]
     public class HashedAccessToken<TId> : AccessToken<TId>, IEquatable<HashedAccessToken<TId>>
     {
-        private static readonly Lazy<IHashFactory> lazyDefaultHashFactory = new Lazy<IHashFactory>(() => new Pbkdf2Sha1Factory());
-
-        public static IHashFactory DefaultHashFactory
-        {
-            get
-            {
-                return lazyDefaultHashFactory.Value;
-            }
-        }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="HashedAccessToken"/> class.
         /// </summary>
@@ -56,7 +63,7 @@ namespace OAuthWorks.Implementation
         /// <param name="tokenType">Type of the refreshToken. Describes how the client should handle it.</param>
         /// <param name="expirationDateUtc">The date of expiration in Universal Coordinated Time.</param>
         public HashedAccessToken(string token, TId id, IUser user, IClient client, IEnumerable<IScope> scopes, string tokenType, DateTime expirationDateUtc)
-            : this(DefaultHashFactory, token, id, user, client, scopes, tokenType, expirationDateUtc)
+            : this(HashedAccessToken.DefaultHashFactory, token, id, user, client, scopes, tokenType, expirationDateUtc)
         {
         }
 

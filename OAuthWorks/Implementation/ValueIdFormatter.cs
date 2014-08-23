@@ -26,7 +26,7 @@ namespace OAuthWorks.Implementation
     /// </summary>
     public static class ValueIdFormatter
     {
-
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
         /// <summary>
         /// Defines a class that provides a basic implementation of <see cref="OAuthWorks.IValueIdFormatter{string}"/>.
         /// </summary>
@@ -105,6 +105,8 @@ namespace OAuthWorks.Implementation
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "String")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
         /// <summary>
         /// Defines a class that provides a basic implementation of <see cref="OAuthWorks.IValueIdFormatter{string}"/>.
         /// </summary>

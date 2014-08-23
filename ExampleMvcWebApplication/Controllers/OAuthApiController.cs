@@ -26,6 +26,7 @@ using System.Web.Security;
 using System.Web.Http.Results;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace ExampleMvcWebApplication.Controllers
 {
@@ -161,7 +162,7 @@ namespace ExampleMvcWebApplication.Controllers
             }
             else
             {
-                return RedirectToRoute("/users/login", new { @return = Request.RequestUri.AbsoluteUri }); // Redirect to login
+                return RedirectToRoute("Default", new { controller = "Users", action = "LogIn", @return = Request.RequestUri.AbsoluteUri }); // Redirect to login
             }
         }
 
@@ -279,41 +280,37 @@ namespace ExampleMvcWebApplication.Controllers
         /// <returns></returns>
         [Route("api/v1/accessToken")]
         [HttpPost]
-        public async Task<HttpResponseMessage> RequestAccessToken(CredentialsTokenRequest request)
+        public HttpResponseMessage RequestAccessToken(CredentialsTokenRequest request)
         {
-            using (DatabaseContext context = new DatabaseContext()) // Create the unit-of-work
-            using (IOAuthProvider Provider = new OAuthProvider // Create the provider for the request
+            User user = Context.Users.FirstOrDefault(u => u.Id.Equals(request.Username)); // Get the user based on the username given in the request
+            if (user == null || !user.IsValidPassword(request.Password)) // Validate the given credentials
             {
-                AccessTokenRepository = new AccessTokenRepository(context), // Pass in our repositories and arguments
-                AuthorizationCodeRepository = new AuthorizationCodeRepository(context),
-                RefreshTokenRepository = new RefreshTokenRepository(context),
-                ClientRepository = new ClientRepository(context),
-                ScopeRepository = new ScopeRepository(context),
-                DistributeRefreshTokens = true,
-                DeleteRevokedTokens = true
-            })
-            {
-                User user = context.Users.FirstOrDefault(u => u.Id.Equals(request.Username)); // Get the user based on the username given in the request
-                if (user == null || !user.IsValidPassword(request.Password)) // Validate the given credentials
-                {
-                    user = null; // Set the user to null if the credentials are bad so the provider can handle creating the correct response
-                }
-                IAccessTokenResponse response = Provider.RequestAccessToken
-                (
-                    new PasswordCredentialsAccessTokenRequest // Send the request to the provider
-                    (
-                        user,
-                        request.ClientId,
-                        request.ClientSecret,
-                        request.GrantType,
-                        request.RedirectUri,
-                        request.Scope
-                    )
-                );
-                await context.SaveChangesAsync(); // Save any changes that the provider made to the database
-                HttpResponseMessage r = Request.CreateResponse(response.StatusCode(), response);
-                return AddHeadersToTokenResponse(r); // Add the headers and return the response
+                user = null; // Set the user to null if the credentials are bad so the provider can handle creating the correct response
             }
+            IAccessTokenResponse response = Provider.RequestAccessToken
+            (
+                new PasswordCredentialsAccessTokenRequest // Send the request to the provider
+                (
+                    user,
+                    request.ClientId,
+                    request.ClientSecret,
+                    request.GrantType,
+                    request.RedirectUri,
+                    request.Scope
+                )
+            );
+            Context.SaveChanges(); // Save any changes that the provider made to the database
+            HttpResponseMessage r;
+            if (Request != null)
+            {
+                r = Request.CreateResponse(response.StatusCode(), response);
+            }
+            else
+            {
+                r = new HttpResponseMessage(response.StatusCode());
+                r.Content = new StringContent(JsonConvert.SerializeObject(response));
+            }
+            return AddHeadersToTokenResponse(r); // Add the headers and return the response
         }
 
         /// <summary>
@@ -331,6 +328,14 @@ namespace ExampleMvcWebApplication.Controllers
             return AddHeadersToTokenResponse(r); // Add required headers and return
         }
 
+        [OAuthAuthorize("all")]
+        [Route("api/v1/hasAccess")]
+        [HttpGet]
+        public bool HasAccess()
+        {
+            return true;
+        }
+
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
@@ -346,8 +351,8 @@ namespace ExampleMvcWebApplication.Controllers
                 }
                 if (provider != null)
                 {
-                    context.Dispose();
-                    context = null;
+                    provider.Dispose();
+                    provider = null;
                 }
             }
             base.Dispose(disposing);

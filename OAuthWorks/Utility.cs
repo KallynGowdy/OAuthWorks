@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -29,17 +30,39 @@ namespace OAuthWorks
     /// </summary>
     public static class Utility
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed")]
         /// <summary>
         /// Throws a new System.ArgumentNullException if the value of the object is null.
         /// </summary>
         /// <param name="value">The object to check for null-ness.</param>
-        /// <param name="parameterName">The name of the parameter that is being checked.</param>
+        /// <param name="parameterName">The name of the parameter that is being checked. Defaults to the name of the member that this method is called on.</param>
         [ContractArgumentValidator]
-        public static void ThrowIfNull(this object value, string parameterName)
+        public static void ThrowIfNull(this object value, [CallerMemberName] string parameterName = null)
         {
             if (value == null)
             {
                 throw new ArgumentNullException(parameterName);
+            }
+            Contract.EndContractBlock();
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed")]
+        /// <summary>
+        /// Throws a new <see cref="ArgumentOutOfRangeException"/> if the value is not between the two given values.
+        /// </summary>
+        /// <param name="value">The value to validate.</param>
+        /// <param name="minInclusive">The minimum value that the value is allowed to equal.</param>
+        /// <param name="maxExclusive">The minimum value that the value can equal while still being invalid.</param>
+        /// <param name="parameterName">The name of the parameter.</param>
+        [ContractArgumentValidator]
+        public static void ThrowIfNotInRange(this int value, int? minInclusive, int? maxExclusive, [CallerMemberName] string parameterName = null)
+        {
+            if((minInclusive.HasValue && value < minInclusive) || (maxExclusive.HasValue && value >= maxExclusive))
+            {
+                throw new ArgumentOutOfRangeException(parameterName, string.Format("{0} must be greater than or equal to {1} and less than {2}", 
+                    parameterName,
+                    minInclusive.HasValue ? minInclusive.Value.ToString() : "-Infinity",
+                    maxExclusive.HasValue ? maxExclusive.Value.ToString() : "Infinity"));
             }
             Contract.EndContractBlock();
         }
@@ -55,11 +78,11 @@ namespace OAuthWorks
         /// </exception>
         public static void ForEach<T>(this IEnumerable<T> objects, Action<T> action)
         {
-            if(objects == null)
+            if (objects == null)
             {
                 throw new ArgumentNullException("objects");
             }
-            if(action == null)
+            if (action == null)
             {
                 throw new ArgumentNullException("action");
             }
@@ -97,20 +120,20 @@ namespace OAuthWorks
         /// <summary>
         /// Converts the given object into a query string representation.
         /// </summary>
-        /// <param name="obj">The object to retreive to query string for.</param>
+        /// <param name="value">The object to retreive to query string for.</param>
         /// <returns></returns>
-        public static string ToQueryString(this object obj)
+        public static string ToQueryString(this object value)
         {
-            if(obj == null)
+            if (value == null)
             {
-                throw new ArgumentNullException("obj");
+                throw new ArgumentNullException("value");
             }
-            Type t = obj.GetType();
+            Type t = value.GetType();
             NameValueCollection values = System.Web.HttpUtility.ParseQueryString(string.Empty);
 
-            foreach(PropertyInfo p in t.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => !p.IsSpecialName && p.CanRead))
+            foreach (PropertyInfo p in t.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => !p.IsSpecialName && p.CanRead))
             {
-                values.Add(p.Name, (p.GetValue(obj) ?? "").ToString());
+                values.Add(p.Name, (p.GetValue(value) ?? "").ToString());
             }
 
             return "?" + values.ToString();
@@ -124,6 +147,7 @@ namespace OAuthWorks
         /// <returns>Returns true if this enum value contains an attribute that defines it as a subgroup of the given other.</returns>
         public static bool IsSubgroupOf(this Enum value, Enum other)
         {
+            if (value == null) throw new ArgumentNullException("value");
             Type type = value.GetType();
             MemberInfo member = type.GetMember(value.ToString()).First();
             IEnumerable<EnumSubgroupAttribute> attributes = member.GetCustomAttributes<EnumSubgroupAttribute>(false);
@@ -138,10 +162,11 @@ namespace OAuthWorks
         /// <returns>Returns the enum value of the first subgroup of the given type that this value belongs to.</returns>
         public static TEnum GetSubgroup<TEnum>(this Enum value)
         {
+            if (value == null) throw new ArgumentNullException("value");
             Type type = value.GetType();
             MemberInfo member = type.GetMember(value.ToString()).First();
             IEnumerable<EnumSubgroupAttribute> attributes = member.GetCustomAttributes<EnumSubgroupAttribute>(false);
-            return (TEnum) attributes.Where(e => e.SubgroupOf is TEnum).First().SubgroupOf;
+            return (TEnum)attributes.Where(e => e.SubgroupOf is TEnum).First().SubgroupOf;
         }
 
         /// <summary>
@@ -151,6 +176,7 @@ namespace OAuthWorks
         /// <returns>Returns a string representing the description of the value.</returns>
         public static string GetDescription(this Enum value)
         {
+            if (value == null) throw new ArgumentNullException("value");
             Type type = value.GetType();
             MemberInfo member = type.GetMember(value.ToString()).First();
             return member.GetCustomAttribute<DescriptionAttribute>().Description;

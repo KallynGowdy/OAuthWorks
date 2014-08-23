@@ -64,7 +64,7 @@ namespace OAuthWorks.Implementation
             }
             if(expirationDateUtc < DateTime.UtcNow)
             {
-                throw new ArgumentOutOfRangeException("The given expirationDateUtc must be greater than DateTime.UtcNow.", "expirationDateUtc");
+                throw new ArgumentOutOfRangeException("expirationDateUtc", "The given expirationDateUtc must be greater than DateTime.UtcNow.");
             }
             this.Id = id;
             this.Client = client;

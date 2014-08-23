@@ -50,6 +50,10 @@ namespace ExampleMvcWebApplication.Models
             {
                 this.Id = id.Id;
             }
+            else
+            {
+                this.Id = Guid.NewGuid().ToString();
+            }
         }
 
 

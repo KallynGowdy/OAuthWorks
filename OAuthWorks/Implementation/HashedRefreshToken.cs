@@ -25,11 +25,9 @@ using System.Threading.Tasks;
 namespace OAuthWorks.Implementation
 {
     /// <summary>
-    /// Defines a class that provides an implementation of <see cref="OAuthWorks.Implementation.RefreshToken"/> by using hashing
-    /// as validation for refreshToken values.
+    /// Defines a static class that contains default values for <see cref="HashedRefreshToken{TId}"/> objects.
     /// </summary>
-    [DataContract]
-    public sealed class HashedRefreshToken<TId> : RefreshToken<TId>
+    public static class HashedRefreshToken
     {
         /// <summary>
         /// The default lifetime (in seconds) of these refresh tokens.
@@ -50,7 +48,15 @@ namespace OAuthWorks.Implementation
                 return lazyDefaultHashFactory.Value;
             }
         }
+    }
 
+    /// <summary>
+    /// Defines a class that provides an implementation of <see cref="OAuthWorks.Implementation.RefreshToken"/> by using hashing
+    /// as validation for refreshToken values.
+    /// </summary>
+    [DataContract]
+    public sealed class HashedRefreshToken<TId> : RefreshToken<TId>
+    {
         /// <summary>
         /// Gets the hash of the token.
         /// </summary>
@@ -71,7 +77,7 @@ namespace OAuthWorks.Implementation
         /// <param name="client">The client.</param>
         /// <param name="scopes">The scopes.</param>
         public HashedRefreshToken(string token, TId id, IUser user, IClient client, IEnumerable<IScope> scopes)
-            : this(DefaultHashFactory, token, id, user, client, scopes)
+            : this(HashedRefreshToken.DefaultHashFactory, token, id, user, client, scopes)
         {
 
         }
@@ -86,7 +92,7 @@ namespace OAuthWorks.Implementation
         /// <param name="client">The client.</param>
         /// <param name="scopes">The scopes.</param>
         public HashedRefreshToken(IHashFactory hashFactory, string token, TId id, IUser user, IClient client, IEnumerable<IScope> scopes)
-            : base(id, user, client, scopes, DateTime.UtcNow.AddSeconds(DefaultLifetime))
+            : base(id, user, client, scopes, DateTime.UtcNow.AddSeconds(HashedRefreshToken.DefaultLifetime))
         {
             if (string.IsNullOrEmpty(token)) throw new ArgumentException("The given token must not be null or empty.", "token");
 

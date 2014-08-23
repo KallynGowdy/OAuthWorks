@@ -101,4 +101,23 @@ namespace ExampleMvcWebApplication
             return new DisposableObject<T>(value, true);
         }
     }
+
+    /// <summary>
+    /// Defines a class that contains a set of extension methods for <see cref="IDisposable"/> objects.
+    /// </summary>
+    public static class DisposeableObjectExtensions
+    {
+
+        /// <summary>
+        /// Gets an <see cref="IDisposableObject{T}"/> that represents the given value.
+        /// </summary>
+        /// <typeparam name="T">The type of the value represented.</typeparam>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static IDisposableObject<T> AsDisposable<T>(this T value) where T : class, IDisposable
+        {
+            return new DisposableObject<T>(value, true);
+        }
+
+    }
 }

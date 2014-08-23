@@ -44,6 +44,8 @@ namespace OAuthWorks.Implementation.Factories
         /// </summary>
         public static readonly Func<int, string> DefaultValueGenerator = AccessTokenFactory.GenerateToken;
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "String")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
         public static class String
         {
             /// <summary>
@@ -154,7 +156,6 @@ namespace OAuthWorks.Implementation.Factories
         public AuthorizationCodeFactory(int codeLength, int codeLifetime, IValueIdFormatter<TId> idFormatter, Func<TId> idGenerator)
             : this(codeLength, codeLifetime, idFormatter, idGenerator, AuthorizationCodeFactory.DefaultValueGenerator)
         {
-
         }
 
         /// <summary>
@@ -167,8 +168,8 @@ namespace OAuthWorks.Implementation.Factories
         /// <param name="valueGenerator">A function that, given an integer returns a string that represents that many pseudorandom bytes.</param>
         public AuthorizationCodeFactory(int codeLength, int codeLifetime, IValueIdFormatter<TId> idFormatter, Func<TId> idGenerator, Func<int, string> valueGenerator)
         {
-            if (codeLength < 20)        throw new ArgumentOutOfRangeException("The given codeLength must be greater than or equal to 20.");
-            if (codeLifetime <= 0)      throw new ArgumentOutOfRangeException("The given codeLifetime must be greater than 0.", "codeLifetime");
+            if (codeLength < 20)        throw new ArgumentOutOfRangeException("codeLength", "The given codeLength must be greater than or equal to 20.");
+            if (codeLifetime <= 0)      throw new ArgumentOutOfRangeException("codeLifetime", "The given codeLifetime must be greater than 0.");
             if (idFormatter == null)    throw new ArgumentNullException("idFormatter");
             if (idGenerator == null)    throw new ArgumentNullException("idGenerator");
             if (valueGenerator == null) throw new ArgumentNullException("valueGenerator");

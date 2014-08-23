@@ -33,6 +33,7 @@ namespace OAuthWorks
         /// <returns>Returns true if the user should be redirect, otherwise false.</returns>
         public static bool ShouldRedirect(this IAuthorizationCodeResponse response)
         {
+            if (response == null) throw new ArgumentNullException("response");
             return response.Redirect != null &&
                 response.IsSuccessful;
         }
@@ -73,5 +74,5 @@ namespace OAuthWorks
                 return null;
             }
         }
-    }    
+    }
 }
