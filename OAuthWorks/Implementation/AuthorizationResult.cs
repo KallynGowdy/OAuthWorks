@@ -28,13 +28,11 @@ namespace OAuthWorks.Implementation
         /// <summary>
         /// Gets a new <see cref="AuthorizationResult"/> value that represents successful authorization.
         /// </summary>
+        /// <param name="token">The token that the authorization was for.</param>
         /// <returns></returns>
-        public static AuthorizationResult Success
+        public static AuthorizationResult Success(IAccessToken token)
         {
-            get
-            {
-                return new AuthorizationResult(true);
-            }
+            return new AuthorizationResult(true, token, null);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
@@ -56,8 +54,7 @@ namespace OAuthWorks.Implementation
                     isSuccessful: false,
                     errorDescription: new AuthorizationResultDescription
                     {
-                        Error = "missing_grant",
-                        ErrorDescription = "The given authorization grant (Access Token) does not exist."
+                        Error = AuthorizationResultErrorType.MissingGrant
                     });
                 }
             }
@@ -65,55 +62,49 @@ namespace OAuthWorks.Implementation
             /// <summary>
             /// Gets a new <see cref="AuthorizationResult"/> that describes that the token was revoked from the client.
             /// </summary>
+            /// <param name="token">The token that the authorization was for.</param>
             /// <returns></returns>
-            public static AuthorizationResult RevokedToken
+            public static AuthorizationResult RevokedToken(IAccessToken token)
             {
-                get
+                return new AuthorizationResult(
+                isSuccessful: false,
+                token: token,
+                errorDescription: new AuthorizationResultDescription
                 {
-                    return new AuthorizationResult(
-                    isSuccessful: false,
-                    errorDescription: new AuthorizationResultDescription
-                    {
-                        Error = "revoked_grant",
-                        ErrorDescription = "The given authorization grant (Access Token) has been revoked and therefore is no longer valid."
-                    });
-                }
+                    Error = AuthorizationResultErrorType.RevokedGrant
+                });
             }
 
             /// <summary>
             /// Gets a new <see cref="AuthorizationResult"/> that describes that the token has expired.
             /// </summary>
+            /// <param name="token">The token that the authorization was for.</param>
             /// <returns></returns>
-            public static AuthorizationResult ExpiredToken
+            public static AuthorizationResult ExpiredToken(IAccessToken token)
             {
-                get
+                return new AuthorizationResult(
+                isSuccessful: false,
+                token: token,
+                errorDescription: new AuthorizationResultDescription
                 {
-                    return new AuthorizationResult(
-                    isSuccessful: false,
-                    errorDescription: new AuthorizationResultDescription
-                    {
-                        Error = "expired_grant",
-                        ErrorDescription = "The given authorization grant (Access Token) has expired and therefore is no longer valid. Use the granted refresh token to gain another grant."
-                    });
-                }
+                    Error = AuthorizationResultErrorType.ExpiredGrant
+                });
             }
 
             /// <summary>
-            /// Gets a new <see cref="AuthorizationResult"/> that describes that the token's granted scopes did not cover what was needed to access the resource.
+            /// Gets a new <see cref="AuthorizationResult" /> that describes that the token's granted scopes did not cover what was needed to access the resource.
             /// </summary>
+            /// <param name="token">The token that the authorization was for.</param>
             /// <returns></returns>
-            public static AuthorizationResult NotGrantedPermission
+            public static AuthorizationResult NotGrantedPermission(IAccessToken token)
             {
-                get
+                return new AuthorizationResult(
+                isSuccessful: false,
+                token: token,
+                errorDescription: new AuthorizationResultDescription
                 {
-                    return new AuthorizationResult(
-                    isSuccessful: false,
-                    errorDescription: new AuthorizationResultDescription
-                    {
-                        Error = "not_enough_permissions",
-                        ErrorDescription = "The given authorization grant (Access Token) has not been granted access to one or more of the required scopes."
-                    });
-                }
+                    Error = AuthorizationResultErrorType.NotEnoughPermissions
+                });
             }
 
             /// <summary>
@@ -128,8 +119,7 @@ namespace OAuthWorks.Implementation
                     isSuccessful: false,
                     errorDescription: new AuthorizationResultDescription
                     {
-                        Error = "unsupported_grant_type",
-                        ErrorDescription = "The specified type for the grant is not supported for authentication."
+                        Error = AuthorizationResultErrorType.UnsupportedGrantType
                     });
                 }
             }
@@ -139,7 +129,7 @@ namespace OAuthWorks.Implementation
         /// Initializes a new instance of the <see cref="AuthorizationResult"/> class.
         /// </summary>
         /// <param name="isSuccessful">if set to <c>true</c> [is successful].</param>
-        public AuthorizationResult(bool isSuccessful) : this(isSuccessful, null)
+        public AuthorizationResult(bool isSuccessful) : this(isSuccessful, null, null)
         {
         }
 
@@ -148,17 +138,27 @@ namespace OAuthWorks.Implementation
         /// </summary>
         /// <param name="isSuccessful">if set to <c>true</c> [is successful].</param>
         /// <param name="errorDescription">The error description.</param>
-        public AuthorizationResult(bool isSuccessful, IAuthorizationResultDescription errorDescription)
+        public AuthorizationResult(bool isSuccessful, IAuthorizationResultDescription errorDescription) : this(isSuccessful, null, errorDescription)
+        { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AuthorizationResult" /> class.
+        /// </summary>
+        /// <param name="isSuccessful">if set to <c>true</c> [is successful].</param>
+        /// <param name="token">The token that represents the given authorization.</param>
+        /// <param name="errorDescription">The error description.</param>
+        public AuthorizationResult(bool isSuccessful, IAccessToken token, IAuthorizationResultDescription errorDescription)
         {
-            this.IsSuccessful = isSuccessful;
+            this.IsValidated = isSuccessful;
             this.ErrorDescription = errorDescription;
+            this.Token = token;
         }
 
         /// <summary>
         /// Gets a 
         /// <see cref="IAuthorizationResultDescription" /> object that describes the error that occured.
         /// Can be null if 
-        /// <see cref="IsSuccessful" /> is true.
+        /// <see cref="IsValidated" /> is true.
         /// </summary>
         /// <returns></returns>
         public IAuthorizationResultDescription ErrorDescription
@@ -172,7 +172,17 @@ namespace OAuthWorks.Implementation
         /// If true, the given access token/request was valid, otherwise it is not.
         /// </summary>
         /// <returns></returns>
-        public bool IsSuccessful
+        public bool IsValidated
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// Gets the <see cref="IAccessToken" /> that represents the validated authorization.
+        /// </summary>
+        /// <returns></returns>
+        public IAccessToken Token
         {
             get;
             private set;

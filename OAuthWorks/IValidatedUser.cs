@@ -1,4 +1,4 @@
-﻿// Copyright 2014 Kallyn Gowdy
+// Copyright 2014 Kallyn Gowdy
 // 
 //    Licensed under the Apache License, Version 2.0 (the "License");
 //    you may not use this file except in compliance with the License.
@@ -12,23 +12,27 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
 namespace OAuthWorks
 {
     /// <summary>
-    /// Defines an interface for objects which contain values concerning a request for an Access Token using the Resource Owner Password Credentials Grant.
+    /// Defines an interface for objects that determine if a user has been validated by it's username/password pair.
     /// </summary>
-    public interface IPasswordCredentialsAccessTokenRequest : IAccessTokenRequest
+    public interface IValidatedUser
     {
         /// <summary>
-        /// Gets the user that account access is being requested for. The given username and password must match the given user for proper validation.
+        /// Gets the user that was being validated.
         /// </summary>
-        /// <returns>Returns the authenticated user that access is being requested for.</returns>
-        IValidatedUser User
+        /// <returns></returns>
+        IUser User
+        {
+            get;
+        }
+
+        /// <summary>
+        /// Gets whether the user is validated.
+        /// </summary>
+        /// <returns></returns>
+        bool IsValidated
         {
             get;
         }

@@ -73,7 +73,7 @@ namespace OAuthWorks.Implementation
         public HashedAuthorizationCode(TId id, string token, IUser user, IClient client, IEnumerable<IScope> scopes, Uri redirectUri, DateTime expirationDateUtc)
             : base(id, user, client, scopes, redirectUri, expirationDateUtc)
         {
-            Contract.Requires(!string.IsNullOrEmpty(token));
+            if (string.IsNullOrEmpty(token)) throw new ArgumentException("The given token must not be null or empty", "token");
             this.CodeHash = new HashedValue(token);
         }
 

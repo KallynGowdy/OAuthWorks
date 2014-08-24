@@ -22,6 +22,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Ninject;
 using OAuthWorks.Implementation;
+using OAuthWorks.ExtensionMethods;
 
 namespace OAuthWorks.Tests
 {

@@ -161,6 +161,9 @@ namespace OAuthWorks
 
         /// <summary>
         /// Requests an access refreshToken from the authorization server based on the given request using the Resource Owner Password Credentials flow. (Section 4.3 [RFC 6749] http://tools.ietf.org/html/rfc6749#section-4.3).
+        /// NOTE that the default implementations of this method DO NOT validate the password in the request, which is why you have to pass in the <see cref="IUser"/>.
+        /// MAKE SURE to validate that the given password is valid and matches the user's password before passing the user into this method. If the password is not valid
+        /// it is OK to pass in the request with a null user
         /// </summary>
         /// <param name="request">The request that contains the required values.</param>
         /// <returns>Returns a new <see cref="OAuthWorks.IAccessTokenResponse"/> object that determines what values to put in the outgoing response.</returns>

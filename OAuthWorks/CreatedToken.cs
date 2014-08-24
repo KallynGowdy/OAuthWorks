@@ -35,8 +35,8 @@ namespace OAuthWorks
         /// <exception cref="System.ArgumentNullException">Thrown if either of the given arguments are null.</exception>
         public CreatedToken(TToken token, string tokenValue)
         {
-            token.ThrowIfNull("token");
-            tokenValue.ThrowIfNull("tokenValue");
+            if (token == null) throw new ArgumentNullException("token");
+            if (tokenValue == null) throw new ArgumentNullException("tokenValue");
 
             this.Token = token;
             this.TokenValue = tokenValue;

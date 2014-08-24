@@ -19,7 +19,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OAuthWorks
+namespace OAuthWorks.ExtensionMethods
 {
     /// <summary>
     /// Defines a class that contains extension methods for <see cref="IAuthorizationCodeResponse"/> objects.

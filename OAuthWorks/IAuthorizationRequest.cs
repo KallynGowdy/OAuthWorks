@@ -41,10 +41,14 @@ namespace OAuthWorks
         }
 
         /// <summary>
-        /// Gets the list of scopes that are required to have been granted to the token in order for the request to be valid/authorized.
+        /// Gets the list of scope groups that are required for the request to be authorized.
+        /// If the request contains all of the required scopes in at least one of the groups, then
+        /// the request is authorized. For Example: With the two scope groups {"all", "viewUser, updateUser"},
+        /// if the given authorization has access to either the "all" scope or both the "viewUser" and "updateUser"
+        /// scopes, then it is allowed.
         /// </summary>
         /// <returns></returns>
-        IEnumerable<IScope> RequiredScopes
+        IEnumerable<IEnumerable<IScope>> RequiredScopes
         {
             get;
         }

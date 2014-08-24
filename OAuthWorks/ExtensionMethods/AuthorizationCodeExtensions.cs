@@ -19,25 +19,28 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OAuthWorks
+namespace OAuthWorks.ExtensionMethods
 {
     /// <summary>
-    /// Defines a static class that contains extension methods for <see cref="OAuthWorks.IRefreshToken"/> objects.
+    /// Defines a static class that provides extension methods for <see cref="OAuthWorks.IAuthorizationCode"/> objects.
     /// </summary>
-    public static class RefreshTokenExtensions
+    public static class AuthorizationCodeExtensions
     {
         /// <summary>
-        /// Determines if the token is in a valid, usable state for the client that was given it.
+        /// Determines if the authorization code is valid for use by the client.
         /// </summary>
-        /// <param name="token">The token to determine validity for.</param>
-        /// <returns>Returns true if the token has not been revoked and if it has not expired. Otherwise false.</returns>
-        public static bool IsValid(this IRefreshToken token)
+        /// <param name="code">The code that should be validated.</param>
+        /// <returns>
+        /// Returns true if the code has not been revoked and has not expired. Otherwise false.
+        /// </returns>
+        /// <exception cref="System.ArgumentNullException">Thrown if the given code is null.</exception>
+        public static bool IsValid(this IAuthorizationCode code)
         {
-            if(token == null)
+            if(code == null)
             {
-                throw new ArgumentNullException("token");
+                throw new ArgumentNullException("code");
             }
-            return !token.Revoked && !token.Expired;
+            return !code.Revoked && !code.Expired;
         }
     }
 }

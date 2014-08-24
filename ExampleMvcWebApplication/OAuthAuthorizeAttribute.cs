@@ -24,34 +24,225 @@ using System.Net.Http.Headers;
 using System.Web;
 using System.Web.Http;
 using System.Web.Http.Controllers;
+using System.Collections;
+using ExampleMvcWebApplication.Controllers;
+using System.Security.Principal;
+using System.Net.Http;
+using System.Net.Http.Formatting;
+using System.Net;
 
 namespace ExampleMvcWebApplication
 {
     /// <summary>
     /// Defines an <see cref="AuthorizeAttribute"/> that authorizes OAuth clients.
     /// </summary>
-    public class OAuthAuthorizeAttribute : AuthorizeAttribute, IDisposable
+    public class OAuthAuthorizeAttribute : AuthorizeAttribute
     {
         /// <summary>
-        /// Whether or not the <see cref="IOAuthProvider"/> and <see cref="DatabaseContext"/> should be created from the configured 
-        /// <see cref="GlobalConfiguration.Configuration.DependencyResolver"/> or not.
+        /// Defines a class that represents a store of http cookies.
         /// </summary>
-        public const bool UseDependencyResolver = false;
+        private class CookieStore : IDictionary<string, string>
+        {
+            Dictionary<string, string> cookieDictionary;
 
-        /// <summary>
-        /// The <see cref="IOAuthProvider"/> that this attribute uses.
-        /// </summary>
-        private IDisposableObject<IOAuthProvider> provider;
+            /// <summary>
+            /// Initializes a new instance of the <see cref="CookieStore"/> class.
+            /// </summary>
+            /// <param name="cookies">The list of cookies that should be put into the store.</param>
+            public CookieStore(IEnumerable<string> cookies)
+            {
+                cookieDictionary = cookies.SelectMany(c => c.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
+                    .Select(c =>
+                {
+                    string trimed = c.Trim();
+                    int index = trimed.IndexOf('=');
+                    return new KeyValuePair<string, string>(trimed.Substring(0, index), trimed.Substring(index + 1));
+                }).ToDictionary(c => c.Key, c => c.Value);
+            }
 
-        private IDisposableObject<DatabaseContext> context;
+            /// <summary>
+            /// Gets or sets the <see cref="System.String"/> with the specified key.
+            /// </summary>
+            /// <value>
+            /// The <see cref="System.String"/>.
+            /// </value>
+            /// <param name="key">The key.</param>
+            /// <returns></returns>
+            public string this[string key]
+            {
+                get
+                {
+                    return cookieDictionary[key];
+                }
 
-        private bool disposed = false;
+                set
+                {
+                    cookieDictionary[key] = value;
+                }
+            }
+
+            /// <summary>
+            /// Gets the number of elements contained in the <see cref="T:System.Collections.Generic.ICollection`1" />.
+            /// </summary>
+            /// <exception cref="System.NotImplementedException"></exception>
+            /// <returns>The number of elements contained in the <see cref="T:System.Collections.Generic.ICollection`1" />.</returns>
+            public int Count
+            {
+                get
+                {
+                    return cookieDictionary.Count;
+                }
+            }
+
+            /// <summary>
+            /// Gets a value indicating whether the <see cref="T:System.Collections.Generic.ICollection`1" /> is read-only.
+            /// </summary>
+            /// <returns>true if the <see cref="T:System.Collections.Generic.ICollection`1" /> is read-only; otherwise, false.</returns>
+            public bool IsReadOnly
+            {
+                get
+                {
+                    return false;
+                }
+            }
+
+            /// <summary>
+            /// Gets an <see cref="T:System.Collections.Generic.ICollection`1" /> containing the keys of the <see cref="T:System.Collections.Generic.IDictionary`2" />.
+            /// </summary>
+            /// <returns>An <see cref="T:System.Collections.Generic.ICollection`1" /> containing the keys of the object that implements <see cref="T:System.Collections.Generic.IDictionary`2" />.</returns>
+            public ICollection<string> Keys
+            {
+                get
+                {
+                    return cookieDictionary.Keys;
+                }
+            }
+
+            /// <summary>
+            /// Gets an <see cref="T:System.Collections.Generic.ICollection`1" /> containing the values in the <see cref="T:System.Collections.Generic.IDictionary`2" />.
+            /// </summary>
+            /// <returns>An <see cref="T:System.Collections.Generic.ICollection`1" /> containing the values in the object that implements <see cref="T:System.Collections.Generic.IDictionary`2" />.</returns>
+            public ICollection<string> Values
+            {
+                get
+                {
+                    return cookieDictionary.Values;
+                }
+            }
+
+            /// <summary>
+            /// Adds the specified item.
+            /// </summary>
+            /// <param name="item">The item.</param>
+            public void Add(KeyValuePair<string, string> item)
+            {
+                cookieDictionary.Add(item.Key, item.Value);
+            }
+
+            /// <summary>
+            /// Adds the specified key.
+            /// </summary>
+            /// <param name="key">The key.</param>
+            /// <param name="value">The value.</param>
+            public void Add(string key, string value)
+            {
+                cookieDictionary.Add(key, value);
+            }
+
+            /// <summary>
+            /// Removes all items from the <see cref="T:System.Collections.Generic.ICollection`1" />.
+            /// </summary>
+            public void Clear()
+            {
+                cookieDictionary.Clear();
+            }
+
+            /// <summary>
+            /// Determines whether [contains] [the specified item].
+            /// </summary>
+            /// <param name="item">The item.</param>
+            /// <returns></returns>
+            public bool Contains(KeyValuePair<string, string> item)
+            {
+                return cookieDictionary.Contains(item);
+            }
+
+            /// <summary>
+            /// Determines whether the specified key contains key.
+            /// </summary>
+            /// <param name="key">The key.</param>
+            /// <returns></returns>
+            public bool ContainsKey(string key)
+            {
+                return cookieDictionary.ContainsKey(key);
+            }
+
+            /// <summary>
+            /// Copies to.
+            /// </summary>
+            /// <param name="array">The array.</param>
+            /// <param name="arrayIndex">Index of the array.</param>
+            public void CopyTo(KeyValuePair<string, string>[] array, int arrayIndex)
+            {
+                ((IDictionary<string, string>)cookieDictionary).CopyTo(array, arrayIndex);
+            }
+
+            /// <summary>
+            /// Returns an enumerator that iterates through the collection.
+            /// </summary>
+            /// <returns>
+            /// A <see cref="T:System.Collections.Generic.IEnumerator`1" /> that can be used to iterate through the collection.
+            /// </returns>
+            public IEnumerator<KeyValuePair<string, string>> GetEnumerator()
+            {
+                return cookieDictionary.GetEnumerator();
+            }
+
+            /// <summary>
+            /// Removes the specified item.
+            /// </summary>
+            /// <param name="item">The item.</param>
+            /// <returns></returns>
+            public bool Remove(KeyValuePair<string, string> item)
+            {
+                return cookieDictionary.Remove(item.Key);
+            }
+
+            /// <summary>
+            /// Removes the specified key.
+            /// </summary>
+            /// <param name="key">The key.</param>
+            /// <returns></returns>
+            /// <exception cref="System.NotImplementedException"></exception>
+            public bool Remove(string key)
+            {
+                return cookieDictionary.Remove(key);
+            }
+
+            public bool TryGetValue(string key, out string value)
+            {
+                return cookieDictionary.TryGetValue(key, out value);
+            }
+
+            /// <summary>
+            /// Returns an enumerator that iterates through a collection.
+            /// </summary>
+            /// <returns>
+            /// An <see cref="T:System.Collections.IEnumerator" /> object that can be used to iterate through the collection.
+            /// </returns>
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return this.GetEnumerator();
+            }
+        }
+
+        private string[] scopes;
 
         /// <summary>
         /// Gets the list of scopes that are required to access the action.
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<IScope> Scopes
+        public IEnumerable<IEnumerable<IScope>> Scopes
         {
             get;
             private set;
@@ -61,138 +252,70 @@ namespace ExampleMvcWebApplication
         /// Initializes a new instance of the <see cref="OAuthAuthorizeAttribute" /> class.
         /// </summary>
         /// <param name="scopes">The scopes that are required in order to be authorized.</param>
-        public OAuthAuthorizeAttribute(string scopes)
+        public OAuthAuthorizeAttribute(params string[] scopes)
         {
-            scopes.ThrowIfNull();
+            if (scopes == null) throw new ArgumentNullException("scopes");
 
-            context = new DatabaseContext().AsDisposable();
-            provider = UseDependencyResolver ?
-                ((IOAuthProvider)GlobalConfiguration.Configuration.DependencyResolver.GetService(typeof(IOAuthProvider))).AsDisposable() :
-                new OAuthProvider
-                (
-                    accessTokenRepository: new AccessTokenRepository(context.Value),
-                    authorizationCodeRepository: new AuthorizationCodeRepository(context.Value),
-                    refreshTokenRepository: new RefreshTokenRepository(context.Value),
-                    clientRepository: new ClientRepository(context.Value),
-                    scopeRepository: new ScopeRepository(context.Value)
-                ).AsDisposable();
-
-            this.Scopes = provider.Value.GetRequestedScopes(scopes);
+            this.scopes = scopes;
+            Scopes = null;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="OAuthAuthorizeAttribute"/> class.
+        /// Gets a value indicating whether [allow multiple].
         /// </summary>
-        /// <param name="scopes">The scopes that are required in order to be authorized.</param>
-        /// <param name="context">The <see cref="DatabaseContext"/> that should be used.</param>
-        /// <param name="oauthProvider">The <see cref="IOAuthProvider"/> that should be used.</param>
-        public OAuthAuthorizeAttribute(string scopes, DatabaseContext context, IOAuthProvider oauthProvider)
-            : this(scopes, context.AsDisposable(), oauthProvider.AsDisposable())
+        /// <value>
+        ///   <c>true</c> if [allow multiple]; otherwise, <c>false</c>.
+        /// </value>
+        public override bool AllowMultiple
         {
+            get
+            {
+                return true;
+            }
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="OAuthAuthorizeAttribute"/> class.
-        /// </summary>
-        /// <param name="scopes">The scopes that are required in order to be authorized.</param>
-        /// <param name="context">The <see cref="DatabaseContext"/> that should be used.</param>
-        /// <param name="oauthProvider">The <see cref="IOAuthProvider"/> that should be used.</param>
-        public OAuthAuthorizeAttribute(string scopes, IDisposableObject<DatabaseContext> context, IDisposableObject<IOAuthProvider> oauthProvider)
+        public override void OnAuthorization(HttpActionContext actionContext)
         {
-            scopes.ThrowIfNull();
-            context.ThrowIfNull();
-            oauthProvider.ThrowIfNull();
-
-            this.context = context;
-            this.provider = oauthProvider;
-
-            this.Scopes = provider.Value.GetRequestedScopes(scopes);
-        }
-
-        /// <summary>
-        /// Determines whether the specified action context is authorized.
-        /// </summary>
-        /// <param name="actionContext">The action context.</param>
-        /// <returns>Returns true if the given context is authorized, otherwise returns false.</returns>
-        protected override bool IsAuthorized(HttpActionContext actionContext)
-        {
-            ThrowIfDisposed();
+            IOAuthProvider provider = ((IApiController)actionContext.ControllerContext.Controller).Provider;
+            if (Scopes == null)
+            {
+                Scopes = scopes.Select(s => provider.GetRequestedScopes(s).ToArray()).ToArray();
+            }
             AuthenticationHeaderValue authorizationHeader = actionContext.Request.Headers.Authorization;
+
             if (authorizationHeader == null)
             {
-                return provider.Value.ValidateAuthorization(new AuthorizationRequest
-                {
-                    Authorization = actionContext.Request.Headers.GetValues("Cookie").SelectMany(c => c.Split(';')).First(c => c.Trim().StartsWith("auth_token")).Substring(12),
-                    Type = "Bearer",
-                    RequiredScopes = Scopes
-                }).IsSuccessful;
+                CookieStore store = new CookieStore(actionContext.Request.Headers.GetValues("Cookie"));
+
+                authorizationHeader = new AuthenticationHeaderValue("Bearer", store["auth_token"]);
+            }
+
+            IAuthorizationResult result = provider.ValidateAuthorization(new AuthorizationRequest
+            {
+                Authorization = authorizationHeader.Parameter,
+                Type = authorizationHeader.Scheme,
+                RequiredScopes = Scopes
+            });
+
+
+            if (result.IsValidated)
+            {
+                HttpContext.Current.User = new GenericPrincipal(new GenericIdentity(result.Token.User.Id), null);
             }
             else
             {
-                return provider.Value.ValidateAuthorization(new AuthorizationRequest
-                {
-                    Authorization = authorizationHeader.Parameter,
-                    Type = authorizationHeader.Scheme,
-                    RequiredScopes = Scopes
-                }).IsSuccessful;
+                actionContext.Response = actionContext.ControllerContext.Request.CreateResponse(HttpStatusCode.Unauthorized, result.ErrorDescription);
             }
         }
 
-        /// <summary>
-        /// Throws a new <see cref="ObjectDisposedException"/> if this object has been disposed.
-        /// </summary>
-        protected void ThrowIfDisposed()
-        {
-            if (disposed)
-            {
-                throw new ObjectDisposedException(GetType().FullName);
-            }
-        }
+        ///// <summary>
+        ///// Determines whether the specified action context is authorized.
+        ///// </summary>
+        ///// <param name="actionContext">The action context.</param>
+        ///// <returns>Returns true if the given context is authorized, otherwise returns false.</returns>
+        //protected override bool IsAuthorized(HttpActionContext actionContext)
+        //{
 
-        /// <summary>
-        /// Finalizes an instance of the <see cref="OAuthAuthorizeAttribute"/> class.
-        /// </summary>
-        ~OAuthAuthorizeAttribute()
-        {
-            Dispose(false);
-        }
-
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposed)
-            {
-                if (disposing)
-                {
-                    if (provider != null)
-                    {
-                        provider.Dispose();
-                        provider = null;
-                    }
-                    if (context != null)
-                    {
-                        context.Dispose();
-                        context = null;
-                    }
-                    if (Scopes != null)
-                    {
-                        Scopes = null;
-                    }
-                }
-            }
-            disposed = true;
-        }
+        //}
     }
 }

@@ -27,58 +27,20 @@ using System.Web.Http.Results;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using OAuthWorks.ExtensionMethods;
 
 namespace ExampleMvcWebApplication.Controllers
 {
     /// <summary>
     /// Defines a controller that provides OAuth 2.0 endpoints through the use of an API.
     /// </summary>
-    public class OAuthApiController : ApiController
+    public class OAuthApiController : BaseApiController
     {
-        IDisposableObject<DatabaseContext> context;
-
-        IDisposableObject<IOAuthProvider> provider;
-
-        /// <summary>
-        /// Gets the <see cref="DatabaseContext"/> used in this controller.
-        /// </summary>
-        /// <returns>Returns the <see cref="DatabaseContext"/> used by this controller.</returns>
-        public DatabaseContext Context
-        {
-            get
-            {
-                return context.Value;
-            }
-        }
-
-        /// <summary>
-        /// Gets the <see cref="IOAuthProvider"/> used by this controller.
-        /// </summary>
-        /// <returns>Returns the <see cref="IOAuthProvider"/> used by this controller.</returns>
-        public IOAuthProvider Provider
-        {
-            get
-            {
-                return provider.Value;
-            }
-        }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="OAuthApiController"/> class.
         /// </summary>
         public OAuthApiController()
         {
-            this.context = new DisposableObject<DatabaseContext>(new DatabaseContext(), shouldDispose: true);
-            this.provider = new DisposableObject<IOAuthProvider>(new OAuthProvider(p =>
-            {
-                p.AuthorizationCodeRepository = new AuthorizationCodeRepository(context.Value);
-                p.ScopeRepository = new ScopeRepository(context.Value);
-                p.ClientRepository = new ClientRepository(context.Value);
-                p.AccessTokenRepository = new AccessTokenRepository(context.Value);
-                p.RefreshTokenRepository = new RefreshTokenRepository(context.Value);
-                p.DistributeRefreshTokens = true;
-                p.DeleteRevokedTokens = false;
-            }), shouldDispose: true);
         }
 
         /// <summary>
@@ -86,18 +48,8 @@ namespace ExampleMvcWebApplication.Controllers
         /// </summary>
         /// <param name="context">The <see cref="DatabaseContext"/> object that should be used for database transactions in this controller.</param>
         /// <param name="provider">The <see cref="IOAuthProvider"/> object that should be used for OAuth 2.0 transactions in this controller.</param>
-        public OAuthApiController(DatabaseContext context, IOAuthProvider provider)
+        public OAuthApiController(DatabaseContext context, IOAuthProvider provider) : base(context, provider)
         {
-            if (context == null)
-            {
-                context = new DatabaseContext();
-            }
-            if (provider == null)
-            {
-                provider = new OAuthProvider();
-            }
-            this.context = new DisposableObject<DatabaseContext>(context, shouldDispose: true);
-            this.provider = new DisposableObject<IOAuthProvider>(provider, shouldDispose: true);
         }
 
         /// <summary>
@@ -106,17 +58,8 @@ namespace ExampleMvcWebApplication.Controllers
         /// <param name="context">The <see cref="IDisposableObject{DatabaseContext}"/> object that should be used for database transactions in this controller and determines whether the underlying <see cref="DatabaseContext"/> should be disposed.</param>
         /// <param name="provider">The <see cref="IDisposableObject{IOAuthProvider}"/> object that should be used for OAuth 2.0 transactions in this controller and determines whether the underlying <see cref="IOAuthProvider"/> should be disposed.</param>
         public OAuthApiController(IDisposableObject<DatabaseContext> context, IDisposableObject<IOAuthProvider> provider)
+            : base(context, provider)
         {
-            if ((bool @null = context == null) || context.Value == null)
-            {
-                throw new ArgumentNullException(@null ? "context" : "context.Value");
-            }
-            if ((bool @null = context == null) || provider.Value == null)
-            {
-                throw new ArgumentNullException(@null ? "provider" : "provider.Value");
-            }
-            this.context = context;
-            this.provider = provider;
         }
 
         /// <summary>
@@ -141,9 +84,9 @@ namespace ExampleMvcWebApplication.Controllers
                 state: state
             );
 
-            if (User.Identity.IsAuthenticated) // Check for logged in user
+            if (((ApiController)this).User.Identity.IsAuthenticated) // Check for logged in user
             {
-                User user = Context.Users.Find(User.Identity.Name);
+                User user = Context.Users.Find(((ApiController)this).User.Identity.Name);
 
                 IAuthorizationCodeResponse response = Provider.RequestAuthorizationCode(request, user); // Issue authorization code
                 Context.SaveChanges();
@@ -291,7 +234,7 @@ namespace ExampleMvcWebApplication.Controllers
             (
                 new PasswordCredentialsAccessTokenRequest // Send the request to the provider
                 (
-                    user,
+                    user.AsValidUser(),
                     request.ClientId,
                     request.ClientSecret,
                     request.GrantType,
@@ -329,33 +272,12 @@ namespace ExampleMvcWebApplication.Controllers
         }
 
         [OAuthAuthorize("all")]
+        [OAuthAuthorize("any")]
         [Route("api/v1/hasAccess")]
         [HttpGet]
         public bool HasAccess()
         {
             return true;
-        }
-
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                if (context != null)
-                {
-                    context.Dispose();
-                    context = null;
-                }
-                if (provider != null)
-                {
-                    provider.Dispose();
-                    provider = null;
-                }
-            }
-            base.Dispose(disposing);
         }
     }
 }

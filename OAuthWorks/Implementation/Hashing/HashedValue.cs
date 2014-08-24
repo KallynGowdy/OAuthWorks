@@ -99,15 +99,15 @@ namespace OAuthWorks.Implementation.Hashing
         /// <param name="iterationsUsed">The iterations used.</param>
         public HashedValue(string hash, string salt, int iterationsUsed)
         {
-            if(hash == null)
+            if (hash == null)
             {
                 throw new ArgumentNullException("hash");
             }
-            if(salt == null)
+            if (salt == null)
             {
                 throw new ArgumentNullException("salt");
             }
-            if(iterationsUsed <= 0)
+            if (iterationsUsed <= 0)
             {
                 throw new ArgumentOutOfRangeException("iterationsUsed", "must be greater than 0");
             }
@@ -132,7 +132,7 @@ namespace OAuthWorks.Implementation.Hashing
         /// <exception cref="System.ArgumentNullException">hashFactory</exception>
         public HashedValue(IHashFactory hashFactory, string value) : this()
         {
-            if(hashFactory == null)
+            if (hashFactory == null)
             {
                 throw new ArgumentNullException("hashFactory");
             }
@@ -187,7 +187,10 @@ namespace OAuthWorks.Implementation.Hashing
         /// <returns>Returns true if the given value matches the originally stored value, otherwise false.</returns>
         public bool MatchesHash(string value)
         {
-            return getHash(value, Convert.FromBase64String(this.Salt), this.HashIterations).Equals(this.Hash, StringComparison.Ordinal);
+            if (value == null)
+                return false;
+            else
+                return getHash(value, Convert.FromBase64String(this.Salt), this.HashIterations).Equals(this.Hash, StringComparison.Ordinal);
         }
 
         /// <summary>

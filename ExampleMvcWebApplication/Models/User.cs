@@ -48,6 +48,10 @@ namespace ExampleMvcWebApplication.Models
         }
 
         
+        /// <summary>
+        /// Gets or sets the hashed value that represents the password of the user.
+        /// </summary>
+        /// <returns></returns>
         public virtual HashedValue Password
         {
             get;
@@ -80,6 +84,11 @@ namespace ExampleMvcWebApplication.Models
             return GrantedAuthorizationCodes.Any(c => c.Client.Equals(client) && c.Scopes.Contains(scope));
         }
 
+        /// <summary>
+        /// Determines whether .
+        /// </summary>
+        /// <param name="password">The password.</param>
+        /// <returns></returns>
         public bool IsValidPassword(string password)
         {
             return password != null && this.Password.MatchesHash(password);

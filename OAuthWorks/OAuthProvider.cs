@@ -22,6 +22,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using OAuthWorks.Implementation;
+using OAuthWorks.ExtensionMethods;
 
 namespace OAuthWorks
 {
@@ -300,7 +301,7 @@ namespace OAuthWorks
             }
             set
             {
-                value.ThrowIfNull("value");
+                if (value == null) throw new ArgumentNullException("value");
                 accessTokenErrorDescriptionProvider = value;
             }
         }
@@ -319,7 +320,7 @@ namespace OAuthWorks
             }
             set
             {
-                value.ThrowIfNull("value");
+                if (value == null) throw new ArgumentNullException("value");
                 authorizationCodeErrorDescriptionProvider = value;
             }
         }
@@ -336,7 +337,7 @@ namespace OAuthWorks
             }
             set
             {
-                value.ThrowIfNull("value");
+                if (value == null) throw new ArgumentNullException("value");
                 accessTokenErrorUriProvider = value;
             }
         }
@@ -655,25 +656,25 @@ namespace OAuthWorks
                     IEnumerable<IScope> scopes = GetRequestedScopes(request.Scope);
                     if (scopes != null && scopes.Any())
                     {
-                        AccessTokenRepository.GetByUserAndClient(request.User, client).ToArray().ForEach(t =>
+                        AccessTokenRepository.GetByUserAndClient(request.User.User, client).ToArray().ForEach(t =>
                         {
                             t.Revoke();
                             if (DeleteRevokedTokens)
                                 AccessTokenRepository.Remove(t);
                         });
 
-                        RefreshTokenRepository.GetByUserAndClient(request.User, client).ToArray().ForEach(t =>
+                        RefreshTokenRepository.GetByUserAndClient(request.User.User, client).ToArray().ForEach(t =>
                         {
                             t.Revoke();
                             if (DeleteRevokedTokens)
                                 RefreshTokenRepository.Remove(t);
                         });
 
-                        ICreatedToken<IAccessToken> token = AccessTokenFactory.Create(client, request.User, scopes);
+                        ICreatedToken<IAccessToken> token = AccessTokenFactory.Create(client, request.User.User, scopes);
                         ICreatedToken<IRefreshToken> refreshToken = null;
                         if (RefreshTokenFactory != null && DistributeRefreshTokens)
                         {
-                            refreshToken = RefreshTokenFactory.Create(client, request.User, scopes);
+                            refreshToken = RefreshTokenFactory.Create(client, request.User.User, scopes);
                             RefreshTokenRepository.Add(refreshToken);
                         }
 
@@ -743,23 +744,23 @@ namespace OAuthWorks
                     {
                         if (!token.Revoked)
                         {
-                            if (request.RequiredScopes.All(s => token.Scopes.Contains(s)))
+                            if (request.RequiredScopes.Any(scopes => scopes.All(s => token.Scopes.Contains(s))))
                             {
-                                return AuthorizationResult.Success;
+                                return AuthorizationResult.Success(token);
                             }
                             else
                             {
-                                return AuthorizationResult.Failure.NotGrantedPermission;
+                                return AuthorizationResult.Failure.NotGrantedPermission(token);
                             }
                         }
                         else
                         {
-                            return AuthorizationResult.Failure.RevokedToken;
+                            return AuthorizationResult.Failure.RevokedToken(token);
                         }
                     }
                     else
                     {
-                        return AuthorizationResult.Failure.ExpiredToken;
+                        return AuthorizationResult.Failure.ExpiredToken(token);
                     }
                 }
                 else
@@ -970,6 +971,10 @@ namespace OAuthWorks
             else if (request.User == null)
             {
                 return AccessTokenSpecificRequestError.NullUser;
+            }
+            else if (!request.User.IsValidated)
+            {
+                return AccessTokenSpecificRequestError.InvalidGrant;
             }
             else
             {

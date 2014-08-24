@@ -47,17 +47,9 @@ namespace ExampleMvcWebApplication.Controllers
         [HttpPost]
         public ActionResult CreateAccount(Account account, string @return = null)
         {
-            using (DatabaseContext context = new DatabaseContext())
+            using(UsersApiController controller = new UsersApiController())
             {
-                User user = new Models.User
-                {
-                    Id = account.Username,
-                    Password = new HashedValue(account.Password),
-                    GrantedAuthorizationCodes = new List<AuthorizationCode>()
-                };
-
-                context.Users.Add(user);
-                context.SaveChanges();
+                controller.PostCreateAccount(account.Username, account).Wait();
                 return Redirect(@return ?? Request.UrlReferrer.AbsolutePath);
             }
         }
@@ -83,9 +75,8 @@ namespace ExampleMvcWebApplication.Controllers
                 var token = JsonConvert.DeserializeAnonymousType(await response.Content.ReadAsStringAsync(), new { access_token = "", refresh_token = "" });
                 if (token != null)
                 {
-                    FormsAuthentication.SetAuthCookie(username, true);
-                    Response.Cookies.Add(new HttpCookie("auth_token", token.access_token));
-                    Response.Cookies.Add(new HttpCookie("refresh_token", token.refresh_token));
+                    Response.Cookies.Add(new HttpCookie("auth_token", token.access_token) { HttpOnly = true });
+                    Response.Cookies.Add(new HttpCookie("refresh_token", token.refresh_token) { HttpOnly = true });
                 }
             }
 

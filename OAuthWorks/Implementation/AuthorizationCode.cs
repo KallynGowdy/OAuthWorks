@@ -37,11 +37,11 @@ namespace OAuthWorks.Implementation
         /// <param name="expirationDateUtc">The expiration date UTC.</param>
         protected AuthorizationCode(TId id, IUser user, IClient client, IEnumerable<IScope> scopes, Uri redirectUri, DateTime expirationDateUtc)
         {
-            Contract.Requires(id != null);
-            Contract.Requires(user != null);
-            Contract.Requires(client != null);
-            Contract.Requires(scopes != null);
-            Contract.Requires(redirectUri != null);
+            if (id == null) throw new ArgumentNullException("id");
+            if (user == null) throw new ArgumentNullException("user");
+            if (client == null) throw new ArgumentNullException("client");
+            if (scopes == null) throw new ArgumentNullException("scopes");
+            if (redirectUri == null) throw new ArgumentNullException("redirectUri");
             this.User = user;
             this.Client = client;
             this.Scopes = scopes;

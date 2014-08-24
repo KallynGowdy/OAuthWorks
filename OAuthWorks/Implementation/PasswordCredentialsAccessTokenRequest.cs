@@ -32,7 +32,7 @@ namespace OAuthWorks.Implementation
         /// Gets the user that account access is being requested for. The given username and password must match the given user for proper validation.
         /// </summary>
         /// <returns>Returns the authenticated user that access is being requested for.</returns>
-        public IUser User
+        public IValidatedUser User
         {
             get;
             private set;
@@ -47,7 +47,7 @@ namespace OAuthWorks.Implementation
         /// <param name="grantType">The type of grant requested by the client.</param>
         /// <param name="scope">The scope requested by the client.</param>
         /// <param name="redirectUri">The redirect URI provided by the client when requesting an authorization code.</param>
-        public PasswordCredentialsAccessTokenRequest(IUser user, string clientId, string clientSecret, string grantType, Uri redirectUri, string scope)
+        public PasswordCredentialsAccessTokenRequest(IValidatedUser user, string clientId, string clientSecret, string grantType, Uri redirectUri, string scope)
             : base(clientId, clientSecret, grantType, scope, redirectUri)
         {
             Contract.Requires(!string.IsNullOrEmpty(clientId));

@@ -14,26 +14,30 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
-using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OAuthWorks
+namespace OAuthWorks.ExtensionMethods
 {
     /// <summary>
-    /// Defines a static class that provides extension methods for <see cref="IAccessTokenResponse"/> objects.
+    /// Defines a static class that contains extension methods for <see cref="OAuthWorks.IRefreshToken"/> objects.
     /// </summary>
-    public static class AccessTokenResponseExtensions
+    public static class RefreshTokenExtensions
     {
         /// <summary>
-        /// Gets the <see cref="HttpStatusCode"/> that represents whether the request was a success or failure.
+        /// Determines if the token is in a valid, usable state for the client that was given it.
         /// </summary>
-        /// <param name="response">The response that the <see cref="HttpStatusCode"/> should be retrieved for.</param>
-        /// <returns>Returns the <see cref="HttpStatusCode"/> representing the status code of the <see cref="IAccessTokenResponse"/>.</returns>
-        public static HttpStatusCode StatusCode(this IAccessTokenResponse response)
+        /// <param name="token">The token to determine validity for.</param>
+        /// <returns>Returns true if the token has not been revoked and if it has not expired. Otherwise false.</returns>
+        public static bool IsValid(this IRefreshToken token)
         {
-            return response is ISuccessfulAccessTokenResponse ? HttpStatusCode.OK : HttpStatusCode.BadRequest;
+            if(token == null)
+            {
+                throw new ArgumentNullException("token");
+            }
+            return !token.Revoked && !token.Expired;
         }
     }
 }

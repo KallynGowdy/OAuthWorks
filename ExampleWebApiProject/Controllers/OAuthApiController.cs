@@ -26,6 +26,7 @@ using System.Web.Security;
 using System.Web.Http.Results;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using OAuthWorks.ExtensionMethods;
 
 namespace ExampleWebApiProject.Controllers
 {
@@ -302,7 +303,7 @@ namespace ExampleWebApiProject.Controllers
                 (
                     new PasswordCredentialsAccessTokenRequest // Send the request to the provider
                     (
-                        user,
+                        user.ForTokenRequest(user != null),
                         request.ClientId,
                         request.ClientSecret,
                         request.GrantType,

@@ -80,7 +80,7 @@ namespace OAuthWorks.Implementation
         public HashedAccessToken(IHashFactory hashFactory, string token, TId id, IUser user, IClient client, IEnumerable<IScope> scopes, string tokenType, DateTime expirationDateUtc)
             : base(id, user, client, scopes, tokenType, expirationDateUtc)
         {
-            Contract.Requires(hashFactory != null);
+            if (hashFactory == null) throw new ArgumentNullException("hashFactory");
             this.TokenHash = new HashedValue(hashFactory, token);
         }
 

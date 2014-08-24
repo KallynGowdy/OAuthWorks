@@ -9,16 +9,11 @@ using System.Web.Optimization;
 using System.Web.Routing;
 using System.Web.Security;
 
-[assembly: PreApplicationStartMethod(typeof(WebApiApplication), "EnableForms")]
 
 namespace ExampleMvcWebApplication
 {
     public class WebApiApplication : System.Web.HttpApplication
     {
-        public static void EnableForms()
-        {
-            FormsAuthentication.EnableFormsAuthentication(null);
-        }
 
         protected void Application_Start()
         {

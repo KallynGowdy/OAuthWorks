@@ -21,43 +21,39 @@ using System.Threading.Tasks;
 namespace OAuthWorks.Implementation
 {
     /// <summary>
-    /// Defines a class that provides a basic implementation of <see cref="IAuthorizationRequest"/>.
+    /// Defines a class that provides a basic implementation of <see cref="IValidatedUser"/>.
     /// </summary>
-    public class AuthorizationRequest : IAuthorizationRequest
+    public class ValidatedUser : IValidatedUser
     {
         /// <summary>
-        /// Gets the value that was given in the 'Authorization' header of the request.
+        /// Initializes a new instance of the <see cref="ValidatedUser"/> class.
         /// </summary>
-        /// <returns></returns>
-        public string Authorization
+        /// <param name="isValidated">Whether the user's credentials have been validated.</param>
+        /// <param name="user">The user whose credentials have been validated (either successfully or not).</param>
+        public ValidatedUser(bool isValidated, IUser user)
         {
-            get;
-            set;
-        }
-
-
-        /// <summary>
-        /// Gets the list of scope groups that are required for the request to be authorized.
-        /// If the request contains all of the required scopes in at least one of the groups, then
-        /// the request is authorized. For Example: With the two scope groups {"all", "viewUser, updateUser"},
-        /// if the given authorization has access to either the "all" scope or both the "viewUser" and "updateUser"
-        /// scopes, then it is allowed.
-        /// </summary>
-        /// <returns></returns>
-        public IEnumerable<IEnumerable<IScope>> RequiredScopes
-        {
-            get;
-            set;
+            this.IsValidated = isValidated;
+            this.User = user;
         }
 
         /// <summary>
-        /// Gets the authorization type that was given in the 'Authorization' header of the request.
+        /// Gets whether the user is validated.
         /// </summary>
         /// <returns></returns>
-        public string Type
+        public bool IsValidated
         {
             get;
-            set;
+            private set;
+        }
+
+        /// <summary>
+        /// Gets the user that was being validated.
+        /// </summary>
+        /// <returns></returns>
+        public IUser User
+        {
+            get;
+            private set;
         }
     }
 }

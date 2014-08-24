@@ -21,18 +21,27 @@ namespace OAuthWorks
     public interface IAuthorizationResult
     {
         /// <summary>
-        /// Gets whether or not the authorization was successful.
+        /// Gets whether or not the authorization was successful and therefore validated.
         /// If true, the given access token/request was valid, otherwise it is not.
         /// </summary>
         /// <returns></returns>
-        bool IsSuccessful
+        bool IsValidated
+        {
+            get;
+        }
+
+        /// <summary>
+        /// Gets the <see cref="IAccessToken"/> that represents the validated authorization.
+        /// </summary>
+        /// <returns></returns>
+        IAccessToken Token
         {
             get;
         }
 
         /// <summary>
         /// Gets a <see cref="IAuthorizationResultDescription"/> object that describes the error that occured.
-        /// Can be null if <see cref="IsSuccessful"/> is true.
+        /// Can be null if <see cref="IsValidated"/> is true.
         /// </summary>
         /// <returns></returns>
         IAuthorizationResultDescription ErrorDescription
