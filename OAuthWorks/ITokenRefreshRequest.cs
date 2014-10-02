@@ -14,7 +14,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,7 +23,6 @@ namespace OAuthWorks
     /// <summary>
     /// Defines an interface for an object that represents a request for a new access refreshToken through the use of a refresh refreshToken.
     /// </summary>
-    [ContractClass(typeof(ITokenRefreshRequestContract))]
     public interface ITokenRefreshRequest : IAccessTokenRequest
     {
         /// <summary>
@@ -33,60 +31,6 @@ namespace OAuthWorks
         string RefreshToken
         {
             get;
-        }
-    }
-
-    [ContractClassFor(typeof(ITokenRefreshRequest))]
-    internal abstract class ITokenRefreshRequestContract : ITokenRefreshRequest
-    {
-
-        string ITokenRefreshRequest.RefreshToken
-        {
-            get
-            {
-                Contract.Ensures(Contract.Result<string>() != null);
-                return default(string);
-            }
-        }
-
-        string IAccessTokenRequest.GrantType
-        {
-            get
-            {
-                return default(string);
-            }
-        }
-
-        string IAccessTokenRequest.ClientId
-        {
-            get
-            {
-                return default(string);
-            }
-        }
-
-        Uri IAccessTokenRequest.RedirectUri
-        {
-            get
-            {
-                return default(Uri);
-            }
-        }
-
-        string IAccessTokenRequest.ClientSecret
-        {
-            get
-            {
-                return default(string);
-            }
-        }
-
-        string IAccessTokenRequest.Scope
-        {
-            get
-            {
-                return default(string);
-            }
         }
     }
 }

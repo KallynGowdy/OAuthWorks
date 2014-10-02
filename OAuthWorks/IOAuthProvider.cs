@@ -16,7 +16,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -34,7 +33,6 @@ namespace OAuthWorks
     /// In the case that the Resource Owner Password Credentials flow is allowed by the provider, 
     /// </remarks>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Auth")]
-    [ContractClass(typeof(IOAuthProviderContract))]
     public interface IOAuthProvider : IDisposable
     {
         //The provider needs to provide support for the different OAuth flows
@@ -204,70 +202,5 @@ namespace OAuthWorks
         /// <param name="request">An object that contains values that were provided by the client to be used for authorization.</param>
         /// <returns>Returns a new <see cref="IAuthorizationResult"/>An object that contains values provided by the client for authorization.</returns>
         IAuthorizationResult ValidateAuthorization(IAuthorizationRequest request);
-    }
-
-    [ContractClassFor(typeof(IOAuthProvider))]
-    internal abstract class IOAuthProviderContract : IOAuthProvider
-    {
-
-        bool IOAuthProvider.DistributeRefreshTokens
-        {
-            get { return default(bool); }
-        }
-
-        IAuthorizationCodeResponse IOAuthProvider.RequestAuthorizationCode(IAuthorizationCodeRequest request, IUser user)
-        {
-            Contract.Requires(user != null);
-            Contract.Ensures(Contract.Result<IAuthorizationCodeResponse>() != null);
-            return default(IAuthorizationCodeResponse);
-        }
-
-        IAccessTokenResponse IOAuthProvider.RequestAccessToken(IAuthorizationCodeGrantAccessTokenRequest request)
-        {
-            Contract.Ensures(Contract.Result<IAccessTokenResponse>() != null);
-            return default(IAccessTokenResponse);
-        }
-
-        IAccessTokenResponse IOAuthProvider.RefreshAccessToken(ITokenRefreshRequest request)
-        {
-            Contract.Ensures(Contract.Result<IAccessTokenResponse>() != null);
-            return default(IAccessTokenResponse);
-        }
-
-        void IOAuthProvider.RevokeAccess(IUser user, IClient client)
-        {
-            Contract.Requires(user != null);
-            Contract.Requires(client != null);
-        }
-
-        bool IOAuthProvider.HasAccess(IUser user, IClient client, IScope scope)
-        {
-            Contract.Requires(user != null);
-            Contract.Requires(client != null);
-            Contract.Requires(scope != null);
-            return default(bool);
-        }
-
-        void IDisposable.Dispose()
-        {
-        }
-
-        IAccessTokenResponse IOAuthProvider.RequestAccessToken(IPasswordCredentialsAccessTokenRequest request)
-        {
-            return default(IAccessTokenResponse);
-        }
-
-        IEnumerable<IScope> IOAuthProvider.GetRequestedScopes(string scopes)
-        {
-            Contract.Ensures(Contract.Result<IEnumerable<IScope>>() != null);
-            return default(IEnumerable<IScope>);
-        }
-
-        IAuthorizationResult IOAuthProvider.ValidateAuthorization(IAuthorizationRequest request)
-        {
-            Contract.Requires(request != null);
-            Contract.Ensures(Contract.Result<IAuthorizationResult>() != null);
-            return default(IAuthorizationResult);
-        }
     }
 }

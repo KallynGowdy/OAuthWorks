@@ -15,7 +15,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 
@@ -24,7 +23,6 @@ namespace OAuthWorks
     /// <summary>
     /// Defines an interface for access tokens.
     /// </summary>
-    [ContractClass(typeof(IAccessTokenContract))]
     public interface IAccessToken : IToken
     {
         /// <summary>
@@ -91,80 +89,5 @@ namespace OAuthWorks
         /// Causes this refresh token to become invalidated and no longer usable by a client.
         /// </summary>
         void Revoke();
-    }
-
-    [ContractClassFor(typeof(IAccessToken))]
-    internal abstract class IAccessTokenContract : IAccessToken
-    {
-
-        IClient IAccessToken.Client
-        {
-            get
-            {
-                Contract.Ensures(Contract.Result<IClient>() != null);
-                return default(IClient);
-            }
-        }
-
-        IEnumerable<IScope> IAccessToken.Scopes
-        {
-            get
-            {
-                Contract.Ensures(Contract.Result<IEnumerable<IScope>>() != null);
-                return default(IEnumerable<IScope>);
-            }
-        }
-
-        IUser IAccessToken.User
-        {
-            get
-            {
-                Contract.Ensures(Contract.Result<IUser>() != null);
-                return default(IUser);
-            }
-        }
-
-        string IAccessToken.TokenType
-        {
-            get
-            {
-                Contract.Ensures(Contract.Result<string>() != null);
-                return default(string);
-            }
-        }
-
-        DateTime IAccessToken.ExpirationDateUtc
-        {
-            get
-            {
-                return default(DateTime);
-            }
-        }
-
-        bool IAccessToken.Expired
-        {
-            get
-            {
-                return default(bool);
-            }
-        }
-
-        bool IAccessToken.Revoked
-        {
-            get
-            {
-                return default(bool);
-            }
-        }
-
-        void IAccessToken.Revoke()
-        {
-            Contract.Ensures(((IAccessToken)this).Revoked);
-        }
-
-        bool IToken.MatchesValue(string token)
-        {
-            return default(bool);
-        }
     }
 }

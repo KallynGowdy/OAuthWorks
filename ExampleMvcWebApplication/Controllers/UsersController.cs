@@ -49,7 +49,7 @@ namespace ExampleMvcWebApplication.Controllers
         {
             using(UsersApiController controller = new UsersApiController())
             {
-                controller.PostCreateAccount(account.Username, account).Wait();
+                controller.PutUpdateAccount(account.Username, account).Wait();
                 return Redirect(@return ?? Request.UrlReferrer.AbsolutePath);
             }
         }

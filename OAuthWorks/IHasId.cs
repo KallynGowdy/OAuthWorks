@@ -15,7 +15,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -27,7 +26,6 @@ namespace OAuthWorks
     /// <summary>
     /// Defines a generic interface for an object that is identifiable.
     /// </summary>
-    [ContractClass(typeof(IHasIdContract<>))]
     public interface IHasId<T>
     {
         /// <summary>
@@ -36,19 +34,6 @@ namespace OAuthWorks
         T Id
         {
             get;
-        }
-    }
-
-    [ContractClassFor(typeof(IHasId<>))]
-    internal abstract class IHasIdContract<T> : IHasId<T>
-    {
-        T IHasId<T>.Id
-        {
-            get
-            {
-                Contract.Ensures(Contract.Result<T>() != null);
-                return default(T);
-            }
         }
     }
 }

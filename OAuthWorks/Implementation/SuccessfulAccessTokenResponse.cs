@@ -14,7 +14,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Net;
 using System.Runtime.Serialization;
@@ -114,8 +113,8 @@ namespace OAuthWorks.Implementation
         /// <param name="refreshToken">The refresh token that can be used by the client to obtain new access tokens.</param>
         public SuccessfulAccessTokenResponse(string token, DateTime expirationDateUtc, string scope, string tokenType, string refreshToken)
         {
-            Contract.Requires(!string.IsNullOrEmpty(token));
-            Contract.Requires(!string.IsNullOrEmpty(tokenType));
+            if (string.IsNullOrEmpty(token)) throw new ArgumentException("Cannot be null or empty.", "token");
+            if (string.IsNullOrEmpty(tokenType)) throw new ArgumentException("Cannot be null or empty.", "tokenType");
             this.AccessToken = token;
             this.ExpirationDateUtc = expirationDateUtc;
             this.Scope = scope;

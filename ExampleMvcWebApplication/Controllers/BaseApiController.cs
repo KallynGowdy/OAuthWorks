@@ -1,11 +1,13 @@
 ﻿using ExampleMvcWebApplication.Models;
 using ExampleMvcWebApplication.Repositories;
 using OAuthWorks;
+using OAuthWorks.Implementation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Web.Http;
 
 namespace ExampleMvcWebApplication.Controllers
@@ -40,7 +42,7 @@ namespace ExampleMvcWebApplication.Controllers
         {
             get
             {
-                if(user == null && base.User.Identity != null && base.User.Identity.IsAuthenticated)
+                if (user == null && base.User.Identity != null && base.User.Identity.IsAuthenticated)
                 {
                     user = Context.Users.Find(base.User.Identity.Name);
                 }
@@ -68,6 +70,57 @@ namespace ExampleMvcWebApplication.Controllers
         {
             get;
             private set;
+        }
+
+        /// <summary>
+        /// Validates whether the requesting client has access to all of the scopes in a given 'group'
+        /// </summary>
+        /// <param name="requiredScopes">The list of scope 'groups' that are required for the request to be valid.</param>
+        /// <returns></returns>
+        protected IAuthorizationResult ValidateAuthorization(params string[] requiredScopes)
+        {
+            return Provider.ValidateAuthorization(GetAuthorizationRequest(requiredScopes.Select(s => Provider.GetRequestedScopes(s))));
+        }
+
+        /// <summary>
+        /// Gets the <see cref="IAuthorizationRequest"/> object that can be used to determine what permissions a client has.
+        /// </summary>
+        /// <param name="requiredScopes">
+        /// The groups of required scopes that are needed for the request to be valid. If the client has access to all of the scopes from one of the 'groups', then the
+        /// request is authorized.
+        /// </param>
+        /// <returns></returns>
+        protected IAuthorizationRequest GetAuthorizationRequest(params IEnumerable<IScope>[] requiredScopes)
+        {
+            return GetAuthorizationRequest(requiredScopes.AsEnumerable());
+        }
+
+        /// <summary>
+        /// Gets the <see cref="IAuthorizationRequest"/> object that can be used to determine what permissions a client has.
+        /// </summary>
+        /// <param name="requiredScopes">
+        /// The groups of required scopes that are needed for the request to be valid. If the client has access to all of the scopes from one of the 'groups', then the
+        /// request is authorized.
+        /// </param>
+        /// <returns></returns>
+        protected IAuthorizationRequest GetAuthorizationRequest(IEnumerable<IEnumerable<IScope>> requiredScopes)
+        {
+            AuthenticationHeaderValue authHeader = Request.Headers.Authorization;
+
+            if(authHeader == null)
+            {
+                CookieStore cookies = new CookieStore(Request.Headers.GetValues("Cookie"));
+                authHeader = new AuthenticationHeaderValue("Bearer", cookies["auth_token"]);
+            }
+
+            IAuthorizationRequest authorizationRequest = new AuthorizationRequest
+            {
+                Authorization = authHeader.Parameter,
+                Type = authHeader.Scheme,
+                RequiredScopes = requiredScopes
+            };
+
+            return authorizationRequest;
         }
 
         /// <summary>

@@ -24,7 +24,7 @@ using System.Threading.Tasks;
 namespace OAuthWorks.Implementation
 {
     /// <summary>
-    /// Defines a class that provides a basic implementation of <see cref="OAuthWorks.AccessTokenResponseExceptionBase"/>.
+    /// Defines a class that provides a basic implementation of <see cref="OAuthWorks.AccessTokenResponseExceptionBase" />.
     /// </summary>
     [DataContract]
     public class UnsuccessfulAccessTokenResponse : IUnsuccessfulAccessTokenResponse

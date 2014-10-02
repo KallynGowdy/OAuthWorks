@@ -16,8 +16,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
@@ -43,14 +43,14 @@ namespace OAuthWorks.ExtensionMethods
                 throw new ArgumentNullException("value");
             }
             Type t = value.GetType();
-            NameValueCollection values = System.Web.HttpUtility.ParseQueryString(string.Empty);
+            Dictionary<string, string> values = new Dictionary<string, string>();
 
             foreach (PropertyInfo p in t.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => !p.IsSpecialName && p.CanRead))
             {
                 values.Add(p.Name, (p.GetValue(value) ?? "").ToString());
             }
 
-            return "?" + values.ToString();
+            return "?" + string.Join("&", values.Select(kv => string.Format("{0}={1}", Uri.EscapeDataString(kv.Key), Uri.EscapeDataString(kv.Value))));
         }
     }
 }

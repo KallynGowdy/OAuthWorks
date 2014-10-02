@@ -15,7 +15,6 @@
 using OAuthWorks.Implementation.Hashing;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Security.Cryptography;

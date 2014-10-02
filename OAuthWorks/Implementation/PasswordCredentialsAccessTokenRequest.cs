@@ -14,7 +14,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
@@ -50,10 +49,10 @@ namespace OAuthWorks.Implementation
         public PasswordCredentialsAccessTokenRequest(IValidatedUser user, string clientId, string clientSecret, string grantType, Uri redirectUri, string scope)
             : base(clientId, clientSecret, grantType, scope, redirectUri)
         {
-            Contract.Requires(!string.IsNullOrEmpty(clientId));
-            Contract.Requires(!string.IsNullOrEmpty(clientSecret));
-            Contract.Requires(!string.IsNullOrEmpty(grantType));
-            Contract.Requires(user != null);
+            if (string.IsNullOrEmpty(clientId)) throw new ArgumentException("Cannot be null or empty.", "clientId");
+            if (string.IsNullOrEmpty(clientSecret)) throw new ArgumentException("Cannot be null or empty.", "clientSecret");
+            if (string.IsNullOrEmpty(grantType)) throw new ArgumentException("Cannot be null or empty.", "grantType");
+            if (user == null) throw new ArgumentNullException("user");
             this.User = user;
             this.ClientId = clientId;
             this.ClientSecret = clientSecret;

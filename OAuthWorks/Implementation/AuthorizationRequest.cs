@@ -26,7 +26,7 @@ namespace OAuthWorks.Implementation
     public class AuthorizationRequest : IAuthorizationRequest
     {
         /// <summary>
-        /// Gets the value that was given in the 'Authorization' header of the request.
+        /// Gets or sets the value that was given in the 'Authorization' header of the request.
         /// </summary>
         /// <returns></returns>
         public string Authorization
@@ -35,9 +35,8 @@ namespace OAuthWorks.Implementation
             set;
         }
 
-
         /// <summary>
-        /// Gets the list of scope groups that are required for the request to be authorized.
+        /// Gets or sets the list of scope groups that are required for the request to be authorized.
         /// If the request contains all of the required scopes in at least one of the groups, then
         /// the request is authorized. For Example: With the two scope groups {"all", "viewUser, updateUser"},
         /// if the given authorization has access to either the "all" scope or both the "viewUser" and "updateUser"
@@ -51,7 +50,7 @@ namespace OAuthWorks.Implementation
         }
 
         /// <summary>
-        /// Gets the authorization type that was given in the 'Authorization' header of the request.
+        /// Gets or sets the authorization type that was given in the 'Authorization' header of the request.
         /// </summary>
         /// <returns></returns>
         public string Type

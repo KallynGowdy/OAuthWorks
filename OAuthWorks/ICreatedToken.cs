@@ -13,14 +13,12 @@
 //    limitations under the License.
 
 using System;
-using System.Diagnostics.Contracts;
 namespace OAuthWorks
 {
     /// <summary>
     /// Defines an interface for objects that contain a token(AuthorizationCode, AccessToken, RefreshToken, ect.) with a generated string representing the token value.
     /// </summary>
     /// <typeparam name="TToken">The type of the tokens that are contained in this object.</typeparam>
-    [ContractClass(typeof(ICreatedTokenContract<>))]
     public interface ICreatedToken<out TToken>
      where TToken : IToken
     {
@@ -33,28 +31,5 @@ namespace OAuthWorks
         /// Gets the value that causes <see cref="IToken.MatchesValue(System.String)"/> to evaluate to true.
         /// </summary>
         string TokenValue { get; }
-    }
-
-    [ContractClassFor(typeof(ICreatedToken<>))]
-    internal abstract class ICreatedTokenContract<TToken> : ICreatedToken<TToken> where TToken : IToken
-    {
-
-        TToken ICreatedToken<TToken>.Token
-        {
-            get
-            {
-                Contract.Ensures(Contract.Result<TToken>() != null);
-                return default(TToken);
-            }
-        }
-
-        string ICreatedToken<TToken>.TokenValue
-        {
-            get
-            {
-                Contract.Ensures(Contract.Result<string>() != null);
-                return default(string);
-            }
-        }
     }
 }

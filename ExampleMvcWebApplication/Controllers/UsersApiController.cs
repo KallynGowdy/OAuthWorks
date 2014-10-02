@@ -1,5 +1,7 @@
 ﻿using ExampleMvcWebApplication.Models;
 using ExampleMvcWebApplication.ViewModels;
+using OAuthWorks;
+using OAuthWorks.Implementation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,38 +18,8 @@ namespace ExampleMvcWebApplication.Controllers
     {
         public UsersApiController() { }
 
-        /// <summary>
-        /// Creates a new account with the specified username and password.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <param name="account">The account.</param>
-        /// <returns></returns>
-        [AllowAnonymous]
-        public async Task<IHttpActionResult> PostCreateAccount(string id, Account account)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            if (id != account.Username)
-            {
-                return BadRequest();
-            }
-
-            User user = new User
-            {
-                Id = id,
-                Password = new HashedValue(account.Password)
-            };
-
-            Context.Users.Add(user);
-            await Context.SaveChangesAsync();
-            return CreatedAtRoute("DefaultApi", new { controller = "users", id }, account);
-        }
-
         [Route("{id}")]
-        [OAuthAuthorize("all", "updateAccount")]     
+        [AllowAnonymous]
         public async Task<IHttpActionResult> PutUpdateAccount(string id, Account account)
         {
             if (!ModelState.IsValid)
@@ -59,19 +31,47 @@ namespace ExampleMvcWebApplication.Controllers
             {
                 return BadRequest();
             }
+            User u = Context.Users.Find(id);
 
-            if (User != null)
+            if (u != null)
             {
-                User.Password = new HashedValue(account.Password);
-                User.Id = account.Username;
-                Context.Entry(User).State = System.Data.Entity.EntityState.Modified;
-                await Context.SaveChangesAsync();
-                return Ok();
+                IAuthorizationResult authorization = ValidateAuthorization("all", "updateAccount");
+
+                if (authorization.IsValidated)
+                {
+                    await UpdateAccount(id, account);
+                    return Ok();
+                }
+                else
+                {
+                    return Content(HttpStatusCode.Unauthorized, authorization.ErrorDescription);
+                }
             }
             else
             {
-                return Unauthorized();
+                u = await CreateAccount(id, account);
+                return CreatedAtRoute("DefaultApi", new { controller = "users", id }, new { UserId = u.Id });
             }
+        }
+
+        private async Task UpdateAccount(string id, Account account)
+        {
+            User.Password = new HashedValue(account.Password);
+            User.Id = account.Username;
+            Context.Entry(User).State = System.Data.Entity.EntityState.Modified;
+            await Context.SaveChangesAsync();
+        }
+
+        private async Task<User> CreateAccount(string id, Account account)
+        {
+            User user = new User
+            {
+                Id = id,
+                Password = new HashedValue(account.Password)
+            };
+            Context.Users.Add(user);
+            await Context.SaveChangesAsync();
+            return user;
         }
     }
 }

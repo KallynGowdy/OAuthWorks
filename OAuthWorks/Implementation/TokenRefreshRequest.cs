@@ -14,7 +14,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
@@ -46,7 +45,7 @@ namespace OAuthWorks.Implementation
         public TokenRefreshRequest(string refreshToken, string clientId, string clientSecret, string grantType, string scope)
             : base(clientId, clientSecret, grantType, scope, null)
         {
-            Contract.Requires(!string.IsNullOrEmpty(refreshToken));
+            if (string.IsNullOrEmpty(refreshToken)) throw new ArgumentException("Cannot be null or empty.", refreshToken);
             RefreshToken = refreshToken;
         }
     }

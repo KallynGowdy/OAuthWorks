@@ -17,7 +17,6 @@ using OAuthWorks.Factories;
 using OAuthWorks.Implementation.Factories;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -102,11 +101,11 @@ namespace OAuthWorks
             IRefreshTokenFactory<IRefreshToken> refreshTokenFactory
             )
         {
-            Contract.Requires(accessTokenFactory != null);
-            Contract.Requires(accessTokenResponseFactory != null);
-            Contract.Requires(authorizationCodeFactory != null);
-            Contract.Requires(authorizationCodeResponseFactory != null);
-            Contract.Requires(refreshTokenFactory != null);
+            if (accessTokenFactory == null) throw new ArgumentNullException("accessTokenFactory");
+            if (accessTokenResponseFactory == null) throw new ArgumentNullException("accessTokenResponseFactory");
+            if (authorizationCodeFactory == null) throw new ArgumentNullException("authorizationCodeFactory");
+            if (authorizationCodeResponseFactory == null) throw new ArgumentNullException("authorizationCodeResponseFactory");
+            if (refreshTokenFactory == null) throw new ArgumentNullException("refreshTokenFactory");
             AccessTokenFactory = accessTokenFactory;
             AuthorizationCodeFactory = authorizationCodeFactory;
             AccessTokenResponseFactory = accessTokenResponseFactory;
@@ -131,10 +130,11 @@ namespace OAuthWorks
             )
             : this()
         {
-            Contract.Requires(accessTokenRepository != null);
-            Contract.Requires(authorizationCodeRepository != null);
-            Contract.Requires(scopeRepository != null);
-            Contract.Requires(clientRepository != null);
+            if (accessTokenRepository == null) throw new ArgumentNullException("accessTokenRepository");
+            if (authorizationCodeRepository == null) throw new ArgumentNullException("authorizationCodeRepository");
+            if (scopeRepository == null) throw new ArgumentNullException("scopeRepository");
+            if (clientRepository == null) throw new ArgumentNullException("clientRepository");
+            if (refreshTokenRepository == null) throw new ArgumentNullException("refreshTokenRepository");
             AccessTokenRepository = accessTokenRepository;
             AuthorizationCodeRepository = authorizationCodeRepository;
             ScopeRepository = scopeRepository;
@@ -260,7 +260,10 @@ namespace OAuthWorks
             }
             set
             {
-                Contract.Requires(value != null);
+                if(value == null)
+                {
+                    throw new ArgumentNullException("value");
+                }
                 scopeFormatter = value;
             }
         }
@@ -279,7 +282,10 @@ namespace OAuthWorks
             }
             set
             {
-                Contract.Requires(value != null);
+                if(value == null)
+                {
+                    throw new ArgumentNullException("value");
+                }
                 scopeParser = value;
             }
         }
@@ -838,7 +844,7 @@ namespace OAuthWorks
             {
                 return AccessTokenSpecificRequestError.NullAuthorizationCode;
             }
-            else if(string.IsNullOrEmpty(request.GrantType))
+            else if (string.IsNullOrEmpty(request.GrantType))
             {
                 return AccessTokenSpecificRequestError.NullGrantType;
             }

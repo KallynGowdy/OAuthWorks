@@ -14,7 +14,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -44,9 +43,9 @@ namespace OAuthWorks.Implementation.Hashing
         /// <param name="iterations">The iterations.</param>
         public Pbkdf2Sha1(byte[] password, byte[] salt, int iterations)
         {
-            Contract.Requires(password != null);
-            Contract.Requires(salt != null);
-            Contract.Requires(iterations > 0);
+            if (password == null) throw new ArgumentNullException("password");
+            if (salt == null) throw new ArgumentNullException("salt");
+            if (iterations <= 0) throw new ArgumentOutOfRangeException("iterations");
             pbkdf2 = new Rfc2898DeriveBytes(password, salt, iterations);
         }
 
@@ -58,9 +57,9 @@ namespace OAuthWorks.Implementation.Hashing
         /// <param name="iterations">The iterations.</param>
         public Pbkdf2Sha1(byte[] password, int saltLength, int iterations)
         {
-            Contract.Requires(password != null);
-            Contract.Requires(saltLength > 0);
-            Contract.Requires(iterations > 0);
+            if (password == null) throw new ArgumentNullException("password");
+            if (saltLength <= 0) throw new ArgumentOutOfRangeException("saltLength");
+            if (iterations <= 0) throw new ArgumentOutOfRangeException("iterations");
             byte[] salt = new byte[saltLength];
             using (RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider())
             {

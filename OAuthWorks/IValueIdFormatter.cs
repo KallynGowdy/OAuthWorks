@@ -14,7 +14,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -30,7 +29,6 @@ namespace OAuthWorks
     /// impossible to do efficiently. Therefore the simple solution is to embed the Id in the refreshToken/code that we give the client.
     /// The fact that the refreshToken/code values are hashed means that no security holes are intruduced by implementing this improvement.
     /// </remarks>
-    [ContractClass(typeof(IValueIdFormatterContract<>))]
     public interface IValueIdFormatter<TId>
     {
         /// <summary>
@@ -54,31 +52,5 @@ namespace OAuthWorks
         /// <param name="formattedToken">A value that was generated using <see cref="OAuthWorks.IValueIdFormatter.FormatValue(System.String, System.String)"/>.</param>
         /// <returns>Returns the refreshToken value that was stored in the given formatted value.</returns>
         string GetToken(string formattedToken);
-    }
-
-    [ContractClassFor(typeof(IValueIdFormatter<>))]
-    internal abstract class IValueIdFormatterContract<TId> : IValueIdFormatter<TId>
-    {
-        string IValueIdFormatter<TId>.FormatValue(TId id, string token)
-        {
-            Contract.Requires(id != null);
-            Contract.Requires(token != null);
-            Contract.Ensures(Contract.Result<string>() != null);
-            return default(string);
-        }
-
-        TId IValueIdFormatter<TId>.GetId(string formattedToken)
-        {
-            Contract.Requires(formattedToken != null);
-            Contract.Ensures(Contract.Result<TId>() != null);
-            return default(TId);
-        }
-
-        string IValueIdFormatter<TId>.GetToken(string formattedToken)
-        {
-            Contract.Requires(formattedToken != null);
-            Contract.Ensures(Contract.Result<string>() != null);
-            return default(string);
-        }
     }
 }

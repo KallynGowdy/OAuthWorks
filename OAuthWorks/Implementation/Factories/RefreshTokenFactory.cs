@@ -15,7 +15,6 @@
 using OAuthWorks.Factories;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -143,9 +142,8 @@ namespace OAuthWorks.Implementation.Factories
         public RefreshTokenFactory(int tokenLength, IValueIdFormatter<TId> idFormatter, Func<TId> idGenerator, Func<int, string> valueGenerator)
         {
             if (tokenLength <= 0) throw new ArgumentOutOfRangeException("tokenLength", "tokenLength must be greater than 0.");
-
-            Contract.Requires(idFormatter != null);
-            Contract.Requires(idGenerator != null);
+            if (idFormatter == null) throw new ArgumentNullException("idFormatter");
+            if (idGenerator == null) throw new ArgumentNullException("idGenerator");
             this.TokenLength    = tokenLength;
             this.IdFormatter    = idFormatter;
             this.IdGenerator    = idGenerator;

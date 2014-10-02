@@ -15,7 +15,6 @@
 using OAuthWorks.Factories;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -25,7 +24,6 @@ namespace OAuthWorks.Implementation.Hashing
     /// <summary>
     /// Defines an interface for an object that creates new <see cref="IHasher"/> objects.
     /// </summary>
-    [ContractClass(typeof(IHashFactoryContract))]
     public interface IHashFactory : IFactory<IHasher>
     {
         /// <summary>
@@ -45,31 +43,6 @@ namespace OAuthWorks.Implementation.Hashing
         /// <param name="iterations">The number of iterations that should be used when hashing.</param>
         /// <returns>Returns a new <see cref="OAuthWorks.Implementation.Hashing.IHasher"/> object that creates a derived password(hash) from the given values.</returns>
         IHasher Create(byte[] password, int saltLength, int iterations);
-    }
-
-    [ContractClassFor(typeof(IHashFactory))]
-    internal abstract class IHashFactoryContract : IHashFactory
-    {
-        IHasher IHashFactory.Create(byte[] password, byte[] salt, int iterations)
-        {
-            Contract.Requires(password != null);
-            Contract.Requires(salt != null);
-            Contract.Requires(iterations > 0);
-            return default(IHasher);
-        }
-
-        IHasher IHashFactory.Create(byte[] password, int saltLength, int iterations)
-        {
-            Contract.Requires(password != null);
-            Contract.Requires(saltLength > 0);
-            Contract.Requires(iterations > 0);
-            return default(IHasher);
-        }
-
-        IHasher IFactory<IHasher>.Create()
-        {
-            return default(IHasher);
-        }
     }
 
 }
