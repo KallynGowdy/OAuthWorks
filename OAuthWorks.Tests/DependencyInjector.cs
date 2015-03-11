@@ -21,35 +21,35 @@ using System.Text;
 using System.Threading.Tasks;
 using Ninject.Parameters;
 using OAuthWorks.DataAccess.Repositories;
+using OAuthWorks.Implementation;
 using OAuthWorks.Implementation.Factories;
 
 namespace OAuthWorks.Tests
 {
-    public class DependencyInjector : IDependencyInjector
-    {
-        public readonly static IKernel Kernel = new StandardKernel();
+	public class DependencyInjector : IDependencyInjector
+	{
+		public readonly static IKernel Kernel = new StandardKernel();
 
-        static DependencyInjector()
-        {
-            Kernel.Bind<IScopeRepository<IScope>>().To<ScopeRepository>();
-            Kernel.Bind<IAccessTokenRepository>().To<AccessTokenRepository>();
-            Kernel.Bind<IAuthorizationCodeRepository>().To<AuthorizationCodeRepository>();
-            Kernel.Bind<IAuthorizationCodeFactory<IAuthorizationCode>>().ToMethod(c => AuthorizationCodeFactory.String.DefaultFactory);
-            Kernel.Bind<IAuthorizationCodeResponseFactory>().To<AuthorizationCodeResponseFactory>();
+		static DependencyInjector()
+		{
+			Kernel.Bind<IScopeRepository<IScope>>().To<ScopeRepository>();
+			Kernel.Bind<IAccessTokenRepository>().To<AccessTokenRepository>();
+			Kernel.Bind<IAuthorizationCodeRepository>().To<AuthorizationCodeRepository>();
 
-            Kernel.Bind(typeof(IAccessTokenResponseFactory)).To<AccessTokenResponseFactory>();
+			Kernel.Bind<IAuthorizationCodeFactory<IAuthorizationCode>>().ToMethod(c => AuthorizationCodeFactory.String.DefaultFactory);
+			Kernel.Bind<IAuthorizationCodeResponseFactory>().To<AuthorizationCodeResponseFactory>();
+			Kernel.Bind<IRefreshTokenFactory<IRefreshToken>>().ToMethod(c => DefaultFactories.DefaultRefreshTokenFactoryConstructor());
+			Kernel.Bind(typeof(IAccessTokenResponseFactory)).To<AccessTokenResponseFactory>();
+			Kernel.Bind<IAccessTokenFactory<IAccessToken>>().ToMethod(c => AccessTokenFactory.String.DefaultFactory);
 
-            //kernel.Bind<>().ToConstructor(a => new AccessTokenResponseFactory());
+			Kernel.Bind<IReadStore<string, IClient>>().To<ClientRepository>();
+			Kernel.Bind<IOAuthProvider>().To<OAuthProvider>();
+			Kernel.Bind<IRefreshTokenRepository>().To<RefreshTokenRepository>();
+		}
 
-            Kernel.Bind<IAccessTokenFactory<IAccessToken>>().ToMethod(c => AccessTokenFactory.String.DefaultFactory);
-            Kernel.Bind<IReadStore<string, IClient>>().To<ClientRepository>();
-            Kernel.Bind<IOAuthProvider>().To<OAuthProvider>();
-            Kernel.Bind<IRefreshTokenRepository>().To<RefreshTokenRepository>();
-        }
-
-        public T GetInstance<T>()
-        {
-            return Kernel.Get<T>();
-        }
-    }
+		public T GetInstance<T>()
+		{
+			return Kernel.Get<T>();
+		}
+	}
 }
