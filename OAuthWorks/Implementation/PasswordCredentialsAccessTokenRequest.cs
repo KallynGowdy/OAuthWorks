@@ -45,20 +45,20 @@ namespace OAuthWorks.Implementation
         /// <param name="clientSecret">The secret of the client making the request.</param>
         /// <param name="grantType">The type of grant requested by the client.</param>
         /// <param name="scope">The scope requested by the client.</param>
-        /// <param name="redirectUri">The redirect URI provided by the client when requesting an authorization code.</param>
-        public PasswordCredentialsAccessTokenRequest(IValidatedUser user, string clientId, string clientSecret, string grantType, Uri redirectUri, string scope)
-            : base(clientId, clientSecret, grantType, scope, redirectUri)
+        public PasswordCredentialsAccessTokenRequest(IValidatedUser user, string clientId, string clientSecret, string grantType, string scope)
+            : base(clientId, clientSecret, grantType, scope, null)
         {
-            if (string.IsNullOrEmpty(clientId)) throw new ArgumentException("Cannot be null or empty.", "clientId");
-            if (string.IsNullOrEmpty(clientSecret)) throw new ArgumentException("Cannot be null or empty.", "clientSecret");
-            if (string.IsNullOrEmpty(grantType)) throw new ArgumentException("Cannot be null or empty.", "grantType");
+            // Do not validate variables because the OAuthProvider will do that and will return a value that the client can understand representing what was wrong.
+
+            //if (string.IsNullOrEmpty(clientId)) throw new ArgumentException("Cannot be null or empty.", "clientId");
+            //if (string.IsNullOrEmpty(clientSecret)) throw new ArgumentException("Cannot be null or empty.", "clientSecret");
+            //if (string.IsNullOrEmpty(grantType)) throw new ArgumentException("Cannot be null or empty.", "grantType");
+
+            // Validate the user variable because it is supplied by the server. If it is not supplied then something is wrong and we should not make assumptions
+            // about whether the user is validated or not.
             if (user == null) throw new ArgumentNullException("user");
+
             this.User = user;
-            this.ClientId = clientId;
-            this.ClientSecret = clientSecret;
-            this.GrantType = grantType;
-            this.RedirectUri = redirectUri;
-            this.Scope = scope;
         }
     }
 }

@@ -401,8 +401,6 @@ namespace OAuthWorks
             return result.All(s => s != null) ? result : new IScope[0];
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")] // Validated by call to 'GetRequestError()'
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")] // Suppressed to be able to return IAuthorizationCodeResponse objects according to OAuth 2.0
         /// <summary>
         /// Initiates the Authorization Code flow based on the given request and returns a response that defines what response to send back to the user agent.
         /// Be sure to authenticate the user and request consent before calling this. THIS METHOD ASSUMES THAT USER CONSENT WAS GIVEN.
@@ -410,6 +408,8 @@ namespace OAuthWorks
         /// <param name="request">The request that contains the values that were sent by the client.</param>
         /// <param name="user">The user that the request is for.</param>
         /// <returns>Returns a new <see cref="OAuthWorks.IAuthorizationCodeResponse"/> object that determines what values to put in the outgoing response.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")] // Validated by call to 'GetRequestError()'
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")] // Suppressed to be able to return IAuthorizationCodeResponse objects according to OAuth 2.0
         public IAuthorizationCodeResponse RequestAuthorizationCode(IAuthorizationCodeRequest request, IUser user)
         {
             AuthorizationCodeRequestSpecificErrorType? error = GetRequestError(request);
@@ -423,16 +423,17 @@ namespace OAuthWorks
                         if (client.IsValidRedirectUri(request.RedirectUri))
                         {
                             IEnumerable<IScope> scopes = GetRequestedScopes(request.Scope);
+                            IEnumerable<IScope> scopesArray = scopes as IScope[] ?? scopes.ToArray();
 
-                            if (scopes != null && scopes.Any())
+                            if (scopes != null && scopesArray.Any())
                             {
-                                if (scopes.All(s => user.HasGrantedScope(client, s)))
+                                if (scopesArray.All(s => user.HasGrantedScope(client, s)))
                                 {
 
                                     //Revoke all of the current authorization codes.
                                     AuthorizationCodeRepository.GetByUserAndClient(user, client).ForEach(c => c.Revoke());
 
-                                    ICreatedToken<IAuthorizationCode> authCode = AuthorizationCodeFactory.Create(request.RedirectUri, user, client, scopes);
+                                    ICreatedToken<IAuthorizationCode> authCode = AuthorizationCodeFactory.Create(request.RedirectUri, user, client, scopesArray);
                                     AuthorizationCodeRepository.Add(authCode);
 
                                     //return a successful response
@@ -441,7 +442,7 @@ namespace OAuthWorks
                                             request,
                                             client,
                                             user,
-                                            scopes
+                                            scopesArray
                                         ));
                                 }
                                 else
@@ -452,7 +453,7 @@ namespace OAuthWorks
                                         request,
                                         client,
                                         user,
-                                        scopes);
+                                        scopesArray);
                                 }
                             }
                             else
@@ -463,7 +464,7 @@ namespace OAuthWorks
                                     request,
                                     client,
                                     user,
-                                    scopes);
+                                    scopesArray);
                             }
                         }
                         else
@@ -503,13 +504,13 @@ namespace OAuthWorks
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")] // Suppressed to be able to return IAccessTokenResponse objects according to OAuth 2.0
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")] // Already validated by IsValidRequest
         /// <summary>
         /// Requests an access refreshToken from the server with the request.
         /// </summary>
         /// <param name="request">The incoming request for an access refreshToken.</param>
         /// <returns>Returns a new <see cref="OAuthWorks.IAccessTokenResponse"/> object that represents what to return to the client.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")] // Suppressed to be able to return IAccessTokenResponse objects according to OAuth 2.0
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")] // Already validated by IsValidRequest
         public IAccessTokenResponse RequestAccessToken(IAuthorizationCodeGrantAccessTokenRequest request)
         {
             AccessTokenSpecificRequestError? requestError = GetRequestError(request);
@@ -563,8 +564,6 @@ namespace OAuthWorks
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")] // Suppressed to be able to return IAccessTokenResponse objects according to OAuth 2.0
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")] // Already validated by IsValidRequest
         /// <summary>
         /// Requests a new access refreshToken from the authorizaiton server based on the given request.
         /// </summary>
@@ -572,6 +571,8 @@ namespace OAuthWorks
         /// <returns>
         /// Returns a new <see cref="OAuthWorks.IAccessTokenResponse" /> object that determines what values to put in the outgoing response.
         /// </returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")] // Suppressed to be able to return IAccessTokenResponse objects according to OAuth 2.0
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")] // Already validated by IsValidRequest
         public IAccessTokenResponse RefreshAccessToken(ITokenRefreshRequest request)
         {
             AccessTokenSpecificRequestError? error = GetRequestError(request);
@@ -638,7 +639,6 @@ namespace OAuthWorks
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")] // Validated by call to 'GetRequestError()'
         /// <summary>
         /// Requests an access refreshToken from the authorization server based on the given request using the Resource Owner Password Credentials flow. (Section 4.3 [RFC 6749] http://tools.ietf.org/html/rfc6749#section-4.3).
         /// </summary>
@@ -646,6 +646,7 @@ namespace OAuthWorks
         /// <returns>
         /// Returns a new <see cref="OAuthWorks.ISuccessfulAccessTokenResponse" /> object that determines what values to put in the outgoing response.
         /// </returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")] // Validated by call to 'GetRequestError()'
         public virtual IAccessTokenResponse RequestAccessToken(IPasswordCredentialsAccessTokenRequest request)
         {
             AccessTokenSpecificRequestError? error = GetRequestError(request);
@@ -750,7 +751,7 @@ namespace OAuthWorks
                     {
                         if (!token.Revoked)
                         {
-                            if (request.RequiredScopes.Any(scopes => scopes.All(s => token.Scopes.Contains(s))))
+                            if (token.User == request.User && request.RequiredScopes.Any(scopes => scopes.All(s => token.Scopes.Contains(s))))
                             {
                                 return AuthorizationResult.Success(token);
                             }

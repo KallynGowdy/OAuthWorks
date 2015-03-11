@@ -145,7 +145,7 @@ namespace OAuthWorks
         IAuthorizationCodeResponse RequestAuthorizationCode(IAuthorizationCodeRequest request, IUser user);
 
         /// <summary>
-        /// Requests an access refreshToken from the authorization server based on the given request using the Authorization Code Grant flow (Section 4.1 [RFC 6749] http://tools.ietf.org/html/rfc6749#section-4.1).
+        /// Requests an access token from the authorization server based on the given request using the Authorization Code Grant flow (Section 4.1 [RFC 6749] http://tools.ietf.org/html/rfc6749#section-4.1).
         /// </summary>
         /// <remarks>
         /// This method is used to distribute access tokens according to the Authorization Code Grant flow (Section 4.1 [RFC 6749] http://tools.ietf.org/html/rfc6749#section-4.1).
@@ -158,7 +158,7 @@ namespace OAuthWorks
         IAccessTokenResponse RequestAccessToken(IAuthorizationCodeGrantAccessTokenRequest request);
 
         /// <summary>
-        /// Requests an access refreshToken from the authorization server based on the given request using the Resource Owner Password Credentials flow. (Section 4.3 [RFC 6749] http://tools.ietf.org/html/rfc6749#section-4.3).
+        /// Requests an access token from the authorization server based on the given request using the Resource Owner Password Credentials flow. (Section 4.3 [RFC 6749] http://tools.ietf.org/html/rfc6749#section-4.3).
         /// NOTE that the default implementations of this method DO NOT validate the password in the request, which is why you have to pass in the <see cref="IUser"/>.
         /// MAKE SURE to validate that the given password is valid and matches the user's password before passing the user into this method. If the password is not valid
         /// it is OK to pass in the request with a null user
@@ -168,9 +168,9 @@ namespace OAuthWorks
         IAccessTokenResponse RequestAccessToken(IPasswordCredentialsAccessTokenRequest request);
 
         /// <summary>
-        /// Requests a new access refreshToken from the authorizaiton server based on the given request.
+        /// Requests a new access token from the authorizaiton server based on the given request.
         /// </summary>
-        /// <param name="request">The request that contains the required values for refreshing an access refreshToken.</param>
+        /// <param name="request">The request that contains the required values for refreshing an access token.</param>
         /// <remarks>
         /// This method distributes new access tokens according to the OAuth 2.0 refresh token flow. (Section 6 [RFC 6749] http://tools.ietf.org/html/rfc6749#section-6)
         /// Classes implementing this method should be able to handle any input and return a valid (non-null) output without throwing an exception.

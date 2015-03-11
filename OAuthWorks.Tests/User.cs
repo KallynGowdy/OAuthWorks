@@ -22,25 +22,38 @@ namespace OAuthWorks.Tests
 {
     class User : IUser, IHasId<string>
     {
+		/// <summary>
+		/// Gets or sets the ID of the user.
+		/// </summary>
         public string Id
         {
             get;
             set;
         }
 
+		/// <summary>
+		/// Gets or sets the list of scopes that the user has granted.
+		/// </summary>
         public Dictionary<IClient, IEnumerable<IScope>> Scopes
         {
             get;
             set;
         }
 
-        public bool HasGrantedScope(IClient client, IScope scope)
+	    /// <summary>
+	    /// Determines if the given scope has been granted to the given client by this user.
+	    /// </summary>
+	    /// <remarks>
+	    /// This method should only determine if access to the given scope was granted, not if an Authorization Code was issued.
+	    /// This allows the <see cref="IOAuthProvider"/> to determine if an Authorization Code can be issued or if the user needs to provide consent first.
+	    /// </remarks>
+	    /// <param name="client">The client that is used to determine whether it has been granted the scope by this user.</param>
+	    /// <param name="scope">The scope that may or may not have been granted to the given client.</param>
+	    /// <returns>Returns true if the given client has been granted the given scope, otherwise false.</returns>
+	    public bool HasGrantedScope(IClient client, IScope scope)
         {
-            if(Scopes.TryGetValue(client, out var scopes))
-            {
-                return scopes.Contains(scope);
-            }
-            return false;
+			IEnumerable<IScope> scopes;
+            return Scopes.TryGetValue(client, out scopes) && scopes.Contains(scope);
         }
     }
 }

@@ -41,6 +41,14 @@ namespace OAuthWorks
         }
 
         /// <summary>
+        /// Gets the <see cref="IUser"/> that the request is being made for.
+        /// </summary>
+        IUser User
+        {
+            get;
+        }
+
+        /// <summary>
         /// Gets the list of scope groups that are required for the request to be authorized.
         /// If the request contains all of the required scopes in at least one of the groups, then
         /// the request is authorized. For Example: With the two scope groups {"all", "viewUser, updateUser"},

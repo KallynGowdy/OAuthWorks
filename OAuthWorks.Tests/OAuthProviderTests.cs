@@ -281,8 +281,8 @@ namespace OAuthWorks.Tests
             IAuthorizationCodeResponse response = provider.RequestAuthorizationCode(codeRequest, user);
 
             Assert.NotNull(response);
-
-            if ((ISuccessfulAuthorizationCodeResponse success = response as ISuccessfulAuthorizationCodeResponse) != null)
+			ISuccessfulAuthorizationCodeResponse success = response as ISuccessfulAuthorizationCodeResponse;
+            if (success != null)
             {
                 Assert.AreEqual(success.State, state);
 

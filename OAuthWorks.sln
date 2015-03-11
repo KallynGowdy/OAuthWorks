@@ -1,13 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.30501.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.22609.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OAuthWorks", "OAuthWorks\OAuthWorks.csproj", "{6365EEBC-E95E-4CC5-ABC9-EA00B0FBFAFD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OAuthWorks.Tests", "OAuthWorks.Tests\OAuthWorks.Tests.csproj", "{43FB5F81-5839-4F35-99AE-E5F2AC71670C}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExampleWebApiProject", "ExampleWebApiProject\ExampleWebApiProject.csproj", "{0B19074A-E7F1-4922-9641-C4BDE7DBB9CE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{C184E254-9568-4F7D-A611-4F9D9FDC7711}"
 	ProjectSection(SolutionItems) = preProject
@@ -15,8 +13,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{C184E2
 		.nuget\NuGet.exe = .nuget\NuGet.exe
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExampleMvcWebApplication", "ExampleMvcWebApplication\ExampleMvcWebApplication.csproj", "{0E8EE6AC-4BBB-43A1-BD46-25F5DCE0ED18}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,14 +28,6 @@ Global
 		{43FB5F81-5839-4F35-99AE-E5F2AC71670C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{43FB5F81-5839-4F35-99AE-E5F2AC71670C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{43FB5F81-5839-4F35-99AE-E5F2AC71670C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0B19074A-E7F1-4922-9641-C4BDE7DBB9CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0B19074A-E7F1-4922-9641-C4BDE7DBB9CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0B19074A-E7F1-4922-9641-C4BDE7DBB9CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0B19074A-E7F1-4922-9641-C4BDE7DBB9CE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0E8EE6AC-4BBB-43A1-BD46-25F5DCE0ED18}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0E8EE6AC-4BBB-43A1-BD46-25F5DCE0ED18}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0E8EE6AC-4BBB-43A1-BD46-25F5DCE0ED18}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0E8EE6AC-4BBB-43A1-BD46-25F5DCE0ED18}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

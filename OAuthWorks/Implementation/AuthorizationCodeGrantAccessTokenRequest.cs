@@ -48,15 +48,12 @@ namespace OAuthWorks.Implementation
         /// <param name="authorizationCode">The authorization code.</param>
         /// <param name="clientId">The id of the client making the request.</param>
         /// <param name="clientSecret">The secret of the client making the request.</param>
-        /// <param name="scope">The scope requested by the client.</param>
         /// <param name="redirectUri">The redirect URI provided by the client when requesting an authorization code.</param>
         public AuthorizationCodeGrantAccessTokenRequest(string authorizationCode, string clientId, string clientSecret, Uri redirectUri)
-            : base(clientId, clientSecret, AuthorizationCodeGrantType, null, redirectUri)
+            : base(clientId, clientSecret, AuthorizationCodeGrantType, null, redirectUri) // The scope is not required because it is already
+                                                                                          // stored with the authorization code.
         {
             this.AuthorizationCode = authorizationCode;
-            this.ClientId = clientId;
-            this.ClientSecret = clientSecret;
-            this.RedirectUri = redirectUri;
         }
     }
 }

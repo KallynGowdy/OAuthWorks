@@ -159,9 +159,9 @@ namespace OAuthWorks.Implementation
             /// </returns>
             public string GetId(string formattedToken)
             {
-                if (string.IsNullOrEmpty(formattedToken))
+                if (formattedToken == null)
                 {
-                    throw new ArgumentException("The formatted token can't be null or empty.", "formattedToken");
+                    throw new ArgumentNullException("formattedToken");
                 }
                 Regex r = new Regex(string.Format(@"(?<!{0}){0}(?!{0})", Divider));
                 return Unescape(r.Split(formattedToken).Last(), Divider, Divider);
@@ -176,9 +176,9 @@ namespace OAuthWorks.Implementation
             /// </returns>
             public string GetToken(string formattedToken)
             {
-                if (string.IsNullOrEmpty(formattedToken))
+                if (formattedToken == null)
                 {
-                    throw new ArgumentException("The formatted token can't be null or empty.", "formattedToken");
+                    throw new ArgumentNullException("formattedToken");
                 }
                 Regex r = new Regex(string.Format(@"(?<!{0}){0}(?!{0})", Divider));
                 return Unescape(r.Split(formattedToken).First(), Divider, Divider);
