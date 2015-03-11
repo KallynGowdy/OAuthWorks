@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{A6265E66-58FB-4252-8A96-A8F62E153AA8}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>OAuthWorks.Implementation</RootNamespace>
+    <AssemblyName>OAuthWorks.Implementation</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AccessToken.cs" />
+    <Compile Include="AccessTokenRequest.cs" />
+    <Compile Include="AuthorizationCode.cs" />
+    <Compile Include="AuthorizationCodeGrantAccessTokenRequest.cs" />
+    <Compile Include="AuthorizationCodeRequest.cs" />
+    <Compile Include="AuthorizationCodeResponse.cs" />
+    <Compile Include="AuthorizationRequest.cs" />
+    <Compile Include="AuthorizationResult.cs" />
+    <Compile Include="AuthorizationResultDescription.cs" />
+    <Compile Include="DataTransferObjects\AuthorizationCodeGrantTokenRequestDto.cs" />
+    <Compile Include="DataTransferObjects\ClientAuthorizationDto.cs" />
+    <Compile Include="DataTransferObjects\PasswordCredentialsTokenRequestDto.cs" />
+    <Compile Include="DataTransferObjects\TokenRequestDto.cs" />
+    <Compile Include="AuthorizationCodeResponseExtensions.cs" />
+    <Compile Include="DefaultFactories.cs" />
+    <Compile Include="Factories\AccessTokenFactory.cs" />
+    <Compile Include="Factories\AccessTokenResponseFactory.cs" />
+    <Compile Include="Factories\AuthorizationCodeFactory.cs" />
+    <Compile Include="Factories\AuthorizationCodeResponseFactory.cs" />
+    <Compile Include="Factories\RefreshTokenFactory.cs" />
+    <Compile Include="HashedAccessToken.cs" />
+    <Compile Include="HashedAuthorizationCode.cs" />
+    <Compile Include="HashedRefreshToken.cs" />
+    <Compile Include="Hashing\HashedValue.cs" />
+    <Compile Include="Hashing\IHasher.cs" />
+    <Compile Include="Hashing\IHashFactory.cs" />
+    <Compile Include="Hashing\Pbkdf2Sha1.cs" />
+    <Compile Include="Hashing\Pbkdf2Sha1Factory.cs" />
+    <Compile Include="PasswordCredentialsAccessTokenRequest.cs" />
+    <Compile Include="RefreshToken.cs" />
+    <Compile Include="ScopeAuthorizationRequest.cs" />
+    <Compile Include="SuccessfulAccessTokenResponse.cs" />
+    <Compile Include="SuccessfulAuthorizationCodeResponse.cs" />
+    <Compile Include="TokenRefreshRequest.cs" />
+    <Compile Include="UnsuccessfulAccessTokenResponse.cs" />
+    <Compile Include="UnsuccessfulAuthorizationCodeResponse.cs" />
+    <Compile Include="UserExtensions.cs" />
+    <Compile Include="ValidatedUser.cs" />
+    <Compile Include="ValueIdFormatter.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\OAuthWorks\OAuthWorks.csproj">
+      <Project>{6852e4b1-d000-42f6-bdee-e05cade26ce8}</Project>
+      <Name>OAuthWorks</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

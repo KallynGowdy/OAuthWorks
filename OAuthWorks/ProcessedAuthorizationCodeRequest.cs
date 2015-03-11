@@ -18,7 +18,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OAuthWorks.Implementation
+namespace OAuthWorks
 {
     /// <summary>
     /// Defines a class that provides a basic implementation of <see cref="IProcessedAuthorizationCodeRequest"/>.

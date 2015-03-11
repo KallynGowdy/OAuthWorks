@@ -14,13 +14,9 @@
 
 using OAuthWorks.DataAccess.Repositories;
 using OAuthWorks.Factories;
-using OAuthWorks.Implementation.Factories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using OAuthWorks.Implementation;
 using OAuthWorks.ExtensionMethods;
 
 namespace OAuthWorks
@@ -28,120 +24,56 @@ namespace OAuthWorks
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Auth")]
     public class OAuthProvider : IOAuthProvider
     {
-        #region Defaults
-        /// <summary>
-        /// The default <see cref="IAccessTokenFactory{TAccessToken}"/> constructor.
-        /// </summary>
-        public static readonly Func<IAccessTokenFactory<IAccessToken>> DefaultAccessTokenFactoryConstructor = () => Implementation.Factories.AccessTokenFactory.String.DefaultFactory;
+		#region Constructors
 
-        /// <summary>
-        /// The default <see cref="IAuthorizationCodeFactory{TAuthorizationCode}"/> constructor.
-        /// </summary>
-        public static readonly Func<IAuthorizationCodeFactory<IAuthorizationCode>> DefaultAuthorizationCodeFactoryConstructor = () => Implementation.Factories.AuthorizationCodeFactory.String.DefaultFactory;
-
-        /// <summary>
-        /// The default <see cref="IAccessTokenResponseFactory"/> constructor.
-        /// </summary>
-        public static readonly Func<IAccessTokenResponseFactory> DefaultAccessTokenResponseFactoryConstructor = () => new AccessTokenResponseFactory();
-
-        /// <summary>
-        /// The default <see cref="IAuthorizationCodeResponseFactory"/> constructor.
-        /// </summary>
-        public static readonly Func<IAuthorizationCodeResponseFactory> DefaultAuthorizationCodeResponseFactoryConstructor = () => new AuthorizationCodeResponseFactory();
-
-        /// <summary>
-        /// The default <see cref="IRefreshTokenFactory{TRefreshToken}"/> constructor.
-        /// </summary>
-        public static readonly Func<IRefreshTokenFactory<IRefreshToken>> DefaultRefreshTokenFactoryConstructor = () => Implementation.Factories.RefreshTokenFactory.String.DefaultFactory;
-
-        #endregion
-
-        #region Constructors
-        /// <summary>
-        /// Creates a new <see cref="OAuthProvider"/> using a default factories.
-        /// </summary>
-        public OAuthProvider() :
-            this(
-                DefaultAccessTokenFactoryConstructor(),
-                DefaultAccessTokenResponseFactoryConstructor(),
-                DefaultAuthorizationCodeFactoryConstructor(),
-                DefaultAuthorizationCodeResponseFactoryConstructor(),
-                DefaultRefreshTokenFactoryConstructor()
-            )
-        {
-        }
-
-        /// <summary>
-        /// Creates a new <see cref="OAuthProvider"/> using the default factories and given <see cref="Action{OAuthProvider}"/> for initialization.
-        /// </summary>
-        /// <param name="initialization">A <see cref="Action{OAuthProvider}"/> that completes initializtion of the provider.</param>
-        public OAuthProvider(Action<OAuthProvider> initialization) :
-            this()
-        {
-            if (initialization == null)
-            {
-                throw new ArgumentNullException("initialization");
-            }
-            initialization(this);
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="OAuthProvider"/> class.
-        /// </summary>
-        /// <param name="accessTokenFactory">The access token factory.</param>
-        /// <param name="accessTokenResponseFactory">The access token response factory.</param>
-        /// <param name="authorizationCodeFactory">The authorization code factory.</param>
-        /// <param name="authorizationCodeResponseFactory">The authorization code response factory.</param>
-        /// <param name="refreshTokenFactory">The refresh token factory.</param>
-        public OAuthProvider(
+		/// <summary>
+		/// Initializes a new instance of the <see cref="OAuthProvider"/> class.
+		/// </summary>
+		/// <param name="accessTokenFactory">The access token factory.</param>
+		/// <param name="accessTokenResponseFactory">The access token response factory.</param>
+		/// <param name="authorizationCodeFactory">The authorization code factory.</param>
+		/// <param name="authorizationCodeResponseFactory">The authorization code response factory.</param>
+		/// <param name="refreshTokenFactory">The refresh token factory.</param>
+		/// <param name="accessTokenRepository">The access token repository.</param>
+		/// <param name="authorizationCodeRepository">The authorization code repository.</param>
+		/// <param name="scopeRepository">The scope repository.</param>
+		/// <param name="clientRepository">The client repository.</param>
+		/// <param name="refreshTokenRepository">The refresh token repository.</param>
+		/// <exception cref="ArgumentNullException">The value of 'accessTokenFactory' cannot be null. </exception>
+		public OAuthProvider(
             IAccessTokenFactory<IAccessToken> accessTokenFactory,
             IAccessTokenResponseFactory accessTokenResponseFactory,
             IAuthorizationCodeFactory<IAuthorizationCode> authorizationCodeFactory,
             IAuthorizationCodeResponseFactory authorizationCodeResponseFactory,
-            IRefreshTokenFactory<IRefreshToken> refreshTokenFactory
-            )
+            IRefreshTokenFactory<IRefreshToken> refreshTokenFactory,
+			IAccessTokenRepository accessTokenRepository,
+			IAuthorizationCodeRepository authorizationCodeRepository,
+			IScopeRepository<IScope> scopeRepository,
+			IReadStore<string, IClient> clientRepository,
+			IRefreshTokenRepository refreshTokenRepository
+			)
         {
             if (accessTokenFactory == null) throw new ArgumentNullException("accessTokenFactory");
             if (accessTokenResponseFactory == null) throw new ArgumentNullException("accessTokenResponseFactory");
             if (authorizationCodeFactory == null) throw new ArgumentNullException("authorizationCodeFactory");
             if (authorizationCodeResponseFactory == null) throw new ArgumentNullException("authorizationCodeResponseFactory");
             if (refreshTokenFactory == null) throw new ArgumentNullException("refreshTokenFactory");
-            AccessTokenFactory = accessTokenFactory;
+			if (accessTokenRepository == null) throw new ArgumentNullException("accessTokenRepository");
+			if (authorizationCodeRepository == null) throw new ArgumentNullException("authorizationCodeRepository");
+			if (scopeRepository == null) throw new ArgumentNullException("scopeRepository");
+			if (clientRepository == null) throw new ArgumentNullException("clientRepository");
+			if (refreshTokenRepository == null) throw new ArgumentNullException("refreshTokenRepository");
+			AccessTokenFactory = accessTokenFactory;
             AuthorizationCodeFactory = authorizationCodeFactory;
             AccessTokenResponseFactory = accessTokenResponseFactory;
             AuthorizationCodeResponseFactory = authorizationCodeResponseFactory;
             RefreshTokenFactory = refreshTokenFactory;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="OAuthProvider"/> class.
-        /// </summary>
-        /// <param name="accessTokenRepository">The access token repository.</param>
-        /// <param name="authorizationCodeRepository">The authorization code repository.</param>
-        /// <param name="scopeRepository">The scope repository.</param>
-        /// <param name="clientRepository">The client repository.</param>
-        /// <param name="refreshTokenRepository">The refresh token repository.</param>
-        public OAuthProvider(
-            IAccessTokenRepository accessTokenRepository,
-            IAuthorizationCodeRepository authorizationCodeRepository,
-            IScopeRepository<IScope> scopeRepository,
-            IReadStore<string, IClient> clientRepository,
-            IRefreshTokenRepository refreshTokenRepository
-            )
-            : this()
-        {
-            if (accessTokenRepository == null) throw new ArgumentNullException("accessTokenRepository");
-            if (authorizationCodeRepository == null) throw new ArgumentNullException("authorizationCodeRepository");
-            if (scopeRepository == null) throw new ArgumentNullException("scopeRepository");
-            if (clientRepository == null) throw new ArgumentNullException("clientRepository");
-            if (refreshTokenRepository == null) throw new ArgumentNullException("refreshTokenRepository");
-            AccessTokenRepository = accessTokenRepository;
-            AuthorizationCodeRepository = authorizationCodeRepository;
-            ScopeRepository = scopeRepository;
-            ClientRepository = clientRepository;
-            RefreshTokenRepository = refreshTokenRepository;
-        }
-
+			AccessTokenRepository = accessTokenRepository;
+			AuthorizationCodeRepository = authorizationCodeRepository;
+			ScopeRepository = scopeRepository;
+			ClientRepository = clientRepository;
+			RefreshTokenRepository = refreshTokenRepository;
+		}
         #endregion
 
         #region Data Members
@@ -488,7 +420,7 @@ namespace OAuthWorks
                             client: client);
                     }
                 }
-                catch (SystemException e)
+                catch (Exception e)
                 {
                     return CreateAuthorizationCodeError(
                         AuthorizationCodeRequestSpecificErrorType.ServerError,
@@ -552,7 +484,7 @@ namespace OAuthWorks
                         ScopeFormatter(accessToken.Token.Scopes),
                         accessToken.Token.ExpirationDateUtc);
                 }
-                catch (SystemException e)
+                catch (Exception e)
                 {
                     // Server error
                     return CreateAccessTokenError(AccessTokenSpecificRequestError.ServerError, null, e);
@@ -628,7 +560,7 @@ namespace OAuthWorks
 
                     return AccessTokenResponseFactory.Create(newToken.TokenValue, refreshValue, newToken.Token.TokenType, ScopeFormatter(newToken.Token.Scopes), newToken.Token.ExpirationDateUtc);
                 }
-                catch (SystemException e)
+                catch (Exception e)
                 {
                     return CreateAccessTokenError(AccessTokenSpecificRequestError.ServerError, null, e);
                 }
@@ -698,7 +630,7 @@ namespace OAuthWorks
                         return CreateAccessTokenError(AccessTokenSpecificRequestError.InvalidScope, client);
                     }
                 }
-                catch (SystemException e)
+                catch (Exception e)
                 {
                     return CreateAccessTokenError(AccessTokenSpecificRequestError.ServerError, null, e);
                 }

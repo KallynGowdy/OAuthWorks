@@ -19,8 +19,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel;
+using OAuthWorks.ExtensionMethods;
+using PortableOAuthWorks.DataAnnotations;
 
-namespace OAuthWorks.Implementation
+namespace OAuthWorks
 {
     /// <summary>
     /// Defines a basic implementation of <see cref="IAccessTokenErrorDescriptionProvider"/>.
@@ -30,14 +32,13 @@ namespace OAuthWorks.Implementation
         /// <summary>
         /// Gets the human-readable description of the specific error.
         /// </summary>
-        /// <param name="specificError">The error that the description should be retrived for.</param>
+        /// <param name="specificError">The error that the description should be retrieved for.</param>
         /// <returns>
         /// Returns a string that represents the human-readable description for the given error.
         /// </returns>
         public string GetDescription(AccessTokenSpecificRequestError specificError)
         {
-            Type t = specificError.GetType();
-            return t.GetMember(specificError.ToString()).First().GetCustomAttributes<DescriptionAttribute>().First().Description;
+			return specificError.GetDescription();
         }
     }
 }

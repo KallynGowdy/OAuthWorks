@@ -43,13 +43,7 @@ namespace OAuthWorks.Tests
 
             Kernel.Bind<IAccessTokenFactory<IAccessToken>>().ToMethod(c => AccessTokenFactory.String.DefaultFactory);
             Kernel.Bind<IReadStore<string, IClient>>().To<ClientRepository>();
-            Kernel.Bind<IOAuthProvider>().ToConstructor(k => new OAuthProvider(
-                 k.Inject<IAccessTokenRepository>(),
-                 k.Inject<IAuthorizationCodeRepository>(),
-                 k.Inject<IScopeRepository<IScope>>(),
-                 k.Inject<IReadStore<string, IClient>>(),
-                 k.Inject<IRefreshTokenRepository>()
-                ));
+            Kernel.Bind<IOAuthProvider>().To<OAuthProvider>();
             Kernel.Bind<IRefreshTokenRepository>().To<RefreshTokenRepository>();
         }
 

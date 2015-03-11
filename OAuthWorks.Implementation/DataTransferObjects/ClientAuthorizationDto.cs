@@ -38,8 +38,9 @@ namespace OAuthWorks.Implementation.DataTransferObjects
         /// <returns>Returns a new <see cref="ClientAuthorizationDto"/> that represents the given authorization string.</returns>
         public static ClientAuthorizationDto FromBasicScheme(string auth)
         {
-            auth = auth.Trim(); // Normalize string
-            string[] values = Encoding.UTF8.GetString(Convert.FromBase64String(auth)).Split(':');
+            auth = auth.Trim();	// Normalize string
+			var bytes = Convert.FromBase64String(auth);
+            string[] values = Encoding.UTF8.GetString(bytes, 0, bytes.Length).Split(':');
             return new ClientAuthorizationDto
             {
                 ClientId = values.FirstOrDefault(),

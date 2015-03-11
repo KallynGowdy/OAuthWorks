@@ -30,27 +30,22 @@ namespace OAuthWorks.ExtensionMethods
     /// Defines a list of extension methods that provide helpers for creating URLs.
     /// </summary>
     public static class UrlHelpers
-    {        
-        /// <summary>
-        /// Converts the given object into a query string representation.
-        /// </summary>
-        /// <param name="value">The object to retreive to query string for.</param>
-        /// <returns></returns>
-        public static string ToQueryString(this object value)
+    {
+	    /// <summary>
+	    /// Converts the given object into a query string representation.
+	    /// </summary>
+	    /// <param name="value">The object to retrieve to query string for.</param>
+	    /// <returns></returns>
+	    /// <exception cref="ArgumentNullException">The value of 'value' cannot be null. </exception>
+	    public static string ToQueryString(this object value)
         {
             if (value == null)
             {
                 throw new ArgumentNullException("value");
             }
-            Type t = value.GetType();
-            Dictionary<string, string> values = new Dictionary<string, string>();
-
-            foreach (PropertyInfo p in t.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => !p.IsSpecialName && p.CanRead))
-            {
-                values.Add(p.Name, (p.GetValue(value) ?? "").ToString());
-            }
-
-            return "?" + string.Join("&", values.Select(kv => string.Format("{0}={1}", Uri.EscapeDataString(kv.Key), Uri.EscapeDataString(kv.Value))));
+            TypeInfo t = value.GetType().GetTypeInfo();
+            Dictionary<string, string> values = t.DeclaredProperties.Where(p => !p.IsSpecialName && p.CanRead).ToDictionary(p => p.Name, p => (p.GetValue(value) ?? "").ToString());
+	        return "?" + string.Join("&", values.Select(kv => string.Format("{0}={1}", Uri.EscapeDataString(kv.Key), Uri.EscapeDataString(kv.Value))));
         }
     }
 }

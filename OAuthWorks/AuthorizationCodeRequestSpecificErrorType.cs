@@ -13,6 +13,7 @@
 //    limitations under the License.
 
 using System.ComponentModel;
+using PortableOAuthWorks.DataAnnotations;
 
 namespace OAuthWorks
 {

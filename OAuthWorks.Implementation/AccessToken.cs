@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 namespace OAuthWorks.Implementation
 {
     /// <summary>
-    /// Defines a base class that provides a basic implemenatation of <see cref="OAuthWorks.AccessToken"/>.
+    /// Defines a base class that provides a basic implemenatation of <see cref="AccessToken{TId}"/>.
     /// </summary>
     /// <remarks>
     /// For a secure implemenatation, see <see cref="OAuthWorks.Implementation.HashedAccessToken"/>.

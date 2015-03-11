@@ -12,14 +12,13 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-using OAuthWorks.Implementation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OAuthWorks.ExtensionMethods
+namespace OAuthWorks.Implementation
 {
     /// <summary>
     /// Defines a static class that contains extension methods for <see cref="IUser"/> objects.

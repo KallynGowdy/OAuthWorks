@@ -12,16 +12,11 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-using OAuthWorks.ExtensionMethods;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
+using OAuthWorks.ExtensionMethods;
+using PortableOAuthWorks.DataAnnotations;
 
-namespace OAuthWorks.Implementation
+namespace OAuthWorks
 {
     /// <summary>
     /// Defines a list of values that specify the different authorization result error codes.

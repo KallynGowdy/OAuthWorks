@@ -19,8 +19,9 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using OAuthWorks.ExtensionMethods;
 
-namespace OAuthWorks.Implementation
+namespace OAuthWorks
 {
 
     /// <summary>
@@ -37,8 +38,7 @@ namespace OAuthWorks.Implementation
         /// </returns>
         public string GetDescription(AuthorizationCodeRequestSpecificErrorType specificError)
         {
-            Type t = specificError.GetType();
-            return t.GetMember(specificError.ToString()).First().GetCustomAttributes<DescriptionAttribute>().First().Description;
+			return specificError.GetDescription();
         }
     }
 }
